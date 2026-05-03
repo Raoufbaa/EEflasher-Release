@@ -574,6 +574,7 @@
           <div class="dl-info-row"><span>Package</span><span>Installer (.exe)</span></div>
           <div class="dl-info-row"><span>Architecture</span><span>x86_64</span></div>
           <div class="dl-info-row"><span>Runtime</span><span>Self-contained</span></div>
+          <div class="dl-info-row"><span>Downloads</span><span id="dl-win-x64">—</span></div>
         </div>
         <div class="dl-actions">
           <a class="btn btn-accent" href="https://github.com/Raoufbaa/EEflasher-Release/releases/latest/download/EEFlasher_Setup.exe">
@@ -598,6 +599,7 @@
           <div class="dl-info-row"><span>Package</span><span>Installer (.exe)</span></div>
           <div class="dl-info-row"><span>Architecture</span><span>x86 (32-bit)</span></div>
           <div class="dl-info-row"><span>Runtime</span><span>Self-contained</span></div>
+          <div class="dl-info-row"><span>Downloads</span><span id="dl-win-x86">—</span></div>
         </div>
         <div class="dl-actions">
           <a class="btn btn-ghost" href="https://github.com/Raoufbaa/EEflasher-Release/releases/latest/download/EEFlasher_Setup_x86.exe">
@@ -622,6 +624,7 @@
           <div class="dl-info-row"><span>Package</span><span>TAR.GZ</span></div>
           <div class="dl-info-row"><span>Architecture</span><span>x86_64</span></div>
           <div class="dl-info-row"><span>Runtime</span><span>Self-contained</span></div>
+          <div class="dl-info-row"><span>Downloads</span><span id="dl-linux-x64">—</span></div>
         </div>
         <div class="dl-actions">
           <a class="btn-portable" href="https://github.com/Raoufbaa/EEflasher-Release/releases/latest/download/EEFlasher-linux-x64.tar.gz">
@@ -640,6 +643,7 @@
         <div class="stat-list">
           <div class="stat-row"><span class="label">Version</span><span class="value" id="relName">Checking…</span></div>
           <div class="stat-row"><span class="label">Published</span><span class="value" id="relDate">Checking…</span></div>
+          <div class="stat-row"><span class="label">Total downloads</span><span class="value check" id="totalDownloads">—</span></div>
           <div class="stat-row"><span class="label">Framework</span><span class="value">.NET 10 / Avalonia 12</span></div>
           <div class="stat-row"><span class="label">License</span><span class="value">MIT</span></div>
           <div class="stat-row"><span class="label">Status</span><span class="value check">Active development</span></div>
@@ -904,32 +908,103 @@
       draw();
     })();
 
-    /* ─── release info ─── */
+    /* ─── release info + download counts ─── */
     document.getElementById("yr").textContent = new Date().getFullYear();
+
+    function formatNumber(num) {
+      if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+      if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+      return num.toString();
+    }
 
     async function loadRelease() {
       const badge   = document.getElementById("versionBadge");
       const relName = document.getElementById("relName");
       const relDate = document.getElementById("relDate");
+      const totalDl = document.getElementById("totalDownloads");
+      const dlWinX64 = document.getElementById("dl-win-x64");
+      const dlWinX86 = document.getElementById("dl-win-x86");
+      const dlLinux = document.getElementById("dl-linux-x64");
+      
       try {
-        const res  = await fetch("https://api.github.com/repos/Raoufbaa/EEflasher-Release/releases/latest");
-        if (!res.ok) throw new Error();
+        // Fetch from GitHub API
+        const res = await fetch("https://api.github.com/repos/Raoufbaa/EEflasher-Release/releases/latest", {
+          headers: {
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+        
+        if (!res.ok) {
+          console.error('GitHub API error:', res.status, res.statusText);
+          throw new Error(`HTTP ${res.status}`);
+        }
+        
         const data = await res.json();
+        console.log('GitHub API response:', data);
+        
         const ver  = (data.tag_name || data.name || "").replace(/^v/i, "");
         const pub  = data.published_at
           ? new Date(data.published_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })
           : "Recently";
+        
         badge.textContent   = ver ? `v${ver}` : "Latest version";
         relName.textContent = data.name || `v${ver}` || "Latest";
         relDate.textContent = pub;
-      } catch {
+        
+        // Calculate download counts
+        let total = 0;
+        let winX64Count = 0;
+        let winX86Count = 0;
+        let linuxCount = 0;
+        
+        if (data.assets && data.assets.length > 0) {
+          console.log('Assets found:', data.assets.length);
+          
+          data.assets.forEach(asset => {
+            const count = asset.download_count || 0;
+            console.log(`${asset.name}: ${count} downloads`);
+            total += count;
+            
+            if (asset.name.includes('Setup.exe') && !asset.name.includes('x86')) {
+              winX64Count += count;
+            } else if (asset.name.includes('Setup_x86.exe')) {
+              winX86Count += count;
+            } else if (asset.name.includes('win-x64.zip')) {
+              winX64Count += count;
+            } else if (asset.name.includes('win-x86.zip')) {
+              winX86Count += count;
+            } else if (asset.name.includes('linux-x64.tar.gz')) {
+              linuxCount += count;
+            }
+          });
+          
+          totalDl.textContent = formatNumber(total);
+          dlWinX64.textContent = formatNumber(winX64Count);
+          dlWinX86.textContent = formatNumber(winX86Count);
+          dlLinux.textContent = formatNumber(linuxCount);
+          
+          console.log('✓ Download counts updated:', { total, winX64Count, winX86Count, linuxCount });
+        } else {
+          console.warn('No assets found in release');
+        }
+      } catch (err) {
+        console.error('Failed to fetch release data:', err);
+        
+        // Fallback to version.json
         try {
           const fb   = await fetch("version.json");
           const data = await fb.json();
           badge.textContent   = `v${data.version}`;
           relName.textContent = `EEFlasher ${data.version}`;
           relDate.textContent = "Latest";
-        } catch {
+          
+          // Set download counts to show they're unavailable
+          if (totalDl) totalDl.textContent = "N/A";
+          if (dlWinX64) dlWinX64.textContent = "N/A";
+          if (dlWinX86) dlWinX86.textContent = "N/A";
+          if (dlLinux) dlLinux.textContent = "N/A";
+        } catch (fbErr) {
+          console.error('Fallback also failed:', fbErr);
           badge.textContent   = "Latest version";
           relName.textContent = "Latest stable";
           relDate.textContent = "See GitHub";
@@ -937,7 +1012,11 @@
       }
     }
 
+    // Initial load
     loadRelease();
+    
+    // Auto-refresh every 5 minutes
+    setInterval(loadRelease, 5 * 60 * 1000);
   </script>
 </body>
 </html>
