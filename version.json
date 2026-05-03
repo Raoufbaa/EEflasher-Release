@@ -7,6 +7,6 @@
   "SupportedVersions": [
     "1.0.13","1.0.14"
   ],
-  "AppDisabled": true,
+  "AppDisabled": false,
   "AppDisabledMessage": ""
 }
