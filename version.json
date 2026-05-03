@@ -1,6 +1,8 @@
 {
   "version": "1.0.11",
-  "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
+  "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest/download/EEFlasher_Setup_x64.exe",
+  "DownloadUrlX64": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest/download/EEFlasher_Setup_x64.exe",
+  "DownloadUrlX86": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest/download/EEFlasher_Setup_x86.exe",
   "ReleaseNotes": "added auto update and updated the installer",
   "SupportedVersions": [
     "1.0.11"
