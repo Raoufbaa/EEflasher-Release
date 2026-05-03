@@ -1,9 +1,9 @@
 {
-  "version": "1.0.9",
+  "version": "1.0.10",
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "fixed getignore",
+  "ReleaseNotes": "updated setup and added eula",
   "SupportedVersions": [
-    "1.0.9"
+    "1.0.10"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
