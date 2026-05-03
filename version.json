@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0",
+  "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
+  "ReleaseNotes": "Initial release of EEFlasher - Modern USB Flash/EEPROM Programmer",
+  "SupportedVersions": [
+    "1.0.0"
+  ],
+  "AppDisabled": false,
+  "AppDisabledMessage": ""
+}

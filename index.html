@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EEFlasher - Download</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 50px;
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.2em;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .version-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-bottom: 30px;
+        }
+        
+        .downloads {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .download-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .download-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+        
+        .download-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        
+        .download-card p {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+        
+        .download-btn {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+        
+        .download-btn:hover {
+            background: #5568d3;
+        }
+        
+        .features {
+            margin: 40px 0;
+        }
+        
+        .features h2 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .features ul {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .features li {
+            padding: 10px 10px 10px 35px;
+            position: relative;
+            color: #555;
+        }
+        
+        .features li:before {
+            content: "✓";
+            position: absolute;
+            left: 10px;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 15px;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 EEFlasher</h1>
+        <p class="subtitle">Modern USB Flash/EEPROM Programmer</p>
+        <div style="text-align: center;">
+            <span class="version-badge" id="version">Loading version...</span>
+        </div>
+        
+        <div class="downloads">
+            <div class="download-card">
+                <h3>Windows x64</h3>
+                <p>Installer for 64-bit Windows</p>
+                <a href="https://github.com/Raoufbaa/EEflasher-Release/releases/latest/download/EEFlasher_Setup.exe" class="download-btn">Download Installer</a>
+                <br><br>
+                <a href="https://github.com/Raoufbaa/EEflasher-Release/releases/latest/download/EEFlasher-win-x64.zip" style="color: #667eea; font-size: 0.9em;">Portable ZIP</a>
+            </div>
+            
+            <div class="download-card">
+                <h3>Windows x86</h3>
+                <p>Installer for 32-bit Windows</p>
+                <a href="https://github.com/Raoufbaa/EEflasher-Release/releases/latest/download/EEFlasher_Setup_x86.exe" class="download-btn">Download Installer</a>
+                <br><br>
+                <a href="https://github.com/Raoufbaa/EEflasher-Release/releases/latest/download/EEFlasher-win-x86.zip" style="color: #667eea; font-size: 0.9em;">Portable ZIP</a>
+            </div>
+            
+            <div class="download-card">
+                <h3>Linux x64</h3>
+                <p>Portable for 64-bit Linux</p>
+                <a href="https://github.com/Raoufbaa/EEflasher-Release/releases/latest/download/EEFlasher-linux-x64.tar.gz" class="download-btn">Download TAR.GZ</a>
+            </div>
+        </div>
+        
+        <div class="features">
+            <h2>✨ Features</h2>
+            <ul>
+                <li>Modern Dark UI</li>
+                <li>Multi-Hardware Support</li>
+                <li>Blazing Fast Performance</li>
+                <li>Multiple Protocols (SPI, I2C, Microwire)</li>
+                <li>Advanced Hex Editor</li>
+                <li>UEFI Capsule Parser</li>
+                <li>Cancellable Operations</li>
+                <li>Write Protection Management</li>
+                <li>Comprehensive Chip Database</li>
+            </ul>
+        </div>
+        
+        <div class="footer">
+            <a href="https://github.com/Raoufbaa/EEflasher-Release/releases">All Releases</a>
+            <a href="https://github.com/Raoufbaa/EEflasher-Release">GitHub</a>
+            <a href="https://github.com/Raoufbaa/EEflasher-Release/blob/main/README.md">Documentation</a>
+        </div>
+    </div>
+    
+    <script>
+        // Fetch version from version.json
+        fetch('version.json')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('version').textContent = 'Version ' + data.version;
+            })
+            .catch(error => {
+                document.getElementById('version').textContent = 'Latest Version';
+            });
+    </script>
+</body>
+</html>
