@@ -5,8 +5,8 @@
   "DownloadUrlX86": "https://github.com/Raoufbaa/EEflasher-Release/releases/download/latest/EEFlasher_Setup_x86.exe",
   "ReleaseNotes": "updated",
   "SupportedVersions": [
-    "1.0.13"
+    "1.0.14"
   ],
-  "AppDisabled": true,
+  "AppDisabled": false,
   "AppDisabledMessage": ""
 }
