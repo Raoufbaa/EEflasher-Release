@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "fixed version error",
+  "ReleaseNotes": "updated the app to support more then 760+ chip",
   "SupportedVersions": [
+    "1.0.18",
     "1.0.17",
-    "1.0.16",
-    "1.0.15"
+    "1.0.16"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
