@@ -927,66 +927,79 @@
       const dlLinux = document.getElementById("dl-linux-x64");
       
       try {
-        // Fetch from GitHub API
-        const res = await fetch("https://api.github.com/repos/Raoufbaa/EEflasher-Release/releases/latest", {
+        // Fetch latest release for version info
+        const latestRes = await fetch("https://api.github.com/repos/Raoufbaa/EEflasher-Release/releases/latest", {
           headers: {
             'Accept': 'application/vnd.github.v3+json'
           }
         });
         
-        if (!res.ok) {
-          console.error('GitHub API error:', res.status, res.statusText);
-          throw new Error(`HTTP ${res.status}`);
+        if (!latestRes.ok) {
+          console.error('GitHub API error:', latestRes.status, latestRes.statusText);
+          throw new Error(`HTTP ${latestRes.status}`);
         }
         
-        const data = await res.json();
-        console.log('GitHub API response:', data);
+        const latestData = await latestRes.json();
+        console.log('Latest release:', latestData);
         
-        const ver  = (data.tag_name || data.name || "").replace(/^v/i, "");
-        const pub  = data.published_at
-          ? new Date(data.published_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })
+        const ver  = (latestData.tag_name || latestData.name || "").replace(/^v/i, "");
+        const pub  = latestData.published_at
+          ? new Date(latestData.published_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })
           : "Recently";
         
         badge.textContent   = ver ? `v${ver}` : "Latest version";
-        relName.textContent = data.name || `v${ver}` || "Latest";
+        relName.textContent = latestData.name || `v${ver}` || "Latest";
         relDate.textContent = pub;
         
-        // Calculate download counts
+        // Fetch ALL releases to get total download counts
+        const allRes = await fetch("https://api.github.com/repos/Raoufbaa/EEflasher-Release/releases", {
+          headers: {
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+        
+        if (!allRes.ok) {
+          console.error('Failed to fetch all releases:', allRes.status);
+          throw new Error(`HTTP ${allRes.status}`);
+        }
+        
+        const allReleases = await allRes.json();
+        console.log(`Found ${allReleases.length} releases`);
+        
+        // Calculate download counts across ALL releases
         let total = 0;
         let winX64Count = 0;
         let winX86Count = 0;
         let linuxCount = 0;
         
-        if (data.assets && data.assets.length > 0) {
-          console.log('Assets found:', data.assets.length);
-          
-          data.assets.forEach(asset => {
-            const count = asset.download_count || 0;
-            console.log(`${asset.name}: ${count} downloads`);
-            total += count;
-            
-            if (asset.name.includes('Setup.exe') && !asset.name.includes('x86')) {
-              winX64Count += count;
-            } else if (asset.name.includes('Setup_x86.exe')) {
-              winX86Count += count;
-            } else if (asset.name.includes('win-x64.zip')) {
-              winX64Count += count;
-            } else if (asset.name.includes('win-x86.zip')) {
-              winX86Count += count;
-            } else if (asset.name.includes('linux-x64.tar.gz')) {
-              linuxCount += count;
-            }
-          });
-          
-          totalDl.textContent = formatNumber(total);
-          dlWinX64.textContent = formatNumber(winX64Count);
-          dlWinX86.textContent = formatNumber(winX86Count);
-          dlLinux.textContent = formatNumber(linuxCount);
-          
-          console.log('✓ Download counts updated:', { total, winX64Count, winX86Count, linuxCount });
-        } else {
-          console.warn('No assets found in release');
-        }
+        allReleases.forEach(release => {
+          if (release.assets && release.assets.length > 0) {
+            release.assets.forEach(asset => {
+              const count = asset.download_count || 0;
+              total += count;
+              
+              if (asset.name.includes('Setup.exe') && !asset.name.includes('x86')) {
+                winX64Count += count;
+              } else if (asset.name.includes('Setup_x86.exe')) {
+                winX86Count += count;
+              } else if (asset.name.includes('win-x64.zip')) {
+                winX64Count += count;
+              } else if (asset.name.includes('win-x86.zip')) {
+                winX86Count += count;
+              } else if (asset.name.includes('linux-x64.tar.gz')) {
+                linuxCount += count;
+              }
+            });
+          }
+        });
+        
+        totalDl.textContent = formatNumber(total);
+        dlWinX64.textContent = formatNumber(winX64Count);
+        dlWinX86.textContent = formatNumber(winX86Count);
+        dlLinux.textContent = formatNumber(linuxCount);
+        
+        console.log('✓ Total downloads across all releases:', { total, winX64Count, winX86Count, linuxCount });
+        
       } catch (err) {
         console.error('Failed to fetch release data:', err);
         
