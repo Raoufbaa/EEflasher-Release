@@ -177,26 +177,6 @@
     }
 
     .hero-meta span { display: flex; align-items: center; gap: 5px; }
-    
-    /* ─── visitor badge ─── */
-    .visitor-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.78rem;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: rgba(34,197,94,0.08);
-      border: 1px solid rgba(34,197,94,0.15);
-      color: var(--green);
-    }
-    .visitor-dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: var(--green);
-      animation: pulse 2s infinite;
-    }
 
     /* ─── buttons ─── */
     .btn {
@@ -559,10 +539,6 @@
       </div>
 
       <div class="hero-meta">
-        <span class="visitor-badge">
-          <span class="visitor-dot"></span>
-          <span id="visitorCount">— visitors online</span>
-        </span>
         <span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           Self-contained
@@ -1054,48 +1030,6 @@
     
     // Auto-refresh every 5 minutes
     setInterval(loadRelease, 5 * 60 * 1000);
-    
-    /* ─── visitor counter using hits.dwyl.com ─── */
-    async function loadVisitorCount() {
-      const visitorEl = document.getElementById("visitorCount");
-      
-      try {
-        // Using hits.dwyl.com - free, open source hit counter
-        const res = await fetch('https://hits.dwyl.com/Raoufbaa/EEflasher-Release.json');
-        
-        if (res.ok) {
-          const data = await res.json();
-          const count = data.total || 0;
-          
-          if (count > 0) {
-            visitorEl.textContent = `${count.toLocaleString()} page views`;
-          } else {
-            visitorEl.textContent = "New project";
-          }
-        } else {
-          // Fallback to GitHub stars
-          const ghRes = await fetch("https://api.github.com/repos/Raoufbaa/EEflasher-Release");
-          if (ghRes.ok) {
-            const ghData = await ghRes.json();
-            const stars = ghData.stargazers_count || 0;
-            if (stars > 0) {
-              visitorEl.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> ${stars} stars`;
-            } else {
-              visitorEl.textContent = "Open source";
-            }
-          }
-        }
-      } catch (err) {
-        console.error('Failed to fetch visitor count:', err);
-        visitorEl.textContent = "Open source project";
-      }
-    }
-    
-    // Load visitor count on page load
-    loadVisitorCount();
-    
-    // Refresh every 2 minutes
-    setInterval(loadVisitorCount, 2 * 60 * 1000);
   </script>
 </body>
 </html>
