@@ -21,7 +21,7 @@
 - ✅ **Write Protection Management** - Easy unlock/lock with detailed status register display
 - ✅ **UEFI Capsule Parser** - Analyze and extract UEFI firmware structures
 - ✅ **Advanced Hex Editor** - Built-in editor with undo/redo, search, and modification tracking
-- ✅ **Comprehensive Chip Database** - Hundreds of chips from major manufacturers
+- ✅ **Comprehensive Chip Database** - 760+ chips from major manufacturers
 - ✅ **Real-time Progress** - Live progress bars and detailed activity logging
 - ✅ **Production Ready** - Stable, tested, and optimized for daily use
 
@@ -70,7 +70,7 @@
 - **Minimum**: 512 bytes (AT93C46)
 - **Maximum**: 256 MB (W25Q256, GD25Q256)
 
-*Comprehensive chip database with hundreds of supported chips*
+*Comprehensive chip database with 760+ supported chips*
 
 ## 🛠️ Installation
 
