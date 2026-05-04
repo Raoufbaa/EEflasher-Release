@@ -1,10 +1,9 @@
 {
+  "version": "1.0.14",
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "Auto-update system with GitHub integration",
+  "ReleaseNotes": "fixed issue and moved to fetch the version from github instead of github",
   "SupportedVersions": [
-    "1.0.14",
-    "1.0.13",
-    "1.0.12"
+    "1.0.14"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
