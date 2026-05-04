@@ -1,5 +1,4 @@
 {
-  "version": "1.0.14",
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
   "ReleaseNotes": "fixed issue and moved to fetch the version from github instead of github",
   "SupportedVersions": [
