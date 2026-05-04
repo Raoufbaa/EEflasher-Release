@@ -1,8 +1,8 @@
 {
-  "version": "1.0.15",
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "now the splash screen / updater show on taskbard",
+  "ReleaseNotes": "updated the github workflow and removed deubg logs",
   "SupportedVersions": [
+    "1.0.16",
     "1.0.15"
   ],
   "AppDisabled": false,
