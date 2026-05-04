@@ -1,8 +1,9 @@
 {
+  "version": "1.0.15",
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "fixed issue and moved to fetch the version from github instead of github",
+  "ReleaseNotes": "now the splash screen / updater show on taskbard",
   "SupportedVersions": [
-    "1.0.13","1.0.14","1.0.15"
+    "1.0.15"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
