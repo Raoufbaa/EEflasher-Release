@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "updated the app to support more then 760+ chip",
+  "ReleaseNotes": "added two new chips to database and fixed issue with auto mode sequance was stuck",
   "SupportedVersions": [
+    "1.0.19",
     "1.0.18",
-    "1.0.17",
-    "1.0.16"
+    "1.0.17"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
