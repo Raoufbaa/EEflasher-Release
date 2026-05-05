@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "added two new chips to database and fixed issue with auto mode sequance was stuck",
+  "ReleaseNotes": "added hex compare and enhanced the app performance and build file",
   "SupportedVersions": [
+    "1.0.20",
     "1.0.19",
-    "1.0.18",
-    "1.0.17"
+    "1.0.18"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
