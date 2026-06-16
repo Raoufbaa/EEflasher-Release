@@ -239,7 +239,20 @@ export default function DatabasePage() {
 
                   return (
                     <tr key={fw.id}>
-                      <td style={{ fontWeight: 600, color: 'var(--white)' }}>{fw.device_model}</td>
+                      <td style={{ fontWeight: 600, color: 'var(--white)' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                          <span>{fw.device_model}</span>
+                          <span style={{ 
+                            fontSize: '0.68rem', 
+                            fontWeight: 600, 
+                            color: fw.is_dump ? '#eab308' : '#60a5fa', 
+                            textTransform: 'uppercase', 
+                            letterSpacing: '0.03em' 
+                          }}>
+                            {fw.is_dump ? '📁 Dump (From Device)' : '⚡ Official Release'}
+                          </span>
+                        </div>
+                      </td>
                       <td>
                         <span className={`${styles.deviceBadge} ${getCategoryBadgeClass(fw.device_type)}`}>
                           {fw.device_type}

@@ -7,7 +7,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 80px 20px;
+  padding: 40px 20px; /* Reduced vertical padding */
   overflow-y: auto;
 }
 
@@ -17,24 +17,24 @@
   border-radius: var(--r);
   width: 100%;
   max-width: 600px;
-  padding: 28px;
+  padding: 20px 24px; /* Tightened padding */
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   animation: fadeUp 0.3s ease both;
   position: relative;
 }
 
 .modalContent h3 {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 800;
   color: var(--white);
-  margin-bottom: 18px;
+  margin-bottom: 12px; /* Reduced margin */
   letter-spacing: -0.02em;
 }
 
 .closeBtn {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 18px;
+  right: 18px;
   background: transparent;
   border: none;
   color: var(--muted);
@@ -54,15 +54,15 @@
   border: 2px dashed var(--border2);
   border-radius: var(--r-sm);
   background: var(--surface2);
-  padding: 32px 20px;
+  padding: 20px 16px; /* Tightened padding */
   text-align: center;
   cursor: pointer;
   transition: border-color var(--trans), background var(--trans);
-  margin-bottom: 20px;
+  margin-bottom: 14px; /* Reduced spacing */
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 6px; /* Reduced gap */
 }
 
 .dropzone:hover, .dropzoneActive {
@@ -72,17 +72,17 @@
 
 .dropzoneIcon {
   color: var(--accent);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .dropzoneText {
-  font-size: 0.86rem;
+  font-size: 0.84rem;
   color: var(--text);
   font-weight: 500;
 }
 
 .dropzoneSub {
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   color: var(--muted);
 }
 
@@ -91,8 +91,8 @@
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
-  padding: 12px 16px;
-  margin-bottom: 20px;
+  padding: 10px 14px; /* Tightened padding */
+  margin-bottom: 14px; /* Reduced spacing */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -102,12 +102,12 @@
 .fileDetails {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   overflow: hidden;
 }
 
 .fileName {
-  font-size: 0.86rem;
+  font-size: 0.84rem;
   font-weight: 600;
   color: var(--white);
   text-overflow: ellipsis;
@@ -116,7 +116,7 @@
 }
 
 .fileSize {
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   color: var(--muted);
 }
 
@@ -137,19 +137,20 @@
 .formRow {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: 12px; /* Reduced gap */
+  margin-bottom: 10px; /* Reduced margin */
 }
 
 .formGroup {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 16px;
+  gap: 4px; /* Reduced gap */
+  margin-bottom: 10px; /* Reduced margin */
+  position: relative; /* Setup relative positioning for dropdown suggestions */
 }
 
 .formGroup label {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--text);
 }
@@ -162,20 +163,128 @@
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  margin-top: 12px;
+  margin-top: 16px;
+}
+
+/* Autocomplete Suggestion Dropdown */
+.suggestionsList {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  max-height: 180px;
+  overflow-y: auto;
+  z-index: 1000;
+  margin-top: 2px;
+  list-style: none;
+  padding: 0;
+}
+
+.suggestionItem {
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: background var(--trans), color var(--trans);
+  text-align: left;
+}
+
+.suggestionItem:hover {
+  background: var(--surface2);
+  color: var(--white);
+}
+
+.suggestionDisabled {
+  opacity: 0.35;
+  cursor: not-allowed !important;
+  pointer-events: none;
+}
+
+.suggestionDisabled:hover {
+  background: transparent !important;
+  color: var(--text) !important;
+}
+
+.suggestionSource {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.sourceDb {
+  background: rgba(96, 165, 250, 0.12);
+  color: #60a5fa;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+.sourceWeb {
+  background: rgba(34, 197, 94, 0.12);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+/* Custom Segmented Control for new/dump */
+.radioGroup {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 3px;
+  gap: 4px;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  background: transparent;
+  border-radius: calc(var(--r-sm) - 2px);
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: color var(--trans), background var(--trans);
+  user-select: none;
+  border: none;
+  text-align: center;
+}
+
+.radioLabelActive {
+  background: var(--accent);
+  color: var(--white);
+}
+
+.radioLabel:hover:not(.radioLabelActive) {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.radioLabel input {
+  display: none; /* Hide default radio checkmark */
 }
 
 /* Progress bar styling */
 .progressContainer {
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .progressLabel {
   display: flex;
   justify-content: space-between;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--text);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   font-weight: 500;
 }
 

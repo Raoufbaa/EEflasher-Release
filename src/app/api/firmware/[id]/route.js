@@ -82,7 +82,17 @@ export async function DELETE(req, { params }) {
       }));
       console.log(`✓ Deleted file from B2: ${file_key}`);
     } catch (b2Err) {
-      console.warn(`⚠️ Failed to delete ${file_key} from Backblaze B2 bucket: ${b2Err.message}. Proceeding to delete from database.`);
+      // If the file is already gone from B2, it is safe to proceed.
+      // Otherwise, we fail to avoid leaving orphaned files in the storage bucket.
+      if (b2Err.name === 'NoSuchKey' || b2Err.code === 'NoSuchKey' || b2Err.$metadata?.httpStatusCode === 404) {
+        console.warn(`⚠️ File ${file_key} not found on B2. Proceeding to delete database record.`);
+      } else {
+        console.error(`Error deleting ${file_key} from B2:`, b2Err);
+        return NextResponse.json(
+          { error: `Failed to delete file from Backblaze storage: ${b2Err.message}. The database record was not removed.` },
+          { status: 500 }
+        );
+      }
     }
 
     // 3. Delete record from PostgreSQL

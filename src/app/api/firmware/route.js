@@ -138,14 +138,15 @@ export async function POST(req) {
       file_key,
       file_name,
       file_size,
-      checksum
+      checksum,
+      is_dump
     } = validation.data;
 
     // Save metadata in Postgres
     const result = await query(
       `INSERT INTO firmwares 
-       (device_model, device_type, version, description, file_key, file_name, file_size, checksum, uploaded_by) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       (device_model, device_type, version, description, file_key, file_name, file_size, checksum, uploaded_by, is_dump) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING *`,
       [
         device_model,
@@ -156,7 +157,8 @@ export async function POST(req) {
         file_name,
         file_size,
         checksum,
-        token.id
+        token.id,
+        is_dump
       ]
     );
 

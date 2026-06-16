@@ -18,7 +18,7 @@ export const authOptions = {
 
         // Query database for user
         const result = await query(
-          "SELECT id, email, password_hash, verified, is_admin FROM users WHERE LOWER(email) = $1",
+          "SELECT id, email, password_hash, verified, is_admin, name, profile_image FROM users WHERE LOWER(email) = $1",
           [credentials.email.toLowerCase()]
         );
 
@@ -38,6 +38,8 @@ export const authOptions = {
           email: user.email,
           verified: user.verified,
           is_admin: user.is_admin,
+          name: user.name,
+          profile_image: user.profile_image,
         };
       }
     })
@@ -52,6 +54,8 @@ export const authOptions = {
         token.email = user.email;
         token.verified = user.verified;
         token.is_admin = user.is_admin;
+        token.name = user.name;
+        token.profile_image = user.profile_image;
       }
       return token;
     },
@@ -61,6 +65,8 @@ export const authOptions = {
         session.user.email = token.email;
         session.user.verified = token.verified;
         session.user.is_admin = token.is_admin;
+        session.user.name = token.name;
+        session.user.profile_image = token.profile_image;
       }
       return session;
     }

@@ -1,18 +1,38 @@
 'use client';
 
-import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { useState, useEffect } from 'react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import styles from '@/styles/Authenticate.module.css';
 
 export default function Authenticate() {
+  const { data: session, status } = useSession();
   const [mode, setMode] = useState('login'); // 'login' or 'register'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [profileImage, setProfileImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const router = useRouter();
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.replace('/');
+    }
+  }, [status, router]);
+
+  if (status === 'loading' || status === 'authenticated') {
+    return (
+      <div className={styles.authPage}>
+        <div className={styles.authCard} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '200px', gap: '12px' }}>
+          <div className={styles.spinner} style={{ width: '32px', height: '32px' }} />
+          <p style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>Verifying session...</p>
+        </div>
+      </div>
+    );
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -44,10 +64,17 @@ export default function Authenticate() {
     } else {
       // Register mode
       try {
+        const formData = new FormData();
+        formData.append('email', email);
+        formData.append('password', password);
+        formData.append('name', name);
+        if (profileImage) {
+          formData.append('profile_image', profileImage);
+        }
+
         const res = await fetch('/api/auth/register', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
+          body: formData,
         });
 
         const data = await res.json();
@@ -59,6 +86,8 @@ export default function Authenticate() {
           setSuccess(data.message || 'Registration successful! You can now log in.');
           setMode('login');
           setPassword('');
+          setName('');
+          setProfileImage(null);
           setLoading(false);
         }
       } catch (err) {
@@ -109,6 +138,46 @@ export default function Authenticate() {
         {success && <div className={styles.successAlert}>{success}</div>}
 
         <form onSubmit={handleSubmit}>
+          {mode === 'register' && (
+            <>
+              <div className={styles.formGroup}>
+                <label htmlFor="name">Full Name</label>
+                <input
+                  id="name"
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. John Doe"
+                  disabled={loading}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label htmlFor="profileImage">Profile Picture (Optional)</label>
+                <input
+                  id="profileImage"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setProfileImage(e.target.files[0]);
+                    }
+                  }}
+                  disabled={loading}
+                  style={{
+                    padding: '8px 12px',
+                    background: 'var(--surface2)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--r-sm)',
+                    color: 'var(--text)',
+                    fontSize: '0.84rem',
+                    cursor: 'pointer'
+                  }}
+                />
+              </div>
+            </>
+          )}
+
           <div className={styles.formGroup}>
             <label htmlFor="email">Email Address</label>
             <input

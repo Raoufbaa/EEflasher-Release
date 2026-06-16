@@ -7,6 +7,14 @@ import styles from '@/styles/UploadModal.module.css';
 
 const DEVICE_TYPES = ['Receiver', 'Router', 'TV', 'TV Box', 'PC BIOS', 'EC Firmware', 'EEPROM Dump', 'Automotive', 'Printer', 'Other'];
 
+function formatModelName(name) {
+  if (!name) return '';
+  let formatted = name.toUpperCase().trim();
+  // Insert hyphen between letters and digits (e.g. HG532 -> HG-532)
+  formatted = formatted.replace(/([A-Z]+)(?=\d)/g, '$1-');
+  return formatted;
+}
+
 export default function UploadModal({ onClose, onSuccess }) {
   const [file, setFile] = useState(null);
   const [deviceModel, setDeviceModel] = useState('');
@@ -15,6 +23,15 @@ export default function UploadModal({ onClose, onSuccess }) {
   const [version, setVersion] = useState('');
   const [description, setDescription] = useState('');
   const [dragActive, setDragActive] = useState(false);
+
+  const [isDump, setIsDump] = useState(false); // default to false (Clean / Official Release)
+  const [isCheckingModel, setIsCheckingModel] = useState(false);
+  const [modelMessage, setModelMessage] = useState('');
+
+  // Autocomplete model suggestions states & ref
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestionsRef = useRef(null);
 
   const [loading, setLoading] = useState(false);
   const [statusText, setStatusText] = useState('');
@@ -32,6 +49,48 @@ export default function UploadModal({ onClose, onSuccess }) {
       document.body.style.overflow = '';
     };
   }, []);
+
+  // Close suggestions on click outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Fetch autocompletion model suggestions with debounce
+  useEffect(() => {
+    if (!deviceModel.trim()) {
+      setSuggestions([]);
+      return;
+    }
+
+    const delayDebounce = setTimeout(async () => {
+      try {
+        const activeType = deviceType === 'Other' ? customType : deviceType;
+        const res = await fetch(`/api/firmware/suggest-models?search=${encodeURIComponent(deviceModel.trim())}&device_type=${encodeURIComponent(activeType)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setSuggestions(data.suggestions || []);
+        }
+      } catch (err) {
+        console.warn("Error loading suggestions:", err);
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounce);
+  }, [deviceModel, deviceType, customType]);
+
+  const handleSelectSuggestion = (modelName) => {
+    setDeviceModel(formatModelName(modelName));
+    setShowSuggestions(false);
+    setModelMessage('Model name formatted.');
+  };
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -66,6 +125,35 @@ export default function UploadModal({ onClose, onSuccess }) {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     return hashHex;
+  };
+
+  const handleModelBlur = async () => {
+    if (!deviceModel.trim()) return;
+
+    // Format input locally first
+    const localFormatted = formatModelName(deviceModel);
+    setDeviceModel(localFormatted);
+
+    setIsCheckingModel(true);
+    setModelMessage('');
+    try {
+      const res = await fetch(`/api/firmware/check-model?model=${encodeURIComponent(localFormatted)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.recommendedName && data.recommendedName !== localFormatted) {
+          setDeviceModel(formatModelName(data.recommendedName));
+          if (data.source === 'database') {
+            setModelMessage('Matched existing database device model.');
+          } else if (data.source === 'internet') {
+            setModelMessage('Format unified using internet lookup.');
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to check model:', err);
+    } finally {
+      setIsCheckingModel(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -143,7 +231,8 @@ export default function UploadModal({ onClose, onSuccess }) {
           file_key,
           file_name: file.name,
           file_size: file.size,
-          checksum
+          checksum,
+          is_dump: isDump
         })
       });
 
@@ -253,15 +342,48 @@ export default function UploadModal({ onClose, onSuccess }) {
                 </select>
               </div>
 
-              <div className={styles.formGroup}>
+              <div className={styles.formGroup} ref={suggestionsRef}>
                 <label>Device Model</label>
                 <input 
                   type="text" 
                   required 
                   placeholder="e.g. TL-WR841N"
                   value={deviceModel}
-                  onChange={(e) => setDeviceModel(e.target.value)}
+                  onChange={(e) => {
+                    setDeviceModel(e.target.value);
+                    setShowSuggestions(true);
+                    setModelMessage('');
+                  }}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={handleModelBlur}
+                  autoComplete="off"
                 />
+                {showSuggestions && suggestions.length > 0 && (() => {
+                  const hasDbMatch = suggestions.some(s => s.source === 'database');
+                  return (
+                    <ul className={styles.suggestionsList}>
+                      {suggestions.map((suggestion, idx) => {
+                        const isDisabled = hasDbMatch && suggestion.source === 'internet';
+                        return (
+                          <li 
+                            key={idx} 
+                            className={`${styles.suggestionItem} ${isDisabled ? styles.suggestionDisabled : ''}`}
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}
+                            onMouseDown={isDisabled ? undefined : () => handleSelectSuggestion(suggestion.name)}
+                            title={isDisabled ? "Web results are disabled when a database match exists" : undefined}
+                          >
+                            <span>{suggestion.name}</span>
+                            <span className={`${styles.suggestionSource} ${suggestion.source === 'database' ? styles.sourceDb : styles.sourceWeb}`}>
+                              {suggestion.source === 'database' ? 'Database Match' : 'Web Match'}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  );
+                })()}
+                {isCheckingModel && <span style={{ fontSize: '0.74rem', color: 'var(--muted)', marginTop: '2px' }}>Checking model name...</span>}
+                {modelMessage && <span style={{ fontSize: '0.74rem', color: '#4ade80', marginTop: '2px' }}>{modelMessage}</span>}
               </div>
             </div>
 
@@ -277,6 +399,32 @@ export default function UploadModal({ onClose, onSuccess }) {
                 />
               </div>
             )}
+
+            <div className={styles.formGroup}>
+              <label>Firmware Source (Required)</label>
+              <div className={styles.radioGroup}>
+                <label className={`${styles.radioLabel} ${isDump === false ? styles.radioLabelActive : ''}`}>
+                  <input 
+                    type="radio" 
+                    name="isDump" 
+                    value="false"
+                    checked={isDump === false}
+                    onChange={() => setIsDump(false)}
+                  />
+                  Official / Clean Release
+                </label>
+                <label className={`${styles.radioLabel} ${isDump === true ? styles.radioLabelActive : ''}`}>
+                  <input 
+                    type="radio" 
+                    name="isDump" 
+                    value="true"
+                    checked={isDump === true}
+                    onChange={() => setIsDump(true)}
+                  />
+                  Dump (Pulled from Device)
+                </label>
+              </div>
+            </div>
 
             <div className={styles.formGroup}>
               <label>Firmware Version</label>

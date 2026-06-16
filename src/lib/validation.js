@@ -2,7 +2,8 @@ import { z } from 'zod';
 
 export const registerSchema = z.object({
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters long")
+  password: z.string().min(6, "Password must be at least 6 characters long"),
+  name: z.string().min(1, "Name is required")
 });
 
 export const loginSchema = z.object({
@@ -24,5 +25,6 @@ export const firmwareSchema = z.object({
   file_key: z.string().min(1, "File key is required").max(512),
   file_name: z.string().min(1, "File name is required").max(255),
   file_size: z.number().positive("File size must be greater than zero"),
-  checksum: z.string().length(64, "Checksum must be a valid 64-character SHA-256 hash")
+  checksum: z.string().length(64, "Checksum must be a valid 64-character SHA-256 hash"),
+  is_dump: z.boolean({ required_error: "Please select if firmware is new or a dump" })
 });

@@ -30,41 +30,41 @@ export default function Home() {
             'Accept': 'application/vnd.github.v3+json'
           }
         });
-        
+
         if (!latestRes.ok) {
           throw new Error(`HTTP ${latestRes.status}`);
         }
-        
+
         const latestData = await latestRes.json();
         const ver = (latestData.tag_name || latestData.name || "").replace(/^v/i, "");
         const pub = latestData.published_at
           ? new Date(latestData.published_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })
           : "Recently";
-        
+
         // Fetch ALL releases to get total download counts
         const allRes = await fetch("https://api.github.com/repos/Raoufbaa/EEflasher-Release/releases", {
           headers: {
             'Accept': 'application/vnd.github.v3+json'
           }
         });
-        
+
         if (!allRes.ok) {
           throw new Error(`HTTP ${allRes.status}`);
         }
-        
+
         const allReleases = await allRes.json();
-        
+
         let total = 0;
         let winX64Count = 0;
         let winX86Count = 0;
         let linuxCount = 0;
-        
+
         allReleases.forEach(release => {
           if (release.assets && release.assets.length > 0) {
             release.assets.forEach(asset => {
               const count = asset.download_count || 0;
               total += count;
-              
+
               if (asset.name.includes('Setup.exe') && !asset.name.includes('x86')) {
                 winX64Count += count;
               } else if (asset.name.includes('Setup_x86.exe')) {
@@ -89,10 +89,10 @@ export default function Home() {
           winX86: formatNumber(winX86Count),
           linuxX64: formatNumber(linuxCount)
         });
-        
+
       } catch (err) {
         console.error('Failed to fetch release data from GitHub:', err);
-        
+
         // Fallback to local version.json
         try {
           const fb = await fetch("/version.json");
@@ -122,7 +122,7 @@ export default function Home() {
 
   return (
     <main className={styles.page}>
-      
+
       {/* Hero Section */}
       <section className={styles.hero}>
         <div className={styles.badge}>
@@ -161,7 +161,7 @@ export default function Home() {
 
       {/* Downloads Grid */}
       <div className={styles.divider} id="downloads">Platform packages</div>
-      
+
       <div className={styles.downloads}>
         {/* Windows x64 Card */}
         <div className={`${styles.dlCard} ${styles.dlCardFeatured}`}>
@@ -258,7 +258,7 @@ export default function Home() {
 
       {/* Features list */}
       <div className={styles.divider} id="features">Key Features</div>
-      
+
       <div className={styles.threeCol}>
         <div className={styles.featureItem}>
           <div className={styles.fIcon}><Cpu size={16} /></div>
@@ -306,12 +306,12 @@ export default function Home() {
           </thead>
           <tbody>
             <tr><td>CH341A</td><td><span className={styles.check}>✓ Supported</span></td><td>SPI, I2C, Microwire</td><td className={styles.check}>✓</td><td className={styles.check}>✓</td></tr>
-            <tr><td>CH347</td><td><span class={styles.check}>✓ Supported</span></td><td>SPI, I2C, Microwire</td><td className={styles.check}>✓</td><td className={styles.check}>✓</td></tr>
-            <tr><td>Arduino</td><td><span class={styles.check}>✓ Supported</span></td><td>SPI</td><td className={styles.check}>✓</td><td className={styles.check}>✓</td></tr>
-            <tr><td>AVRISP MKII</td><td><span class={styles.check}>✓ Supported</span></td><td>SPI, ISP</td><td className={styles.check}>✓</td><td className={styles.check}>✓</td></tr>
-            <tr><td>USBAsp</td><td><span class={styles.check}>✓ Supported</span></td><td>SPI</td><td className={styles.check}>✓</td><td className={styles.check}>✓</td></tr>
-            <tr><td>Bus Pirate</td><td><span class={styles.plan}>⏳ Planned</span></td><td>SPI, I2C</td><td>—</td><td>—</td></tr>
-            <tr><td>FT232H</td><td><span class={styles.plan}>⏳ Planned</span></td><td>SPI, I2C</td><td>—</td><td>—</td></tr>
+            <tr><td>CH347</td><td><span className={styles.check}>✓ Supported</span></td><td>SPI, I2C, Microwire</td><td className={styles.check}>✓</td><td className={styles.check}>✓</td></tr>
+            <tr><td>Arduino</td><td><span className={styles.check}>✓ Supported</span></td><td>SPI</td><td className={styles.check}>✓</td><td className={styles.check}>✓</td></tr>
+            <tr><td>AVRISP MKII</td><td><span className={styles.check}>✓ Supported</span></td><td>SPI, ISP</td><td className={styles.check}>✓</td><td className={styles.check}>✓</td></tr>
+            <tr><td>USBAsp</td><td><span className={styles.check}>✓ Supported</span></td><td>SPI</td><td className={styles.check}>✓</td><td className={styles.check}>✓</td></tr>
+            <tr><td>Bus Pirate</td><td><span className={styles.plan}>⏳ Planned</span></td><td>SPI, I2C</td><td>—</td><td>—</td></tr>
+            <tr><td>FT232H</td><td><span className={styles.plan}>⏳ Planned</span></td><td>SPI, I2C</td><td>—</td><td>—</td></tr>
           </tbody>
         </table>
       </div>

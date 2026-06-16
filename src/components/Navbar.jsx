@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
@@ -8,8 +9,33 @@ import styles from '@/styles/Navbar.module.css';
 export default function Navbar() {
   const pathname = usePathname();
   const { data: session, status } = useSession();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   const isHome = pathname === '/';
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Close dropdown when changing route
+  useEffect(() => {
+    setDropdownOpen(false);
+  }, [pathname]);
+
+  // Hide Navbar if on /authenticate and not authenticated
+  if (pathname === '/authenticate' && !session && status !== 'loading') {
+    return null;
+  }
 
   return (
     <nav className={styles.navbar}>
@@ -65,18 +91,43 @@ export default function Navbar() {
         {status === 'loading' ? (
           <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>...</span>
         ) : session ? (
-          <>
-            <div className={styles.authInfo}>
-              <strong>{session.user.email}</strong>
-              <span>Uploader</span>
-            </div>
+          <div className={styles.dropdownContainer} ref={dropdownRef}>
             <button 
-              onClick={() => signOut({ callbackUrl: '/' })} 
-              className={`${styles.authBtn} ${styles.authBtnGhost}`}
+              onClick={() => setDropdownOpen(!dropdownOpen)} 
+              className={styles.avatarBtn}
+              aria-expanded={dropdownOpen}
+              title="View account"
             >
-              Logout
+              <img 
+                src={'/api/user/avatar?t=' + encodeURIComponent(session.user.profile_image || '')} 
+                alt={`${session.user.name || 'User'}'s Profile`}
+                className={styles.avatarImg}
+              />
             </button>
-          </>
+            
+            {dropdownOpen && (
+              <div className={styles.dropdownMenu}>
+                <div className={styles.dropdownHeader}>
+                  <img 
+                    src={'/api/user/avatar?t=' + encodeURIComponent(session.user.profile_image || '')} 
+                    alt="Dropdown Avatar"
+                    className={styles.dropdownAvatar}
+                  />
+                  <div className={styles.dropdownUserDetail}>
+                    <span className={styles.dropdownName}>{session.user.name || 'Uploader'}</span>
+                    <span className={styles.dropdownEmail}>{session.user.email}</span>
+                  </div>
+                </div>
+                <div className={styles.dropdownDivider} />
+                <button 
+                  onClick={() => signOut({ callbackUrl: '/' })} 
+                  className={styles.dropdownLogoutBtn}
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         ) : (
           <Link href="/authenticate" className={styles.authBtn}>
             Login
