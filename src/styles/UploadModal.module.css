@@ -1,0 +1,194 @@
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  z-index: 10000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 80px 20px;
+  overflow-y: auto;
+}
+
+.modalContent {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  width: 100%;
+  max-width: 600px;
+  padding: 28px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  animation: fadeUp 0.3s ease both;
+  position: relative;
+}
+
+.modalContent h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--white);
+  margin-bottom: 18px;
+  letter-spacing: -0.02em;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color var(--trans);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeBtn:hover {
+  color: var(--text);
+}
+
+/* Drag & Drop Area */
+.dropzone {
+  border: 2px dashed var(--border2);
+  border-radius: var(--r-sm);
+  background: var(--surface2);
+  padding: 32px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--trans), background var(--trans);
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.dropzone:hover, .dropzoneActive {
+  border-color: var(--accent);
+  background: rgba(91, 95, 199, 0.04);
+}
+
+.dropzoneIcon {
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.dropzoneText {
+  font-size: 0.86rem;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.dropzoneSub {
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+/* Selected File Info */
+.fileInfoCard {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fileDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.fileName {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--white);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.fileSize {
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+.removeFileBtn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color var(--trans);
+  padding: 4px;
+}
+
+.removeFileBtn:hover {
+  color: #ef4444;
+}
+
+/* Form Layout */
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.formGroup label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.formGroup select {
+  cursor: pointer;
+}
+
+.submitBtnRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+/* Progress bar styling */
+.progressContainer {
+  margin-bottom: 20px;
+}
+
+.progressLabel {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--text);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.progressBarBg {
+  background: var(--border2);
+  height: 6px;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progressBarFill {
+  background: var(--accent);
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.1s linear;
+}

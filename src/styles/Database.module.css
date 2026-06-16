@@ -1,0 +1,283 @@
+.dbPage {
+  position: relative;
+  width: min(100%, 1100px);
+  margin: 0 auto;
+  padding: 120px 20px 64px;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.headerRow h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--white);
+  letter-spacing: -0.03em;
+}
+
+.controlsRow {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.searchBox {
+  flex: 1;
+  min-width: 280px;
+  position: relative;
+}
+
+.searchBox input {
+  padding-left: 40px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.filterSelect {
+  width: auto;
+  min-width: 180px;
+  cursor: pointer;
+}
+
+/* Table Card Layout */
+.tableCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.fwTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+.fwTable th {
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--muted);
+  font-weight: 600;
+  text-align: left;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.fwTable td {
+  padding: 16px 18px;
+  color: var(--text);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  vertical-align: middle;
+}
+
+.fwTable tbody tr {
+  transition: background var(--trans);
+}
+
+.fwTable tbody tr:hover {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.deviceBadge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 99px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.badgeReceiver { background: rgba(91, 95, 199, 0.12); color: #8487d4; border: 1px solid rgba(91, 95, 199, 0.2); }
+.badgeRouter { background: rgba(34, 197, 94, 0.12); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.2); }
+.badgeTV { background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.2); }
+.badgeTVBox { background: rgba(14, 165, 233, 0.12); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.2); }
+.badgeOther { background: rgba(255, 255, 255, 0.04); color: var(--muted); border: 1px solid var(--border); }
+
+.descText {
+  color: var(--muted);
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.actionCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.actionIconBtn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background var(--trans), border-color var(--trans), color var(--trans);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actionIconBtn:hover {
+  background: var(--surface2);
+  border-color: var(--border2);
+  color: var(--white);
+}
+
+.deleteBtn {
+  border-color: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.deleteBtn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+
+/* Empty State */
+.emptyState {
+  padding: 64px 32px;
+  text-align: center;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.emptyStateIcon {
+  color: var(--border2);
+  margin-bottom: 8px;
+}
+
+/* Pagination / Load More */
+.loadMoreRow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  border-top: 1px solid var(--border);
+  gap: 12px;
+}
+
+.loadMoreBtn {
+  min-width: 150px;
+  height: 38px;
+  font-size: 0.84rem;
+}
+
+.warningBanner {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  color: #fbbf24;
+  padding: 12px 18px;
+  border-radius: var(--r-sm);
+  margin-bottom: 24px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: fadeUp 0.3s ease both;
+}
+
+.warningBanner svg {
+  color: #f59e0b;
+  flex-shrink: 0;
+}
+
+/* Responsive adjustments for mobile/tablet */
+@media (max-width: 768px) {
+  .dbPage {
+    padding-top: 170px; /* Make space for the stacked mobile navbar */
+  }
+  
+  .headerRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .headerRow h2 {
+    font-size: 1.5rem;
+  }
+
+  .controlsRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  
+  .searchBox {
+    width: 100%;
+    min-width: unset;
+  }
+  
+  .filterSelect {
+    width: 100%;
+    min-width: unset;
+  }
+
+  /* Hide Description and Uploaded Date columns to preserve table readability */
+  .fwTable th:nth-child(4), /* Description */
+  .fwTable td:nth-child(4),
+  .fwTable th:nth-child(6), /* Uploaded */
+  .fwTable td:nth-child(6) {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .dbPage {
+    padding-top: 200px; /* Even more space for wrapped navbar links */
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  /* Hide Size and Downloads counts on very small viewports */
+  .fwTable th:nth-child(5), /* Size */
+  .fwTable td:nth-child(5),
+  .fwTable th:nth-child(7), /* Downloads */
+  .fwTable td:nth-child(7) {
+    display: none;
+  }
+  
+  .fwTable th, .fwTable td {
+    padding: 10px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .deviceBadge {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+  }
+}
+

@@ -1,0 +1,150 @@
+.navbar {
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(calc(100% - 32px), 1200px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 18px;
+  background: rgba(11, 14, 16, 0.5);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  animation: fadeDown 0.4s ease both;
+}
+
+.navBrand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.navBrand img {
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  object-fit: contain;
+}
+
+.navBrand span {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.navLink {
+  font-size: 0.83rem;
+  color: var(--muted);
+  padding: 6px 12px;
+  border-radius: var(--r-sm);
+  transition: color var(--trans), background var(--trans);
+}
+
+.navLink:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.navActive {
+  color: var(--white) !important;
+  background: rgba(91, 95, 199, 0.12) !important;
+  border: 1px solid rgba(91, 95, 199, 0.2);
+}
+
+.authContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.authInfo {
+  font-size: 0.82rem;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.2;
+}
+
+.authInfo span {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.authBtn {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  background: var(--accent);
+  color: var(--white);
+  border: 1px solid var(--accent);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background var(--trans), border-color var(--trans), transform var(--trans);
+}
+
+.authBtn:hover {
+  background: var(--accent-d);
+  border-color: var(--accent-d);
+  transform: translateY(-1px);
+}
+
+.authBtnGhost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border2);
+}
+
+.authBtnGhost:hover {
+  color: var(--text);
+  background: var(--surface2);
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    top: 10px;
+    width: calc(100% - 20px);
+    border-radius: 12px;
+  }
+  
+  .navLinks {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2px;
+    width: 100%;
+  }
+
+  .navLink {
+    font-size: 0.78rem;
+    padding: 4px 8px;
+  }
+  
+  .authContainer {
+    justify-content: center;
+    width: 100%;
+    border-top: 1px solid var(--border);
+    padding-top: 8px;
+    margin-top: 2px;
+    gap: 8px;
+  }
+  
+  .authInfo {
+    align-items: center;
+  }
+}
