@@ -46,48 +46,41 @@ export default function Navbar() {
         <img src="/Assets/EEFlasher.ico" alt="EEFlasher Logo" />
         <span>EEFlasher</span>
       </Link>
-      
+
       <div className={styles.navLinks}>
-        <Link 
-          href={isHome ? '#downloads' : '/#downloads'} 
+        <Link
+          href={isHome ? '#downloads' : '/#downloads'}
           className={`${styles.navLink}`}
         >
           Downloads
         </Link>
-        <Link 
-          href={isHome ? '#features' : '/#features'} 
+        <Link
+          href={isHome ? '#features' : '/#features'}
           className={`${styles.navLink}`}
         >
           Features
         </Link>
-        <Link 
-          href={isHome ? '#hardware' : '/#hardware'} 
+        <Link
+          href={isHome ? '#hardware' : '/#hardware'}
           className={`${styles.navLink}`}
         >
           Hardware
         </Link>
-        <Link 
-          href="/database" 
+        <Link
+          href="/database"
           className={`${styles.navLink} ${pathname === '/database' ? styles.navActive : ''}`}
         >
           Database
         </Link>
-        <a 
-          href="https://github.com/Raoufbaa/EEflasher-Release" 
-          target="_blank" 
-          rel="noopener noreferrer" 
+        <Link
+          href="https://github.com/Raoufbaa/EEflasher-Release"
+          target="_blank"
+          rel="noopener noreferrer"
           className={styles.navLink}
         >
           GitHub
-        </a>
-        <a 
-          href="https://github.com/Raoufbaa/EEflasher-Release/blob/main/README.md" 
-          target="_blank" 
-          rel="noopener noreferrer" 
-          className={styles.navLink}
-        >
-          Docs
-        </a>
+        </Link>
+
       </div>
 
       <div className={styles.authContainer}>
@@ -95,24 +88,24 @@ export default function Navbar() {
           <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>...</span>
         ) : session ? (
           <div className={styles.dropdownContainer} ref={dropdownRef}>
-            <button 
-              onClick={() => setDropdownOpen(!dropdownOpen)} 
+            <button
+              onClick={() => setDropdownOpen(!dropdownOpen)}
               className={styles.avatarBtn}
               aria-expanded={dropdownOpen}
               title="View account"
             >
-              <img 
-                src={'/api/user/avatar?t=' + encodeURIComponent(session.user.profile_image || '')} 
+              <img
+                src={'/api/user/avatar?t=' + encodeURIComponent(session.user.profile_image || '')}
                 alt={`${session.user.name || 'User'}'s Profile`}
                 className={styles.avatarImg}
               />
             </button>
-            
+
             {dropdownOpen && (
               <div className={styles.dropdownMenu}>
                 <div className={styles.dropdownHeader}>
-                  <img 
-                    src={'/api/user/avatar?t=' + encodeURIComponent(session.user.profile_image || '')} 
+                  <img
+                    src={'/api/user/avatar?t=' + encodeURIComponent(session.user.profile_image || '')}
                     alt="Dropdown Avatar"
                     className={styles.dropdownAvatar}
                   />
@@ -145,8 +138,8 @@ export default function Navbar() {
                 </div>
 
                 <div className={styles.dropdownDivider} />
-                <button 
-                  onClick={() => signOut({ callbackUrl: '/' })} 
+                <button
+                  onClick={() => signOut({ callbackUrl: '/' })}
                   className={styles.dropdownLogoutBtn}
                 >
                   Logout
