@@ -103,15 +103,15 @@ export default function Authenticate() {
       <div className={styles.authCard}>
         <h2>{mode === 'login' ? 'Welcome Back' : 'Create Uploader Account'}</h2>
         <p className={styles.authSubtitle}>
-          {mode === 'login' 
-            ? 'Sign in to upload and manage device firmwares' 
+          {mode === 'login'
+            ? 'Sign in to upload and manage device firmwares'
             : 'Register as an authorized firmware uploader'}
         </p>
 
         {/* Toggler */}
         <div className={styles.selectorContainer}>
-          <button 
-            type="button" 
+          <button
+            type="button"
             className={`${styles.selectorBtn} ${mode === 'login' ? styles.selectorBtnActive : ''}`}
             onClick={() => {
               setMode('login');
@@ -121,8 +121,8 @@ export default function Authenticate() {
           >
             Login
           </button>
-          <button 
-            type="button" 
+          <button
+            type="button"
             className={`${styles.selectorBtn} ${mode === 'register' ? styles.selectorBtnActive : ''}`}
             onClick={() => {
               setMode('register');
@@ -148,7 +148,7 @@ export default function Authenticate() {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. John Doe"
+                  placeholder="Full Name"
                   disabled={loading}
                 />
               </div>
@@ -186,7 +186,7 @@ export default function Authenticate() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. admin@example.com"
+              placeholder="Email Address"
               disabled={loading}
             />
           </div>
