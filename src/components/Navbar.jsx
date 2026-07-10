@@ -29,7 +29,10 @@ export default function Navbar() {
 
   // Close dropdown when changing route
   useEffect(() => {
-    setDropdownOpen(false);
+    const timer = setTimeout(() => {
+      setDropdownOpen(false);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [pathname]);
 
   // Hide Navbar if on /authenticate and not authenticated
@@ -118,6 +121,29 @@ export default function Navbar() {
                     <span className={styles.dropdownEmail}>{session.user.email}</span>
                   </div>
                 </div>
+
+                <div className={styles.dropdownBadges}>
+                  {session.user.is_admin ? (
+                    <span className={`${styles.dropdownBadge} ${styles.badgeAdmin}`}>
+                      🛡️ System Admin
+                    </span>
+                  ) : (
+                    <span className={`${styles.dropdownBadge} ${styles.badgeUploader}`}>
+                      👤 Uploader
+                    </span>
+                  )}
+
+                  {session.user.verified !== false ? (
+                    <span className={`${styles.dropdownBadge} ${styles.badgeVerified}`}>
+                      ✓ Account Verified
+                    </span>
+                  ) : (
+                    <span className={`${styles.dropdownBadge} ${styles.badgePending}`}>
+                      ⏳ Verification Pending
+                    </span>
+                  )}
+                </div>
+
                 <div className={styles.dropdownDivider} />
                 <button 
                   onClick={() => signOut({ callbackUrl: '/' })} 

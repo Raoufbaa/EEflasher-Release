@@ -15,6 +15,38 @@ function formatModelName(name) {
   return formatted;
 }
 
+const genericBlocklist = ['router', 'tv', 'box', 'receiver', 'bios', 'firmware', 'dump', 'device', 'printer', 'automotive', 'pc', 'ec'];
+const brands = ['huawei', 'tplink', 'tp-link', 'dlink', 'd-link', 'asus', 'netgear', 'linksys', 'tenda', 'mercusys', 'totolink', 'xiaomi', 'zte', 'cisco', 'belkin', 'ubiquiti', 'mikrotik', 'samsung', 'lg', 'sony', 'panasonic'];
+
+function isValidModelName(name) {
+  if (!name) return false;
+  const clean = name.toLowerCase().replace(/[^a-z0-9]/g, ' ').trim();
+  
+  // 1. Must contain at least one digit
+  if (!/\d/.test(clean)) {
+    return false;
+  }
+  
+  // 2. Remove all brand names and generic words
+  let remaining = clean;
+  brands.forEach(brand => {
+    const regex = new RegExp(`\\b${brand.replace('-', '')}\\b|\\b${brand}\\b`, 'gi');
+    remaining = remaining.replace(regex, '');
+  });
+  genericBlocklist.forEach(word => {
+    const regex = new RegExp(`\\b${word}\\b`, 'gi');
+    remaining = remaining.replace(regex, '');
+  });
+  
+  const finalCheck = remaining.replace(/\s+/g, '').trim();
+  if (finalCheck.length < 2) {
+    return false;
+  }
+  
+  return true;
+}
+
+
 export default function UploadModal({ onClose, onSuccess }) {
   const [file, setFile] = useState(null);
   const [deviceModel, setDeviceModel] = useState('');
@@ -26,6 +58,7 @@ export default function UploadModal({ onClose, onSuccess }) {
 
   const [isDump, setIsDump] = useState(false); // default to false (Clean / Official Release)
   const [isCheckingModel, setIsCheckingModel] = useState(false);
+  const [isNewModel, setIsNewModel] = useState(false);
   const [modelMessage, setModelMessage] = useState('');
 
   // Autocomplete model suggestions states & ref
@@ -42,11 +75,12 @@ export default function UploadModal({ onClose, onSuccess }) {
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => setMounted(true), 0);
     // Lock body scroll when modal is active
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = '';
+      clearTimeout(timer);
     };
   }, []);
 
@@ -66,8 +100,10 @@ export default function UploadModal({ onClose, onSuccess }) {
   // Fetch autocompletion model suggestions with debounce
   useEffect(() => {
     if (!deviceModel.trim()) {
-      setSuggestions([]);
-      return;
+      const timer = setTimeout(() => {
+        setSuggestions([]);
+      }, 0);
+      return () => clearTimeout(timer);
     }
 
     const delayDebounce = setTimeout(async () => {
@@ -90,6 +126,7 @@ export default function UploadModal({ onClose, onSuccess }) {
     setDeviceModel(formatModelName(modelName));
     setShowSuggestions(false);
     setModelMessage('Model name formatted.');
+    setIsNewModel(false);
   };
 
   const handleDrag = (e) => {
@@ -134,19 +171,26 @@ export default function UploadModal({ onClose, onSuccess }) {
     const localFormatted = formatModelName(deviceModel);
     setDeviceModel(localFormatted);
 
+    if (!isValidModelName(localFormatted)) {
+      setModelMessage('');
+      setIsNewModel(false);
+      return;
+    }
+
     setIsCheckingModel(true);
     setModelMessage('');
+    setIsNewModel(false);
     try {
       const res = await fetch(`/api/firmware/check-model?model=${encodeURIComponent(localFormatted)}`);
       if (res.ok) {
         const data = await res.json();
-        if (data.recommendedName && data.recommendedName !== localFormatted) {
+        if (data.exists) {
           setDeviceModel(formatModelName(data.recommendedName));
-          if (data.source === 'database') {
-            setModelMessage('Matched existing database device model.');
-          } else if (data.source === 'internet') {
-            setModelMessage('Format unified using internet lookup.');
-          }
+          setModelMessage(data.isApproved ? 'Matched existing device model.' : 'Matched existing pending model.');
+          setIsNewModel(false);
+        } else {
+          setIsNewModel(true);
+          setModelMessage('');
         }
       }
     } catch (err) {
@@ -163,9 +207,15 @@ export default function UploadModal({ onClose, onSuccess }) {
       return;
     }
 
+    if (!isValidModelName(deviceModel)) {
+      setError('Invalid model name. Please enter a specific alphanumeric model number (e.g. TL-WR841N) rather than a generic device type name.');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setStatusText('Initializing upload...');
+
 
     try {
       // 1. Calculate SHA-256 Checksum
@@ -353,37 +403,39 @@ export default function UploadModal({ onClose, onSuccess }) {
                     setDeviceModel(e.target.value);
                     setShowSuggestions(true);
                     setModelMessage('');
+                    setIsNewModel(false);
                   }}
                   onFocus={() => setShowSuggestions(true)}
                   onBlur={handleModelBlur}
                   autoComplete="off"
                 />
-                {showSuggestions && suggestions.length > 0 && (() => {
-                  const hasDbMatch = suggestions.some(s => s.source === 'database');
-                  return (
-                    <ul className={styles.suggestionsList}>
-                      {suggestions.map((suggestion, idx) => {
-                        const isDisabled = hasDbMatch && suggestion.source === 'internet';
-                        return (
-                          <li 
-                            key={idx} 
-                            className={`${styles.suggestionItem} ${isDisabled ? styles.suggestionDisabled : ''}`}
-                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}
-                            onMouseDown={isDisabled ? undefined : () => handleSelectSuggestion(suggestion.name)}
-                            title={isDisabled ? "Web results are disabled when a database match exists" : undefined}
-                          >
-                            <span>{suggestion.name}</span>
-                            <span className={`${styles.suggestionSource} ${suggestion.source === 'database' ? styles.sourceDb : styles.sourceWeb}`}>
-                              {suggestion.source === 'database' ? 'Database Match' : 'Web Match'}
-                            </span>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  );
-                })()}
+                {showSuggestions && suggestions.length > 0 && (
+                  <ul className={styles.suggestionsList}>
+                    {suggestions.map((suggestion, idx) => (
+                      <li 
+                        key={idx} 
+                        className={styles.suggestionItem}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}
+                        onMouseDown={() => handleSelectSuggestion(suggestion.name)}
+                      >
+                        <span>{suggestion.name}</span>
+                        <span className={`${styles.suggestionSource} ${styles.sourceDb}`}>
+                          Database Match
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
                 {isCheckingModel && <span style={{ fontSize: '0.74rem', color: 'var(--muted)', marginTop: '2px' }}>Checking model name...</span>}
                 {modelMessage && <span style={{ fontSize: '0.74rem', color: '#4ade80', marginTop: '2px' }}>{modelMessage}</span>}
+                {isNewModel && (
+                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center', backgroundColor: 'rgba(234, 179, 8, 0.1)', border: '1px solid rgba(234, 179, 8, 0.3)', padding: '6px 10px', borderRadius: '6px', marginTop: '6px' }}>
+                    <AlertTriangle size={14} style={{ color: '#eab308', flexShrink: 0 }} />
+                    <span style={{ fontSize: '0.74rem', color: '#f59e0b', lineHeight: '1.2' }}>
+                      <strong>New Model:</strong> This device model is not in our database. It will require admin review before becoming public.
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 

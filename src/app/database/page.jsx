@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { Search, Download, Trash2, Plus, Database as DbIcon, AlertTriangle } from 'lucide-react';
+import { Search, Download, Trash2, Plus, Database as DbIcon, AlertTriangle, ShieldAlert } from 'lucide-react';
 import UploadModal from '@/components/UploadModal';
 import styles from '@/styles/Database.module.css';
 
@@ -47,6 +47,90 @@ export default function DatabasePage() {
 
   // Is verified check
   const isVerifiedUploader = session?.user ? session.user.verified !== false : false;
+
+  const [pendingModels, setPendingModels] = useState([]);
+  const [loadingPending, setLoadingPending] = useState(false);
+
+  const fetchPendingModels = async () => {
+    setLoadingPending(true);
+    try {
+      const res = await fetch('/api/admin/models');
+      if (res.ok) {
+        const data = await res.json();
+        setPendingModels(data.models || []);
+      }
+    } catch (err) {
+      console.error("Failed to load pending models:", err);
+    } finally {
+      setLoadingPending(false);
+    }
+  };
+
+  useEffect(() => {
+    if (session?.user?.is_admin === true) {
+      const timer = setTimeout(() => {
+        fetchPendingModels();
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [session, refreshTrigger]);
+
+  const handleApproveModel = async (modelId) => {
+    try {
+      const res = await fetch('/api/admin/models', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'approve', modelId })
+      });
+      if (!res.ok) throw new Error("Failed to approve model");
+      setRefreshTrigger(prev => prev + 1);
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleMergeModel = async (typoModelId, typoName) => {
+    const canonicalModelName = window.prompt(`Merge typo model "${typoName}". Enter the correct target model name:`, typoName);
+    if (!canonicalModelName || !canonicalModelName.trim()) return;
+
+    try {
+      const res = await fetch('/api/admin/models', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'merge',
+          typoModelId,
+          canonicalModelName: canonicalModelName.trim()
+        })
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to merge model");
+      }
+      setRefreshTrigger(prev => prev + 1);
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleRejectModel = async (modelId, name) => {
+    if (!window.confirm(`Are you sure you want to reject and delete the model "${name}"? This will delete all firmwares and storage files uploaded under this model!`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/admin/models', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', modelId })
+      });
+      if (!res.ok) throw new Error("Failed to delete model");
+      setRefreshTrigger(prev => prev + 1);
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -182,6 +266,83 @@ export default function DatabasePage() {
         )}
       </div>
 
+      {session && session.user.is_admin === true && pendingModels.length > 0 && (
+        <div style={{
+          backgroundColor: 'rgba(239, 68, 68, 0.05)',
+          border: '1px solid rgba(239, 68, 68, 0.2)',
+          borderRadius: '12px',
+          padding: '20px',
+          marginBottom: '24px'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+            <h3 style={{ color: '#ef4444', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem', margin: 0 }}>
+              <ShieldAlert size={20} />
+              Pending Device Models Review ({pendingModels.length})
+            </h3>
+            <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>Requires admin approval to be visible to public users</span>
+          </div>
+          
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)', textAlign: 'left' }}>
+                  <th style={{ padding: '8px', color: 'var(--muted)' }}>Device Model</th>
+                  <th style={{ padding: '8px', color: 'var(--muted)' }}>Type</th>
+                  <th style={{ padding: '8px', color: 'var(--muted)' }}>Uploads</th>
+                  <th style={{ padding: '8px', color: 'var(--muted)' }}>Submitted</th>
+                  <th style={{ padding: '8px', color: 'var(--muted)', textAlign: 'right' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingModels.map(model => (
+                  <tr key={model.id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                    <td style={{ padding: '12px 8px', fontWeight: 600, color: 'var(--white)' }}>{model.model_name}</td>
+                    <td style={{ padding: '12px 8px' }}>
+                      <span className={`${styles.deviceBadge} ${getCategoryBadgeClass(model.device_type)}`}>
+                        {model.device_type}
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px 8px' }}>{model.firmwares_count} firmware(s)</td>
+                    <td style={{ padding: '12px 8px', color: 'var(--muted)', fontSize: '0.8rem' }}>
+                      {new Date(model.created_at).toLocaleDateString(undefined, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </td>
+                    <td style={{ padding: '12px 8px', textAlign: 'right' }}>
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                        <button 
+                          onClick={() => handleApproveModel(model.id)}
+                          className="btn btn-accent" 
+                          style={{ padding: '4px 10px', fontSize: '0.78rem', height: '28px', width: 'auto' }}
+                        >
+                          Approve
+                        </button>
+                        <button 
+                          onClick={() => handleMergeModel(model.id, model.model_name)}
+                          className="btn btn-ghost" 
+                          style={{ padding: '4px 10px', fontSize: '0.78rem', height: '28px', border: '1px solid var(--accent)', color: '#8487d4', width: 'auto' }}
+                        >
+                          Merge
+                        </button>
+                        <button 
+                          onClick={() => handleRejectModel(model.id, model.model_name)}
+                          className="btn btn-ghost" 
+                          style={{ padding: '4px 10px', fontSize: '0.78rem', height: '28px', border: '1px solid #ef4444', color: '#f87171', width: 'auto' }}
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       <div className={styles.controlsRow}>
         <div className={styles.searchBox}>
           <Search size={18} className={styles.searchIcon} />
@@ -240,19 +401,36 @@ export default function DatabasePage() {
                   return (
                     <tr key={fw.id}>
                       <td style={{ fontWeight: 600, color: 'var(--white)' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                          <span>{fw.device_model}</span>
-                          <span style={{ 
-                            fontSize: '0.68rem', 
-                            fontWeight: 600, 
-                            color: fw.is_dump ? '#eab308' : '#60a5fa', 
-                            textTransform: 'uppercase', 
-                            letterSpacing: '0.03em' 
-                          }}>
-                            {fw.is_dump ? '📁 Dump (From Device)' : '⚡ Official Release'}
-                          </span>
-                        </div>
-                      </td>
+                         <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                           <span>{fw.device_model}</span>
+                           <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                             <span style={{ 
+                               fontSize: '0.68rem', 
+                               fontWeight: 600, 
+                               color: fw.is_dump ? '#eab308' : '#60a5fa', 
+                               textTransform: 'uppercase', 
+                               letterSpacing: '0.03em' 
+                             }}>
+                               {fw.is_dump ? '📁 Dump (From Device)' : '⚡ Official Release'}
+                             </span>
+                             {fw.is_approved === false && (
+                               <span style={{ 
+                                 fontSize: '0.68rem', 
+                                 fontWeight: 600, 
+                                 color: '#ef4444', 
+                                 backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                 border: '1px solid rgba(239, 68, 68, 0.3)',
+                                 padding: '1px 5px',
+                                 borderRadius: '4px',
+                                 textTransform: 'uppercase', 
+                                 letterSpacing: '0.03em' 
+                               }}>
+                                 Pending Review
+                               </span>
+                             )}
+                           </div>
+                         </div>
+                       </td>
                       <td>
                         <span className={`${styles.deviceBadge} ${getCategoryBadgeClass(fw.device_type)}`}>
                           {fw.device_type}

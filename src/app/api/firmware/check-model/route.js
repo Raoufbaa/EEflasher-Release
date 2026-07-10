@@ -15,52 +15,37 @@ export async function GET(req) {
   const model = searchParams.get('model') || '';
 
   if (!model.trim()) {
-    return NextResponse.json({ recommendedName: '' });
+    return NextResponse.json({ recommendedName: '', isApproved: false, exists: false });
   }
 
   try {
     const trimmedModel = model.trim();
+    const normalized = trimmedModel.toUpperCase().replace(/[^A-Z0-9]/g, '');
 
-    // 1. Check local DB (case-insensitive) to group under the exact same name
+    if (!normalized) {
+      return NextResponse.json({ recommendedName: '', isApproved: false, exists: false });
+    }
+
+    // Check local DB for normalized matching model name
     const dbCheck = await query(
-      "SELECT device_model FROM firmwares WHERE LOWER(device_model) = LOWER($1) LIMIT 1",
-      [trimmedModel]
+      "SELECT model_name, approved FROM device_models WHERE normalized_name = $1 LIMIT 1",
+      [normalized]
     );
 
     if (dbCheck.rowCount > 0) {
       return NextResponse.json({
-        recommendedName: dbCheck.rows[0].device_model,
+        recommendedName: dbCheck.rows[0].model_name,
+        isApproved: dbCheck.rows[0].approved,
+        exists: true,
         source: 'database'
       });
     }
 
-    // 2. Query DuckDuckGo Instant Answer API to search the internet
-    try {
-      const ddgRes = await fetch(
-        `https://api.duckduckgo.com/?q=${encodeURIComponent(trimmedModel)}&format=json&t=eeflasher`,
-        {
-          headers: { 'User-Agent': 'EEFlasher-App/1.0' },
-          next: { revalidate: 86400 } // Cache for 24 hours
-        }
-      );
-
-      if (ddgRes.ok) {
-        const data = await ddgRes.json();
-        // If DDG returns a Heading that contains our search term (or vice versa), use that clean name
-        if (data.Heading && data.Heading.toLowerCase().includes(trimmedModel.toLowerCase())) {
-          return NextResponse.json({
-            recommendedName: data.Heading,
-            source: 'internet'
-          });
-        }
-      }
-    } catch (searchErr) {
-      console.warn("Internet search lookup failed:", searchErr);
-    }
-
-    // Default to the user's original input
+    // Default to the user's original input as new model
     return NextResponse.json({
       recommendedName: trimmedModel,
+      isApproved: false,
+      exists: false,
       source: 'none'
     });
   } catch (err) {
@@ -68,3 +53,4 @@ export async function GET(req) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
