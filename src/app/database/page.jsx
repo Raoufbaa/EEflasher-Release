@@ -23,7 +23,7 @@ const DEVICE_CATEGORIES = [
 ];
 
 export default function DatabasePage() {
-  const { data: session } = useSession();
+  const { data: session, update: updateSession } = useSession();
   const [firmwares, setFirmwares] = useState([]);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
@@ -61,6 +61,100 @@ export default function DatabasePage() {
   const [resending, setResending] = useState(false);
   const [resendMessage, setResendMessage] = useState('');
   const [resendError, setResendError] = useState(false);
+
+  // OTP Modal states
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [otpError, setOtpError] = useState('');
+  const [otpSuccess, setOtpSuccess] = useState('');
+
+  const handleOtpDigitChange = (val, idx) => {
+    const cleanVal = val.replace(/[^0-9]/g, '');
+    const newOtpDigits = [...otpDigits];
+    newOtpDigits[idx] = cleanVal.slice(-1);
+    setOtpDigits(newOtpDigits);
+
+    // Auto-focus next input
+    if (cleanVal && idx < 5) {
+      const nextInput = document.getElementById(`otp-digit-${idx + 1}`);
+      if (nextInput) nextInput.focus();
+    }
+  };
+
+  const handleOtpDigitKeyDown = (e, idx) => {
+    if (e.key === 'Backspace') {
+      if (!otpDigits[idx] && idx > 0) {
+        const prevInput = document.getElementById(`otp-digit-${idx - 1}`);
+        if (prevInput) {
+          prevInput.focus();
+          const newOtpDigits = [...otpDigits];
+          newOtpDigits[idx - 1] = '';
+          setOtpDigits(newOtpDigits);
+        }
+      }
+    }
+  };
+
+  const handleOtpDigitPaste = (e) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text').trim();
+    if (/^\d{6}$/.test(pasted)) {
+      const digits = pasted.split('');
+      setOtpDigits(digits);
+      const lastInput = document.getElementById('otp-digit-5');
+      if (lastInput) lastInput.focus();
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    const otpCode = otpDigits.join('');
+    if (otpCode.length !== 6) {
+      setOtpError('Please enter all 6 digits.');
+      return;
+    }
+
+    setVerifyingOtp(true);
+    setOtpError('');
+    setOtpSuccess('');
+
+    try {
+      const res = await fetch('/api/auth/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ otp: otpCode }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setOtpSuccess(data.message || 'Verification successful!');
+        // Update local session state dynamically
+        await updateSession();
+        // Auto close after 1.5 seconds
+        setTimeout(() => {
+          closeVerifyModal();
+        }, 1500);
+      } else {
+        setOtpError(data.error || 'Failed to verify OTP.');
+      }
+    } catch (err) {
+      console.error('OTP verification error:', err);
+      setOtpError('An unexpected error occurred. Please try again.');
+    } finally {
+      setVerifyingOtp(false);
+    }
+  };
+
+  const closeVerifyModal = () => {
+    setShowVerifyModal(false);
+    setOtpDigits(['', '', '', '', '', '']);
+    setOtpError('');
+    setOtpSuccess('');
+    setVerifyingOtp(false);
+  };
 
   const handleResendVerification = async () => {
     if (!session?.user?.email) return;
@@ -371,45 +465,61 @@ export default function DatabasePage() {
               }
             </span>
           </div>
-          {!resendMessage && (
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            {!resendMessage && (
+              <button 
+                onClick={handleResendVerification}
+                disabled={resending}
+                className="btn"
+                style={{
+                  height: '30px',
+                  fontSize: '0.8rem',
+                  padding: '0 12px',
+                  backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                  borderColor: 'rgba(245, 158, 11, 0.3)',
+                  color: '#fbbf24',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  cursor: 'pointer'
+                }}
+              >
+                {resending ? 'Sending...' : 'Resend Email'}
+              </button>
+            )}
+            {resendMessage && resendError && (
+              <button 
+                onClick={() => { setResendMessage(''); setResendError(false); }}
+                className="btn"
+                style={{
+                  height: '30px',
+                  fontSize: '0.8rem',
+                  padding: '0 12px',
+                  backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                  borderColor: 'rgba(239, 68, 68, 0.3)',
+                  color: '#f87171',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  cursor: 'pointer'
+                }}
+              >
+                Try Again
+              </button>
+            )}
             <button 
-              onClick={handleResendVerification}
-              disabled={resending}
-              className="btn"
+              onClick={() => setShowVerifyModal(true)}
+              className="btn btn-accent"
               style={{
                 height: '30px',
                 fontSize: '0.8rem',
                 padding: '0 12px',
-                backgroundColor: 'rgba(245, 158, 11, 0.15)',
-                borderColor: 'rgba(245, 158, 11, 0.3)',
-                color: '#fbbf24',
                 display: 'inline-flex',
                 alignItems: 'center',
                 cursor: 'pointer'
               }}
             >
-              {resending ? 'Sending...' : 'Resend Email'}
+              Verify Code
             </button>
-          )}
-          {resendMessage && resendError && (
-            <button 
-              onClick={() => { setResendMessage(''); setResendError(false); }}
-              className="btn"
-              style={{
-                height: '30px',
-                fontSize: '0.8rem',
-                padding: '0 12px',
-                backgroundColor: 'rgba(239, 68, 68, 0.15)',
-                borderColor: 'rgba(239, 68, 68, 0.3)',
-                color: '#f87171',
-                display: 'inline-flex',
-                alignItems: 'center',
-                cursor: 'pointer'
-              }}
-            >
-              Try Again
-            </button>
-          )}
+          </div>
         </div>
       )}
 
@@ -880,6 +990,137 @@ export default function DatabasePage() {
             setRefreshTrigger(prev => prev + 1);
           }}
         />
+      )}
+
+      {/* OTP Verification Modal */}
+      {showVerifyModal && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(11, 14, 16, 0.8)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            animation: 'fadeUp 0.3s ease both'
+          }}
+        >
+          <div 
+            style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--r)',
+              width: '100%',
+              maxWidth: '400px',
+              padding: '32px 24px',
+              boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              position: 'relative'
+            }}
+          >
+            <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+              <img src="https://i0b6tkdu1q.ufs.sh/f/XAiYDdRKAy97uNDG9cUFnyzR5Io9UVHOhGge8qYbPMs2irJA" alt="EEFlasher Logo" style={{ width: '56px', height: '56px', borderRadius: '8px' }} />
+            </div>
+
+            <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--white)', marginBottom: '8px' }}>Confirm Verification</h3>
+            <p style={{ fontSize: '0.84rem', color: 'var(--muted)', textAlign: 'center', marginBottom: '24px' }}>
+              We've sent a 6-digit OTP code to your email. Please enter it below.
+            </p>
+
+            {otpError && (
+              <div 
+                style={{
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  border: '1px solid rgba(239, 68, 68, 0.25)',
+                  color: '#f87171',
+                  fontSize: '0.82rem',
+                  padding: '10px 14px',
+                  borderRadius: 'var(--r-sm)',
+                  marginBottom: '20px',
+                  width: '100%',
+                  textAlign: 'center'
+                }}
+              >
+                {otpError}
+              </div>
+            )}
+
+            {otpSuccess && (
+              <div 
+                style={{
+                  background: 'rgba(34, 197, 94, 0.1)',
+                  border: '1px solid rgba(34, 197, 94, 0.25)',
+                  color: '#4ade80',
+                  fontSize: '0.82rem',
+                  padding: '10px 14px',
+                  borderRadius: 'var(--r-sm)',
+                  marginBottom: '20px',
+                  width: '100%',
+                  textAlign: 'center'
+                }}
+              >
+                {otpSuccess}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '24px' }}>
+              {otpDigits.map((digit, idx) => (
+                <input
+                  key={idx}
+                  id={`otp-digit-${idx}`}
+                  type="text"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleOtpDigitChange(e.target.value, idx)}
+                  onKeyDown={(e) => handleOtpDigitKeyDown(e, idx)}
+                  onPaste={handleOtpDigitPaste}
+                  disabled={verifyingOtp || !!otpSuccess}
+                  style={{
+                    width: '42px',
+                    height: '48px',
+                    fontSize: '1.4rem',
+                    fontWeight: '700',
+                    textAlign: 'center',
+                    background: 'var(--surface2)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--r-sm)',
+                    color: 'var(--white)',
+                    outline: 'none',
+                    transition: 'border-color var(--trans)'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = 'var(--accent)'}
+                  onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
+                />
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+              <button 
+                onClick={closeVerifyModal}
+                disabled={verifyingOtp}
+                className="btn btn-ghost"
+                style={{ flex: 1, height: '40px' }}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleVerifyOtp}
+                disabled={verifyingOtp || otpDigits.some(d => !d) || !!otpSuccess}
+                className="btn btn-accent"
+                style={{ flex: 1, height: '40px' }}
+              >
+                {verifyingOtp ? 'Verifying...' : 'Verify OTP'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </main>
   );

@@ -103,7 +103,7 @@ async function main() {
     await client.query(`
       ALTER TABLE users ALTER COLUMN verified TYPE VARCHAR(255) USING (CASE WHEN verified::text = 'true' THEN 'true' ELSE 'false' END);
       ALTER TABLE users ALTER COLUMN verified SET DEFAULT 'false';
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_expires TIMESTAMP WITH TIME ZONE;
+      ALTER TABLE users DROP COLUMN IF EXISTS verification_expires;
       DROP TABLE IF EXISTS verification_tokens;
     `);
     console.log("✓ Database migrations for email verification applied successfully.");

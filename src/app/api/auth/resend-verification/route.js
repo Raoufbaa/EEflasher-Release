@@ -2,21 +2,23 @@ import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
 import { sendVerificationEmail } from '@/lib/email';
+import { getToken } from 'next-auth/jwt';
 import crypto from 'crypto';
 
 export async function POST(req) {
   const ip = getClientIp(req);
 
   try {
-    const { email } = await req.json();
-
-    if (!email || typeof email !== 'string') {
+    // Get session token to identify the logged-in user
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.email) {
       return NextResponse.json(
-        { error: "Email address is required." },
-        { status: 400 }
+        { error: "Unauthorized. You must be logged in to request a verification code." },
+        { status: 401 }
       );
     }
 
+    const email = token.email;
     const lowerEmail = email.toLowerCase().trim();
 
     // Enforce rate limiting specifically for resending emails (max 3 resends per 5 minutes per email/IP)
@@ -24,7 +26,7 @@ export async function POST(req) {
     const limitRes = rateLimit(rateLimitKey, 3, 300000); // 5 minutes window
     if (!limitRes.success) {
       return NextResponse.json(
-        { error: "Too many requests. Please wait a few minutes before requesting another verification email." },
+        { error: "Too many requests. Please wait a few minutes before requesting another verification code." },
         { status: 429 }
       );
     }
@@ -36,10 +38,9 @@ export async function POST(req) {
     );
 
     if (userResult.rowCount === 0) {
-      // Protect against email enumeration: return success even if email doesn't exist
       return NextResponse.json(
-        { message: "If the account exists and is unverified, a verification link has been sent." },
-        { status: 200 }
+        { error: "User account not found." },
+        { status: 404 }
       );
     }
 
@@ -47,39 +48,35 @@ export async function POST(req) {
 
     if (user.verified === 'true') {
       return NextResponse.json(
-        { error: "This email address is already verified. You can log in." },
+        { error: "This email address is already verified." },
         { status: 400 }
       );
     }
 
-    // Generate a secure random token
-    const rawToken = crypto.randomBytes(32).toString('hex');
-    const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours expiry
+    // Generate a 6-digit OTP code
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes expiry
 
-    // Save token hash and expiration in the users table
+    // Concatenate OTP hash and expiration time ISO string
+    const verifiedVal = `${otpHash}|${expiresAt.toISOString()}`;
+
+    // Save merged OTP token in the users table
     await query(
-      "UPDATE users SET verified = $1, verification_expires = $2 WHERE id = $3",
-      [tokenHash, expiresAt, user.id]
+      "UPDATE users SET verified = $1 WHERE id = $2",
+      [verifiedVal, user.id]
     );
 
     // Send verification email
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    const verificationUrl = `${siteUrl}/verify-email?token=${rawToken}`;
-    
-    await sendVerificationEmail(lowerEmail, verificationUrl);
+    await sendVerificationEmail(lowerEmail, otp);
 
     return NextResponse.json(
-      { message: "Verification link sent! Please check your email inbox and spam folder." },
+      { message: "Verification code sent! Please check your email inbox." },
       { status: 200 }
     );
 
   } catch (error) {
     console.error("Error in resend verification API:", error);
-    try {
-      await query('ROLLBACK');
-    } catch (e) {}
-
     return NextResponse.json(
       { error: "Internal server error." },
       { status: 500 }

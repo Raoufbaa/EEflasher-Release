@@ -24,13 +24,12 @@ const sendEmail = async (mailOptions) => {
  * @param {string} to Receiver's email
  * @param {string} verificationUrl The verification URL containing the token
  */
-export const sendVerificationEmail = async (to, verificationUrl) => {
+export const sendVerificationEmail = async (to, otp) => {
   const appName = process.env.NEXT_PUBLIC_APPNAME || 'EEFlasher';
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   const mailOptions = {
     from: `"${appName}" <${process.env.EMAIL_USER}>`,
     to,
-    subject: 'Verify Your Email Address - EEFlasher',
+    subject: 'Your Verification Code - EEFlasher',
     html: `
 <!DOCTYPE html>
 <html lang="en">
@@ -49,16 +48,16 @@ export const sendVerificationEmail = async (to, verificationUrl) => {
             <h1 style="color: #ffffff; font-size: 22px; font-weight: 700; margin-bottom: 16px; letter-spacing: -0.01em;">Confirm Your Email</h1>
 
             <p style="color: #dde3e8; margin-bottom: 28px; font-size: 14px; line-height: 1.6;">
-                You're almost there! Click the button below to verify your email address and activate your uploader privileges.
+                Here is your 6-digit verification code (OTP). Enter this code on the database page to activate your uploader privileges.
             </p>
 
-            <!-- Verification Button -->
-            <a href="${verificationUrl}" style="display: inline-block; background-color: #5b5fc7; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 12px rgba(91, 95, 199, 0.25);">
-                Verify Email Address
-            </a>
+            <!-- OTP Box -->
+            <div style="display: inline-block; background-color: #161b1f; border: 1px solid #1e2428; color: #ffffff; padding: 14px 40px; border-radius: 8px; font-weight: 700; font-size: 28px; letter-spacing: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); margin: 10px 0; font-family: monospace;">
+                ${otp}
+            </div>
 
             <p style="margin-top: 28px; font-size: 12px; color: #5a6470;">
-                This link will expire in 24 hours. If you did not register for an account, please ignore this email.
+                This code will expire in 15 minutes. If you did not register for an account, please ignore this email.
             </p>
 
             <div style="margin-top: 28px; border-top: 1px solid #1e2428; padding-top: 20px; font-size: 11px; color: #5a6470;">

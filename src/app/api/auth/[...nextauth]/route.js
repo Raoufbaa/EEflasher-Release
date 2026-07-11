@@ -48,7 +48,7 @@ export const authOptions = {
     strategy: "jwt",
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
@@ -56,6 +56,23 @@ export const authOptions = {
         token.is_admin = user.is_admin;
         token.name = user.name;
         token.profile_image = user.profile_image;
+      } else if (trigger === "update") {
+        try {
+          // Fetch the latest state from the database
+          const result = await query(
+            "SELECT verified, is_admin, name, profile_image FROM users WHERE id = $1",
+            [token.id]
+          );
+          const dbUser = result.rows[0];
+          if (dbUser) {
+            token.verified = dbUser.verified === 'true';
+            token.is_admin = dbUser.is_admin;
+            token.name = dbUser.name;
+            token.profile_image = dbUser.profile_image;
+          }
+        } catch (err) {
+          console.error("Error refreshing JWT callback token:", err);
+        }
       }
       return token;
     },

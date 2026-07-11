@@ -85,44 +85,42 @@ export async function POST(req) {
     const is_admin = isFirstUser ? true : false;
 
     let verifiedVal = 'true';
-    let expiresAt = null;
-    let rawToken = null;
-
+    let otp = null;
+ 
     if (!isFirstUser) {
-      // Generate secure random token
-      rawToken = crypto.randomBytes(32).toString('hex');
-      // Use token hash for the verified column
-      verifiedVal = crypto.createHash('sha256').update(rawToken).digest('hex');
-      expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours expiry
+      // Generate a 6-digit OTP code
+      otp = Math.floor(100000 + Math.random() * 900000).toString();
+      // Hash the OTP (SHA-256)
+      const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes expiry
+      // Store in verified column as 'otpHash|expiration'
+      verifiedVal = `${otpHash}|${expiresAt.toISOString()}`;
     }
-
+ 
     // Save user with name and profile image to database
     await query(
-      "INSERT INTO users (email, password_hash, verified, verification_expires, is_admin, name, profile_image) VALUES ($1, $2, $3, $4, $5, $6, $7)",
-      [email, passwordHash, verifiedVal, expiresAt, is_admin, validatedName, profileImageUrl]
+      "INSERT INTO users (email, password_hash, verified, is_admin, name, profile_image) VALUES ($1, $2, $3, $4, $5, $6)",
+      [email, passwordHash, verifiedVal, is_admin, validatedName, profileImageUrl]
     );
-
+ 
     if (!isFirstUser) {
       // Send verification email
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-      const verificationUrl = `${siteUrl}/verify-email?token=${rawToken}`;
-      
       try {
-        await sendVerificationEmail(lowerEmail, verificationUrl);
+        await sendVerificationEmail(lowerEmail, otp);
       } catch (emailError) {
-        console.error("Failed to send verification email during registration:", emailError);
+        console.error("Failed to send verification OTP email during registration:", emailError);
         return NextResponse.json(
-          { message: "Registration successful. However, we could not send the verification email. Please log in and request a new verification link." },
+          { message: "Registration successful. However, we could not send the verification code. Please log in and request a new code." },
           { status: 201 }
         );
       }
-
+ 
       return NextResponse.json(
-        { message: "Registration successful. Please check your email to verify your account." },
+        { message: "Registration successful. Please check your email for your 6-digit verification code." },
         { status: 201 }
       );
     }
-
+ 
     return NextResponse.json(
       { message: "Registration successful. You can now log in." },
       { status: 201 }
