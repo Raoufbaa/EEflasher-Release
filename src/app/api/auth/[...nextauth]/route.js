@@ -36,7 +36,7 @@ export const authOptions = {
         return {
           id: user.id,
           email: user.email,
-          verified: user.verified,
+          verified: user.verified === 'true',
           is_admin: user.is_admin,
           name: user.name,
           profile_image: user.profile_image,

@@ -30,7 +30,7 @@ export async function DELETE(req, { params }) {
     );
   }
   const dbUser = userResult.rows[0];
-  const isVerified = dbUser.verified;
+  const isVerified = dbUser.verified === 'true';
   const isAdmin = dbUser.is_admin;
 
   // Check uploader verification if required

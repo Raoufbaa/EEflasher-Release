@@ -33,7 +33,7 @@ export async function POST(req) {
       { status: 401 }
     );
   }
-  const isVerified = userResult.rows[0].verified;
+  const isVerified = userResult.rows[0].verified === 'true';
 
   // Check uploader verification if required
   const requireVerification = process.env.REQUIRE_UPLOADER_VERIFICATION === 'true';

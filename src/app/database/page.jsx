@@ -58,6 +58,42 @@ export default function DatabasePage() {
   // Is verified check
   const isVerifiedUploader = session?.user ? session.user.verified !== false : false;
 
+  const [resending, setResending] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
+  const [resendError, setResendError] = useState(false);
+
+  const handleResendVerification = async () => {
+    if (!session?.user?.email) return;
+    setResending(true);
+    setResendMessage('');
+    setResendError(false);
+
+    try {
+      const res = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: session.user.email }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setResendMessage(data.message || 'Verification link sent!');
+      } else {
+        setResendError(true);
+        setResendMessage(data.error || 'Failed to resend verification link.');
+      }
+    } catch (err) {
+      console.error('Error resending verification:', err);
+      setResendError(true);
+      setResendMessage('An unexpected error occurred. Please try again.');
+    } finally {
+      setResending(false);
+    }
+  };
+
   const [pendingModels, setPendingModels] = useState([]);
   const [loadingPending, setLoadingPending] = useState(false);
 
@@ -325,9 +361,55 @@ export default function DatabasePage() {
     <main className={styles.dbPage}>
       {/* Warning banner for unverified uploaders */}
       {session && !isVerifiedUploader && (
-        <div className={styles.warningBanner}>
-          <AlertTriangle size={18} />
-          <span>Your uploader account is pending verification. File uploads, deletions, and chip additions are disabled.</span>
+        <div className={styles.warningBanner} style={{ flexWrap: 'wrap', gap: '12px', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <AlertTriangle size={18} />
+            <span>
+              {resendMessage 
+                ? resendMessage 
+                : "Your uploader account is pending verification. File uploads, deletions, and chip additions are disabled."
+              }
+            </span>
+          </div>
+          {!resendMessage && (
+            <button 
+              onClick={handleResendVerification}
+              disabled={resending}
+              className="btn"
+              style={{
+                height: '30px',
+                fontSize: '0.8rem',
+                padding: '0 12px',
+                backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                borderColor: 'rgba(245, 158, 11, 0.3)',
+                color: '#fbbf24',
+                display: 'inline-flex',
+                alignItems: 'center',
+                cursor: 'pointer'
+              }}
+            >
+              {resending ? 'Sending...' : 'Resend Email'}
+            </button>
+          )}
+          {resendMessage && resendError && (
+            <button 
+              onClick={() => { setResendMessage(''); setResendError(false); }}
+              className="btn"
+              style={{
+                height: '30px',
+                fontSize: '0.8rem',
+                padding: '0 12px',
+                backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                borderColor: 'rgba(239, 68, 68, 0.3)',
+                color: '#f87171',
+                display: 'inline-flex',
+                alignItems: 'center',
+                cursor: 'pointer'
+              }}
+            >
+              Try Again
+            </button>
+          )}
         </div>
       )}
 

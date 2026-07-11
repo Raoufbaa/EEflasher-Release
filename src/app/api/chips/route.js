@@ -81,7 +81,7 @@ export async function POST(req) {
   if (userResult.rowCount === 0) {
     return NextResponse.json({ error: "Unauthorized. User account not found." }, { status: 401 });
   }
-  const isVerified = userResult.rows[0].verified;
+  const isVerified = userResult.rows[0].verified === 'true';
   const isUserAdmin = userResult.rows[0].is_admin;
 
   // Check uploader verification if required

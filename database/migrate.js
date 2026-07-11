@@ -54,6 +54,7 @@ function getChipslistePath() {
   const possiblePaths = [
     path.join(__dirname, 'Chipsliste.json'),
     path.join(__dirname, '../Chipsliste.json'),
+    path.join(__dirname, '../src/lib/Chipsliste.json'),
     path.join(__dirname, '../EEflasher-Release/src/lib/Chipsliste.json'),
     path.join(__dirname, '../EEFlasher/Assets/ChipDatabase/Chipsliste.json'),
   ];
@@ -97,6 +98,15 @@ async function main() {
     const schemaSql = fs.readFileSync(schemaPath, 'utf8');
     await client.query(schemaSql);
     console.log("✓ Database schema initialized successfully.");
+
+    console.log("Applying email verification schema changes...");
+    await client.query(`
+      ALTER TABLE users ALTER COLUMN verified TYPE VARCHAR(255) USING (CASE WHEN verified::text = 'true' THEN 'true' ELSE 'false' END);
+      ALTER TABLE users ALTER COLUMN verified SET DEFAULT 'false';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_expires TIMESTAMP WITH TIME ZONE;
+      DROP TABLE IF EXISTS verification_tokens;
+    `);
+    console.log("✓ Database migrations for email verification applied successfully.");
 
     // 1.5 Migrate legacy 'PC BIOS' categories to 'Desktop BIOS' in existing records
     console.log("Migrating existing 'PC BIOS' records to 'Desktop BIOS'...");

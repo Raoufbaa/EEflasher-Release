@@ -7,6 +7,8 @@ import { s3Client } from '@/lib/b2';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import crypto from 'crypto';
 
+import { sendVerificationEmail } from '@/lib/email';
+
 export async function POST(req) {
   // Apply rate limiting (5 attempts per minute)
   const ip = getClientIp(req);
@@ -77,18 +79,49 @@ export async function POST(req) {
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(validatedPassword, salt);
 
-    // Determine verification status based on ENV and whether this is the first user
-    const requireVerification = process.env.REQUIRE_UPLOADER_VERIFICATION === 'true';
+    // Determine verification status: first user is auto-verified admin, others are unverified
     const userCountRes = await query("SELECT COUNT(*) as count FROM users");
     const isFirstUser = parseInt(userCountRes.rows[0].count, 10) === 0;
-    const verified = isFirstUser ? true : !requireVerification;
     const is_admin = isFirstUser ? true : false;
+
+    let verifiedVal = 'true';
+    let expiresAt = null;
+    let rawToken = null;
+
+    if (!isFirstUser) {
+      // Generate secure random token
+      rawToken = crypto.randomBytes(32).toString('hex');
+      // Use token hash for the verified column
+      verifiedVal = crypto.createHash('sha256').update(rawToken).digest('hex');
+      expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours expiry
+    }
 
     // Save user with name and profile image to database
     await query(
-      "INSERT INTO users (email, password_hash, verified, is_admin, name, profile_image) VALUES ($1, $2, $3, $4, $5, $6)",
-      [email, passwordHash, verified, is_admin, validatedName, profileImageUrl]
+      "INSERT INTO users (email, password_hash, verified, verification_expires, is_admin, name, profile_image) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+      [email, passwordHash, verifiedVal, expiresAt, is_admin, validatedName, profileImageUrl]
     );
+
+    if (!isFirstUser) {
+      // Send verification email
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+      const verificationUrl = `${siteUrl}/verify-email?token=${rawToken}`;
+      
+      try {
+        await sendVerificationEmail(lowerEmail, verificationUrl);
+      } catch (emailError) {
+        console.error("Failed to send verification email during registration:", emailError);
+        return NextResponse.json(
+          { message: "Registration successful. However, we could not send the verification email. Please log in and request a new verification link." },
+          { status: 201 }
+        );
+      }
+
+      return NextResponse.json(
+        { message: "Registration successful. Please check your email to verify your account." },
+        { status: 201 }
+      );
+    }
 
     return NextResponse.json(
       { message: "Registration successful. You can now log in." },
