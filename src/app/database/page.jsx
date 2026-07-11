@@ -428,8 +428,8 @@ export default function DatabasePage() {
       {/* Admin Panel: Pending Models Review (Firmware Tab only) */}
       {activeTab === 'firmware' && session && session.user.is_admin === true && pendingModels.length > 0 && (
         <div style={{
-          backgroundColor: 'rgba(239, 68, 68, 0.05)',
-          border: '1px solid rgba(239, 68, 68, 0.2)',
+          backgroundColor: 'var(--surface)',
+          border: '2px dashed rgba(239, 68, 68, 0.2)',
           borderRadius: '12px',
           padding: '20px',
           marginBottom: '24px'
@@ -630,32 +630,33 @@ export default function DatabasePage() {
                     return (
                       <tr key={fw.id}>
                         <td style={{ fontWeight: 600, color: 'var(--white)' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-start' }}>
                             <span>{fw.device_model}</span>
-                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
                               <span style={{
-                                fontSize: '0.68rem',
+                                fontSize: '0.6rem',
                                 fontWeight: 600,
                                 color: fw.is_dump ? '#eab308' : '#60a5fa',
                                 textTransform: 'uppercase',
-                                letterSpacing: '0.03em'
+                                letterSpacing: '0.03em',
+                                whiteSpace: 'nowrap'
                               }}>
-                                {fw.is_dump ? '📁 Dump (From Device)' : '⚡ Official Release'}
+                                {fw.is_dump ? 'Dump (From Device)' : 'Official Release'}
                               </span>
                               {fw.is_approved === false && (
-                                <span style={{
-                                  fontSize: '0.68rem',
-                                  fontWeight: 600,
-                                  color: '#ef4444',
-                                  backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                                  border: '1px solid rgba(239, 68, 68, 0.3)',
-                                  padding: '1px 5px',
-                                  borderRadius: '4px',
-                                  textTransform: 'uppercase',
-                                  letterSpacing: '0.03em'
-                                }}>
-                                  Pending Review
-                                </span>
+                                <>
+                                  <span style={{ fontSize: '0.6rem', color: 'var(--muted)' }}>/</span>
+                                  <span style={{
+                                    fontSize: '0.6rem',
+                                    fontWeight: 600,
+                                    color: '#ef4444',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.03em',
+                                    whiteSpace: 'nowrap'
+                                  }}>
+                                    Pending
+                                  </span>
+                                </>
                               )}
                             </div>
                           </div>

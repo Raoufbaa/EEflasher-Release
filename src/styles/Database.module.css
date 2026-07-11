@@ -79,13 +79,13 @@
   color: var(--muted);
   font-weight: 600;
   text-align: left;
-  padding: 14px 18px;
+  padding: 14px 12px;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
 }
 
 .fwTable td {
-  padding: 16px 18px;
+  padding: 16px 12px;
   color: var(--text);
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
   vertical-align: middle;
