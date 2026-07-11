@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { X, UploadCloud, File, AlertTriangle } from 'lucide-react';
 import styles from '@/styles/UploadModal.module.css';
 
-const DEVICE_TYPES = ['Receiver', 'Router', 'TV', 'TV Box', 'PC BIOS', 'EC Firmware', 'EEPROM Dump', 'Automotive', 'Printer', 'Other'];
+const DEVICE_TYPES = ['Receiver', 'Router', 'TV', 'TV Box', 'Desktop BIOS', 'Laptop BIOS', 'EC Firmware', 'EEPROM Dump', 'Automotive', 'Printer', 'Other'];
 
 function formatModelName(name) {
   if (!name) return '';
@@ -21,12 +21,12 @@ const brands = ['huawei', 'tplink', 'tp-link', 'dlink', 'd-link', 'asus', 'netge
 function isValidModelName(name) {
   if (!name) return false;
   const clean = name.toLowerCase().replace(/[^a-z0-9]/g, ' ').trim();
-  
+
   // 1. Must contain at least one digit
   if (!/\d/.test(clean)) {
     return false;
   }
-  
+
   // 2. Remove all brand names and generic words
   let remaining = clean;
   brands.forEach(brand => {
@@ -37,12 +37,12 @@ function isValidModelName(name) {
     const regex = new RegExp(`\\b${word}\\b`, 'gi');
     remaining = remaining.replace(regex, '');
   });
-  
+
   const finalCheck = remaining.replace(/\s+/g, '').trim();
   if (finalCheck.length < 2) {
     return false;
   }
-  
+
   return true;
 }
 
@@ -56,6 +56,7 @@ export default function UploadModal({ onClose, onSuccess }) {
   const [description, setDescription] = useState('');
   const [dragActive, setDragActive] = useState(false);
 
+  const [isUnknownVersion, setIsUnknownVersion] = useState(false);
   const [isDump, setIsDump] = useState(false); // default to false (Clean / Official Release)
   const [isCheckingModel, setIsCheckingModel] = useState(false);
   const [isNewModel, setIsNewModel] = useState(false);
@@ -200,6 +201,16 @@ export default function UploadModal({ onClose, onSuccess }) {
     }
   };
 
+  const handleUnknownVersionChange = (e) => {
+    const checked = e.target.checked;
+    setIsUnknownVersion(checked);
+    if (checked) {
+      setVersion('Unknown');
+    } else {
+      setVersion('');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file) {
@@ -269,7 +280,7 @@ export default function UploadModal({ onClose, onSuccess }) {
       // 4. Save metadata to Postgres Database
       setStatusText('Saving firmware details to database...');
       const finalType = deviceType === 'Other' ? customType : deviceType;
-      
+
       const saveRes = await fetch('/api/firmware', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -325,199 +336,224 @@ export default function UploadModal({ onClose, onSuccess }) {
           </div>
         )}
 
-        {loading ? (
-          <div className={styles.progressContainer}>
-            <div className={styles.progressLabel}>
-              <span>{statusText}</span>
-              <span>{uploadProgress}%</span>
-            </div>
-            <div className={styles.progressBarBg}>
-              <div 
-                className={styles.progressBarFill} 
-                style={{ width: `${uploadProgress}%` }}
+        <form onSubmit={handleSubmit}>
+          {/* File Dropzone */}
+          {!file ? (
+            <div
+              className={`${styles.dropzone} ${dragActive ? styles.dropzoneActive : ''}`}
+              onDragEnter={handleDrag}
+              onDragOver={handleDrag}
+              onDragLeave={handleDrag}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current.click()}
+            >
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: 'none' }}
+                onChange={handleFileChange}
               />
+              <UploadCloud size={32} className={styles.dropzoneIcon} />
+              <span className={styles.dropzoneText}>Drag & drop file or click to browse</span>
+              <span className={styles.dropzoneSub}>Supports bin, rom, hex up to 128MB</span>
             </div>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit}>
-            {/* File Dropzone */}
-            {!file ? (
-              <div 
-                className={`${styles.dropzone} ${dragActive ? styles.dropzoneActive : ''}`}
-                onDragEnter={handleDrag}
-                onDragOver={handleDrag}
-                onDragLeave={handleDrag}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current.click()}
-              >
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  style={{ display: 'none' }}
-                  onChange={handleFileChange}
-                />
-                <UploadCloud size={32} className={styles.dropzoneIcon} />
-                <span className={styles.dropzoneText}>Drag & drop file or click to browse</span>
-                <span className={styles.dropzoneSub}>Supports bin, rom, hex up to 128MB</span>
-              </div>
-            ) : (
-              <div className={styles.fileInfoCard}>
-                <div className={styles.fileDetails}>
-                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                    <File size={16} style={{ color: 'var(--accent)', flexShrink: 0 }} />
-                    <span className={styles.fileName}>{file.name}</span>
-                  </div>
-                  <span className={styles.fileSize}>{formatBytes(file.size)}</span>
+          ) : (
+            <div className={styles.fileInfoCard}>
+              <div className={styles.fileDetails}>
+                <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                  <File size={16} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+                  <span className={styles.fileName}>{file.name}</span>
                 </div>
-                <button 
-                  type="button" 
-                  className={styles.removeFileBtn} 
+                <span className={styles.fileSize}>{formatBytes(file.size)}</span>
+              </div>
+              {!loading && (
+                <button
+                  type="button"
+                  className={styles.removeFileBtn}
                   onClick={() => setFile(null)}
                 >
                   <X size={18} />
                 </button>
-              </div>
-            )}
+              )}
+            </div>
+          )}
 
-            <div className={styles.formRow}>
-              <div className={styles.formGroup}>
-                <label>Device Type</label>
-                <select 
-                  value={deviceType} 
-                  onChange={(e) => setDeviceType(e.target.value)}
-                >
-                  {DEVICE_TYPES.map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className={styles.formGroup} ref={suggestionsRef}>
-                <label>Device Model</label>
-                <input 
-                  type="text" 
-                  required 
-                  placeholder="e.g. TL-WR841N"
-                  value={deviceModel}
-                  onChange={(e) => {
-                    setDeviceModel(e.target.value);
-                    setShowSuggestions(true);
-                    setModelMessage('');
-                    setIsNewModel(false);
-                  }}
-                  onFocus={() => setShowSuggestions(true)}
-                  onBlur={handleModelBlur}
-                  autoComplete="off"
-                />
-                {showSuggestions && suggestions.length > 0 && (
-                  <ul className={styles.suggestionsList}>
-                    {suggestions.map((suggestion, idx) => (
-                      <li 
-                        key={idx} 
-                        className={styles.suggestionItem}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}
-                        onMouseDown={() => handleSelectSuggestion(suggestion.name)}
-                      >
-                        <span>{suggestion.name}</span>
-                        <span className={`${styles.suggestionSource} ${styles.sourceDb}`}>
-                          Database Match
-                        </span>
-                      </li>
+          {!loading && (
+            <>
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label>Device Type</label>
+                  <select
+                    value={deviceType}
+                    onChange={(e) => setDeviceType(e.target.value)}
+                  >
+                    {DEVICE_TYPES.map(type => (
+                      <option key={type} value={type}>{type}</option>
                     ))}
-                  </ul>
-                )}
-                {isCheckingModel && <span style={{ fontSize: '0.74rem', color: 'var(--muted)', marginTop: '2px' }}>Checking model name...</span>}
-                {modelMessage && <span style={{ fontSize: '0.74rem', color: '#4ade80', marginTop: '2px' }}>{modelMessage}</span>}
-                {isNewModel && (
-                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center', backgroundColor: 'rgba(234, 179, 8, 0.1)', border: '1px solid rgba(234, 179, 8, 0.3)', padding: '6px 10px', borderRadius: '6px', marginTop: '6px' }}>
-                    <AlertTriangle size={14} style={{ color: '#eab308', flexShrink: 0 }} />
-                    <span style={{ fontSize: '0.74rem', color: '#f59e0b', lineHeight: '1.2' }}>
-                      <strong>New Model:</strong> This device model is not in our database. It will require admin review before becoming public.
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
+                  </select>
+                </div>
 
-            {deviceType === 'Other' && (
+                <div className={styles.formGroup} ref={suggestionsRef}>
+                  <label>Device Model</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. TL-WR841N"
+                    value={deviceModel}
+                    onChange={(e) => {
+                      setDeviceModel(e.target.value);
+                      setShowSuggestions(true);
+                      setModelMessage('');
+                      setIsNewModel(false);
+                    }}
+                    onFocus={() => setShowSuggestions(true)}
+                    onBlur={handleModelBlur}
+                    autoComplete="off"
+                  />
+                  {showSuggestions && suggestions.length > 0 && (
+                    <ul className={styles.suggestionsList}>
+                      {suggestions.map((suggestion, idx) => (
+                        <li
+                          key={idx}
+                          className={styles.suggestionItem}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}
+                          onMouseDown={() => handleSelectSuggestion(suggestion.name)}
+                        >
+                          <span>{suggestion.name}</span>
+                          <span className={`${styles.suggestionSource} ${styles.sourceDb}`}>
+                            Database Match
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {isCheckingModel && <span style={{ fontSize: '0.74rem', color: 'var(--muted)', marginTop: '2px' }}>Checking model name...</span>}
+                  {modelMessage && <span style={{ fontSize: '0.74rem', color: '#4ade80', marginTop: '2px' }}>{modelMessage}</span>}
+                </div>
+              </div>
+              {isNewModel && (
+                <div className={styles.warningBox}>
+                  <AlertTriangle size={14} className={styles.warningBoxIcon} />
+                  <span className={styles.warningBoxText}>
+                    <strong>New Model:</strong> This device model is not in our database. It will require admin review before becoming public.
+                  </span>
+                </div>
+              )}
+              {deviceType === 'Other' && (
+                <div className={styles.formGroup}>
+                  <label>Custom Device Type</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. TV Box, Modem"
+                    value={customType}
+                    onChange={(e) => setCustomType(e.target.value)}
+                  />
+                </div>
+              )}
+
               <div className={styles.formGroup}>
-                <label>Custom Device Type</label>
-                <input 
-                  type="text" 
-                  required 
-                  placeholder="e.g. TV Box, Modem"
-                  value={customType}
-                  onChange={(e) => setCustomType(e.target.value)}
+                <label>Firmware Source (Required)</label>
+                <div className={styles.radioGroup}>
+                  <label className={`${styles.radioLabel} ${isDump === false ? styles.radioLabelActive : ''}`}>
+                    <input
+                      type="radio"
+                      name="isDump"
+                      value="false"
+                      checked={isDump === false}
+                      onChange={() => setIsDump(false)}
+                    />
+                    Official / Clean Release
+                  </label>
+                  <label className={`${styles.radioLabel} ${isDump === true ? styles.radioLabelActive : ''}`}>
+                    <input
+                      type="radio"
+                      name="isDump"
+                      value="true"
+                      checked={isDump === true}
+                      onChange={() => setIsDump(true)}
+                    />
+                    Dump (Pulled from Device)
+                  </label>
+                </div>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Firmware Version</label>
+                <div className={styles.versionInputRow}>
+                  <input
+                    type="text"
+                    required={!isUnknownVersion}
+                    disabled={isUnknownVersion}
+                    placeholder={isUnknownVersion ? "Unknown" : "e.g. v1.2.3"}
+                    value={version}
+                    onChange={(e) => setVersion(e.target.value)}
+                    style={{ flex: 1 }}
+                  />
+                  <label className={`${styles.unknownToggle} ${isUnknownVersion ? styles.unknownToggleChecked : ''}`}>
+                    <input
+                      type="checkbox"
+                      checked={isUnknownVersion}
+                      onChange={handleUnknownVersionChange}
+                    />
+                    <span>Unknown</span>
+                  </label>
+                </div>
+              </div>
+              {isUnknownVersion && (
+                <div className={styles.warningBox}>
+                  <AlertTriangle size={14} className={styles.warningBoxIcon} />
+                  <span className={styles.warningBoxText}>
+                    <strong>Unknown Version:</strong> Double check that this firmware works great for this model.
+                  </span>
+                </div>
+              )}
+
+              <div className={styles.formGroup}>
+                <label>Description / Release Notes (Optional)</label>
+                <textarea
+                  rows="3"
+                  placeholder="Details about fixes, updates or region..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                 />
               </div>
-            )}
 
-            <div className={styles.formGroup}>
-              <label>Firmware Source (Required)</label>
-              <div className={styles.radioGroup}>
-                <label className={`${styles.radioLabel} ${isDump === false ? styles.radioLabelActive : ''}`}>
-                  <input 
-                    type="radio" 
-                    name="isDump" 
-                    value="false"
-                    checked={isDump === false}
-                    onChange={() => setIsDump(false)}
-                  />
-                  Official / Clean Release
-                </label>
-                <label className={`${styles.radioLabel} ${isDump === true ? styles.radioLabelActive : ''}`}>
-                  <input 
-                    type="radio" 
-                    name="isDump" 
-                    value="true"
-                    checked={isDump === true}
-                    onChange={() => setIsDump(true)}
-                  />
-                  Dump (Pulled from Device)
-                </label>
+              <div className={styles.submitBtnRow}>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  style={{ width: 'auto' }}
+                  onClick={onClose}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-accent"
+                  style={{ width: 'auto' }}
+                >
+                  Start Upload
+                </button>
+              </div>
+            </>
+          )}
+
+          {loading && (
+            <div className={styles.progressContainer} style={{ marginTop: '14px' }}>
+              <div className={styles.progressLabel}>
+                <span>{statusText}</span>
+                <span>{uploadProgress}%</span>
+              </div>
+              <div className={styles.progressBarBg}>
+                <div
+                  className={styles.progressBarFill}
+                  style={{ width: `${uploadProgress}%` }}
+                />
               </div>
             </div>
-
-            <div className={styles.formGroup}>
-              <label>Firmware Version</label>
-              <input 
-                type="text" 
-                required 
-                placeholder="e.g. v1.2.3"
-                value={version}
-                onChange={(e) => setVersion(e.target.value)}
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Description / Release Notes (Optional)</label>
-              <textarea 
-                rows="3" 
-                placeholder="Details about fixes, updates or region..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-            </div>
-
-            <div className={styles.submitBtnRow}>
-              <button 
-                type="button" 
-                className="btn btn-ghost" 
-                style={{ width: 'auto' }}
-                onClick={onClose}
-              >
-                Cancel
-              </button>
-              <button 
-                type="submit" 
-                className="btn btn-accent" 
-                style={{ width: 'auto' }}
-              >
-                Start Upload
-              </button>
-            </div>
-          </form>
-        )}
+          )}
+        </form>
       </div>
     </div>,
     document.body

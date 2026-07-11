@@ -2,12 +2,13 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(2px);
   z-index: 10000;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 40px 20px; /* Reduced vertical padding */
+  padding: 40px 20px;
+  /* Reduced vertical padding */
   overflow-y: auto;
 }
 
@@ -17,7 +18,8 @@
   border-radius: var(--r);
   width: 100%;
   max-width: 600px;
-  padding: 20px 24px; /* Tightened padding */
+  padding: 20px 24px;
+  /* Tightened padding */
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   animation: fadeUp 0.3s ease both;
   position: relative;
@@ -27,7 +29,8 @@
   font-size: 1.2rem;
   font-weight: 800;
   color: var(--white);
-  margin-bottom: 12px; /* Reduced margin */
+  margin-bottom: 12px;
+  /* Reduced margin */
   letter-spacing: -0.02em;
 }
 
@@ -54,18 +57,22 @@
   border: 2px dashed var(--border2);
   border-radius: var(--r-sm);
   background: var(--surface2);
-  padding: 20px 16px; /* Tightened padding */
+  padding: 20px 16px;
+  /* Tightened padding */
   text-align: center;
   cursor: pointer;
   transition: border-color var(--trans), background var(--trans);
-  margin-bottom: 14px; /* Reduced spacing */
+  margin-bottom: 14px;
+  /* Reduced spacing */
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px; /* Reduced gap */
+  gap: 6px;
+  /* Reduced gap */
 }
 
-.dropzone:hover, .dropzoneActive {
+.dropzone:hover,
+.dropzoneActive {
   border-color: var(--accent);
   background: rgba(91, 95, 199, 0.04);
 }
@@ -91,8 +98,10 @@
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
-  padding: 10px 14px; /* Tightened padding */
-  margin-bottom: 14px; /* Reduced spacing */
+  padding: 10px 14px;
+  /* Tightened padding */
+  margin-bottom: 14px;
+  /* Reduced spacing */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -137,16 +146,18 @@
 .formRow {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px; /* Reduced gap */
-  margin-bottom: 10px; /* Reduced margin */
+  gap: 12px;
 }
 
 .formGroup {
   display: flex;
   flex-direction: column;
-  gap: 4px; /* Reduced gap */
-  margin-bottom: 10px; /* Reduced margin */
-  position: relative; /* Setup relative positioning for dropdown suggestions */
+  gap: 4px;
+  /* Reduced gap */
+  margin-bottom: 10px;
+  /* Reduced margin */
+  position: relative;
+  /* Setup relative positioning for dropdown suggestions */
 }
 
 .formGroup label {
@@ -271,7 +282,8 @@
 }
 
 .radioLabel input {
-  display: none; /* Hide default radio checkmark */
+  display: none;
+  /* Hide default radio checkmark */
 }
 
 /* Progress bar styling */
@@ -300,4 +312,66 @@
   height: 100%;
   border-radius: 99px;
   transition: width 0.1s linear;
+}
+
+/* Warnings and alerts styling */
+.warningBox {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  background-color: rgba(234, 179, 8, 0.1);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+.warningBoxIcon {
+  color: #eab308;
+  flex-shrink: 0;
+}
+
+.warningBoxText {
+  font-size: 0.74rem;
+  color: #f59e0b;
+  line-height: 1.2;
+}
+
+.versionInputRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+.unknownToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--muted);
+  transition: border-color var(--trans), color var(--trans), background var(--trans);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.unknownToggleChecked {
+  border-color: var(--amber) !important;
+  color: var(--white) !important;
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.unknownToggle input[type="checkbox"] {
+  accent-color: var(--amber);
+  width: 16px !important;
+  height: 16px !important;
+  margin: 0 !important;
+  cursor: pointer;
 }

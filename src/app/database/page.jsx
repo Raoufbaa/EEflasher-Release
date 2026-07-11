@@ -13,7 +13,8 @@ const DEVICE_CATEGORIES = [
   'Router',
   'TV',
   'TV Box',
-  'PC BIOS',
+  'Desktop BIOS',
+  'Laptop BIOS',
   'EC Firmware',
   'EEPROM Dump',
   'Automotive',
@@ -311,7 +312,8 @@ export default function DatabasePage() {
       case 'Router': return styles.badgeRouter;
       case 'TV': return styles.badgeTV;
       case 'TV Box': return styles.badgeTVBox;
-      case 'PC BIOS': return styles.badgeReceiver; // Reuse styles for visual consistency
+      case 'Desktop BIOS':
+      case 'Laptop BIOS': return styles.badgeReceiver; // Reuse styles for visual consistency
       case 'EC Firmware': return styles.badgeRouter;
       case 'EEPROM Dump': return styles.badgeTV;
       case 'Automotive': return styles.badgeTVBox;
