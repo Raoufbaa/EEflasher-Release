@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "feat: add UsbDeviceDetector service to identify connected programmer hardware via WMI",
+  "ReleaseNotes": "chore: restore version to 1.0.24 and trigger release build",
   "SupportedVersions": [
+    "1.0.24",
     "1.0.21",
-    "1.0.20",
-    "1.0.19"
+    "1.0.20"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
