@@ -1,6 +1,6 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "feat: add release trigger workflow and enable dynamic versioning in Inno Setup scripts",
+  "ReleaseNotes": "feat: implement initial core architecture including MVVM view models, USB hardware detection services, and device communication protocols",
   "SupportedVersions": [
     "1.0.21",
     "1.0.20",
