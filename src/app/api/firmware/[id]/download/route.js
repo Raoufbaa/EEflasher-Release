@@ -4,6 +4,7 @@ import { s3Client } from '@/lib/b2';
 import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
+import { getToken } from 'next-auth/jwt';
 
 export async function GET(req, { params }) {
   // Await params for Next.js 15 compatibility
@@ -21,9 +22,12 @@ export async function GET(req, { params }) {
   }
 
   try {
-    // 1. Fetch firmware record
+    // 1. Fetch firmware record with approval status and uploader details
     const result = await query(
-      "SELECT file_key, file_name FROM firmwares WHERE id = $1",
+      `SELECT f.file_key, f.file_name, f.uploaded_by, m.approved
+       FROM firmwares f
+       JOIN device_models m ON f.model_id = m.id
+       WHERE f.id = $1`,
       [id]
     );
 
@@ -34,7 +38,26 @@ export async function GET(req, { params }) {
       );
     }
 
-    const { file_key, file_name } = result.rows[0];
+    const { file_key, file_name, uploaded_by, approved } = result.rows[0];
+
+    // If the device model is not approved yet, check permissions:
+    // Only the uploader or an administrator can access/download it.
+    if (!approved) {
+      const token = await getToken({
+        req,
+        secret: process.env.NEXTAUTH_SECRET,
+        secureCookie: process.env.NODE_ENV === 'production',
+      });
+      const isOwner = token && token.id === uploaded_by;
+      const isAdmin = token && token.is_admin === true;
+
+      if (!isOwner && !isAdmin) {
+        return NextResponse.json(
+          { error: "Forbidden. This firmware is associated with a model pending review. Only the owner of this file or an administrator can download it." },
+          { status: 403 }
+        );
+      }
+    }
 
     // 2. Increment download count in database
     await query(
