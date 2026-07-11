@@ -8,7 +8,11 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 export const dynamic = 'force-dynamic';
 
 export async function GET(req) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const token = await getToken({
+    req,
+    secret: process.env.NEXTAUTH_SECRET,
+    secureCookie: process.env.NODE_ENV === 'production',
+  });
   if (!token) {
     // Return default profile picture if not logged in
     return NextResponse.redirect(new URL('/Assets/profile.jpg', req.url));

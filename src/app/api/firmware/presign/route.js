@@ -13,7 +13,11 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req) {
   // Check JWT authorization
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const token = await getToken({
+    req,
+    secret: process.env.NEXTAUTH_SECRET,
+    secureCookie: process.env.NODE_ENV === 'production',
+  });
   if (!token) {
     return NextResponse.json(
       { error: "Unauthorized. You must be logged in to upload firmware." },

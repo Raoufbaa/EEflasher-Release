@@ -64,7 +64,11 @@ export async function GET(req) {
   const offset = (page - 1) * limit;
 
   // Retrieve token if present to check uploader/admin visibility
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const token = await getToken({
+    req,
+    secret: process.env.NEXTAUTH_SECRET,
+    secureCookie: process.env.NODE_ENV === 'production',
+  });
   const userId = token?.id || null;
   const isAdmin = token?.is_admin === true;
 
@@ -139,7 +143,11 @@ export async function GET(req) {
 
 export async function POST(req) {
   // Authenticate user with NextAuth JWT
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const token = await getToken({
+    req,
+    secret: process.env.NEXTAUTH_SECRET,
+    secureCookie: process.env.NODE_ENV === 'production',
+  });
   if (!token) {
     return NextResponse.json(
       { error: "Unauthorized. You must be logged in to upload firmware." },

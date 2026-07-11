@@ -5,7 +5,11 @@ import { query } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 
 async function verifyAdmin(req) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const token = await getToken({
+    req,
+    secret: process.env.NEXTAUTH_SECRET,
+    secureCookie: process.env.NODE_ENV === 'production',
+  });
   if (!token) return false;
 
   const res = await query("SELECT is_admin FROM users WHERE id = $1", [token.id]);

@@ -9,7 +9,11 @@ export const dynamic = 'force-dynamic';
 
 export async function DELETE(req, { params }) {
   // Authenticate user with NextAuth JWT
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const token = await getToken({
+    req,
+    secret: process.env.NEXTAUTH_SECRET,
+    secureCookie: process.env.NODE_ENV === 'production',
+  });
   if (!token) {
     return NextResponse.json(
       { error: "Unauthorized. You must be logged in to delete firmware." },

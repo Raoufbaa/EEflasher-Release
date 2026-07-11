@@ -6,7 +6,11 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req) {
   // Ensure the user is logged in
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const token = await getToken({
+    req,
+    secret: process.env.NEXTAUTH_SECRET,
+    secureCookie: process.env.NODE_ENV === 'production',
+  });
   if (!token) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

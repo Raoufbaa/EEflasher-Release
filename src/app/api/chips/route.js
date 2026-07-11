@@ -24,7 +24,11 @@ export async function GET(req) {
     const includeUnapproved = searchParams.get('all') === 'true';
 
     // Retrieve token if present to check uploader/admin visibility
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    const token = await getToken({
+      req,
+      secret: process.env.NEXTAUTH_SECRET,
+      secureCookie: process.env.NODE_ENV === 'production',
+    });
     const isAdmin = token?.is_admin === true;
 
     let queryText = `
@@ -63,7 +67,11 @@ export async function GET(req) {
 
 // POST /api/chips - Submit a new chip
 export async function POST(req) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const token = await getToken({
+    req,
+    secret: process.env.NEXTAUTH_SECRET,
+    secureCookie: process.env.NODE_ENV === 'production',
+  });
   if (!token) {
     return NextResponse.json({ error: "Unauthorized. You must be logged in to add chips." }, { status: 401 });
   }

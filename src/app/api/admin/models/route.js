@@ -15,7 +15,11 @@ function formatModelName(name) {
 
 // Helper to check if current logged-in user is an admin
 async function verifyAdmin(req) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const token = await getToken({
+    req,
+    secret: process.env.NEXTAUTH_SECRET,
+    secureCookie: process.env.NODE_ENV === 'production',
+  });
   if (!token) return false;
 
   const res = await query("SELECT is_admin FROM users WHERE id = $1", [token.id]);
