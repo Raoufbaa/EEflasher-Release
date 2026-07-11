@@ -41,19 +41,18 @@ export async function GET(req, { params }) {
     const { file_key, file_name, uploaded_by, approved } = result.rows[0];
 
     // If the device model is not approved yet, check permissions:
-    // Only the uploader or an administrator can access/download it.
+    // Only an administrator can access/download it.
     if (!approved) {
       const token = await getToken({
         req,
         secret: process.env.NEXTAUTH_SECRET,
         secureCookie: process.env.NODE_ENV === 'production',
       });
-      const isOwner = token && token.id === uploaded_by;
       const isAdmin = token && token.is_admin === true;
 
-      if (!isOwner && !isAdmin) {
+      if (!isAdmin) {
         return NextResponse.json(
-          { error: "Forbidden. This firmware is associated with a model pending review. Only the owner of this file or an administrator can download it." },
+          { error: "Forbidden. This firmware is associated with a model pending review. Only an administrator can download it." },
           { status: 403 }
         );
       }

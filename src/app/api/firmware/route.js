@@ -85,15 +85,9 @@ export async function GET(req) {
     const params = [];
     let paramCounter = 1;
 
-    // Filter unapproved model firmwares from public users
+    // Filter unapproved model firmwares from public users (only admins can see unapproved ones)
     if (!isAdmin) {
-      if (userId) {
-        queryText += ` AND (m.approved = TRUE OR f.uploaded_by = $${paramCounter})`;
-        params.push(userId);
-        paramCounter++;
-      } else {
-        queryText += ` AND m.approved = TRUE`;
-      }
+      queryText += ` AND m.approved = TRUE`;
     }
 
     if (search) {
