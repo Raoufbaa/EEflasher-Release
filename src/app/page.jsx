@@ -10,10 +10,10 @@ export default function Home() {
     version: 'Latest version',
     name: 'Latest stable',
     date: 'Checking...',
-    totalDl: '—',
-    winX64: '—',
-    winX86: '—',
-    linuxX64: '—'
+    totalDl: '-',
+    winX64: '-',
+    winX86: '-',
+    linuxX64: '-'
   });
 
   const formatNumber = (num) => {
@@ -130,7 +130,7 @@ export default function Home() {
           <span>{releaseInfo.version}</span>
         </div>
         <h2>Modern EEPROM &amp; Flash Programmer</h2>
-        <p>A cross-platform replacement for AsProgrammer — built on .NET 10 and Avalonia with a clean dark UI, faster write speeds, and full cancellation support.</p>
+        <p>A cross-platform replacement for AsProgrammer - built on .NET 10 and Avalonia with a clean dark UI, faster write speeds, and full cancellation support.</p>
 
         <div className={styles.heroActions}>
           <a className={`${styles.btn} ${styles.btnAccent}`} style={{ width: 'auto' }} href="https://github.com/Raoufbaa/EEflasher-Release/releases/latest/download/EEFlasher_Setup.exe">
@@ -215,7 +215,7 @@ export default function Home() {
             <h3>Linux x64</h3>
             <span className={`${styles.tag} ${styles.tagGray}`}>Portable</span>
           </div>
-          <p className={styles.dlSub}>Portable archive for 64-bit Linux. Extract and run — no installer needed.</p>
+          <p className={styles.dlSub}>Portable archive for 64-bit Linux. Extract and run - no installer needed.</p>
           <div className={styles.dlInfo}>
             <div className={styles.dlInfoRow}><span>Package</span><span>TAR.GZ</span></div>
             <div className={styles.dlInfoRow}><span>Architecture</span><span>x86_64</span></div>
@@ -263,7 +263,7 @@ export default function Home() {
         <div className={styles.featureItem}>
           <div className={styles.fIcon}><Cpu size={16} /></div>
           <h4>Multi-hardware support</h4>
-          <p>CH341A, CH347, Arduino, AVRISP MKII, USBAsp — auto-detection and hot-plug ready.</p>
+          <p>CH341A, CH347, Arduino, AVRISP MKII, USBAsp - auto-detection and hot-plug ready.</p>
         </div>
 
         <div className={styles.featureItem}>
@@ -310,8 +310,8 @@ export default function Home() {
             <tr><td>Arduino</td><td><span className={styles.check}>✓ Supported</span></td><td>SPI</td><td className={styles.check}>✓</td><td className={styles.check}>✓</td></tr>
             <tr><td>AVRISP MKII</td><td><span className={styles.check}>✓ Supported</span></td><td>SPI, ISP</td><td className={styles.check}>✓</td><td className={styles.check}>✓</td></tr>
             <tr><td>USBAsp</td><td><span className={styles.check}>✓ Supported</span></td><td>SPI</td><td className={styles.check}>✓</td><td className={styles.check}>✓</td></tr>
-            <tr><td>Bus Pirate</td><td><span className={styles.plan}>⏳ Planned</span></td><td>SPI, I2C</td><td>—</td><td>—</td></tr>
-            <tr><td>FT232H</td><td><span className={styles.plan}>⏳ Planned</span></td><td>SPI, I2C</td><td>—</td><td>—</td></tr>
+            <tr><td>Bus Pirate</td><td><span className={styles.plan}>⏳ Planned</span></td><td>SPI, I2C</td><td>-</td><td>-</td></tr>
+            <tr><td>FT232H</td><td><span className={styles.plan}>⏳ Planned</span></td><td>SPI, I2C</td><td>-</td><td>-</td></tr>
           </tbody>
         </table>
       </div>
@@ -367,7 +367,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className={styles.footer}>
-        <div>© {new Date().getFullYear()} EEFlasher — built for the hardware and firmware community.</div>
+        <div>© {new Date().getFullYear()} EEFlasher - built for the hardware and firmware community.</div>
         <div className={styles.footerLinks}>
           <a href="https://github.com/Raoufbaa/EEflasher-Release/releases" target="_blank" rel="noopener noreferrer">All Releases</a>
           <a href="https://github.com/Raoufbaa/EEflasher-Release" target="_blank" rel="noopener noreferrer">Source Code</a>

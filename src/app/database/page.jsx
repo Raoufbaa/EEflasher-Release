@@ -8,16 +8,16 @@ import AddChipModal from '@/components/AddChipModal';
 import styles from '@/styles/Database.module.css';
 
 const DEVICE_CATEGORIES = [
-  'All', 
-  'Receiver', 
-  'Router', 
-  'TV', 
-  'TV Box', 
-  'PC BIOS', 
-  'EC Firmware', 
-  'EEPROM Dump', 
-  'Automotive', 
-  'Printer', 
+  'All',
+  'Receiver',
+  'Router',
+  'TV',
+  'TV Box',
+  'PC BIOS',
+  'EC Firmware',
+  'EEPROM Dump',
+  'Automotive',
+  'Printer',
   'Other'
 ];
 
@@ -26,7 +26,7 @@ export default function DatabasePage() {
   const [firmwares, setFirmwares] = useState([]);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
-  
+
   // Tabs
   const [activeTab, setActiveTab] = useState('firmware'); // 'firmware' or 'chips'
   const [chips, setChips] = useState([]);
@@ -225,7 +225,7 @@ export default function DatabasePage() {
         setLoading(false);
       }
     };
-    
+
     resetAndFetch();
   }, [searchQuery, category, refreshTrigger, activeTab]);
 
@@ -334,23 +334,23 @@ export default function DatabasePage() {
         <div>
           <h2>{activeTab === 'firmware' ? 'Firmware Database' : 'Supported Chips Directory'}</h2>
           <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginTop: '4px' }}>
-            {activeTab === 'firmware' 
-              ? 'Find and download verified ROMs and dump files for various devices.' 
+            {activeTab === 'firmware'
+              ? 'Find and download verified ROMs and dump files for various devices.'
               : 'Browse and search our database of supported EEPROM and Flash memory chips.'}
           </p>
         </div>
         {session && (
           <div>
             {activeTab === 'firmware' ? (
-              <button 
-                onClick={() => setShowUploadModal(true)} 
+              <button
+                onClick={() => setShowUploadModal(true)}
                 disabled={!isVerifiedUploader}
-                className="btn btn-accent" 
-                style={{ 
-                  width: 'auto', 
-                  gap: '6px', 
-                  opacity: isVerifiedUploader ? 1 : 0.5, 
-                  cursor: isVerifiedUploader ? 'pointer' : 'not-allowed' 
+                className="btn btn-accent"
+                style={{
+                  width: 'auto',
+                  gap: '6px',
+                  opacity: isVerifiedUploader ? 1 : 0.5,
+                  cursor: isVerifiedUploader ? 'pointer' : 'not-allowed'
                 }}
                 title={isVerifiedUploader ? 'Upload new firmware file' : 'Account verification pending'}
               >
@@ -358,15 +358,15 @@ export default function DatabasePage() {
                 Upload Firmware
               </button>
             ) : (
-              <button 
-                onClick={() => setShowAddChipModal(true)} 
+              <button
+                onClick={() => setShowAddChipModal(true)}
                 disabled={!isVerifiedUploader}
-                className="btn btn-accent" 
-                style={{ 
-                  width: 'auto', 
-                  gap: '6px', 
-                  opacity: isVerifiedUploader ? 1 : 0.5, 
-                  cursor: isVerifiedUploader ? 'pointer' : 'not-allowed' 
+                className="btn btn-accent"
+                style={{
+                  width: 'auto',
+                  gap: '6px',
+                  opacity: isVerifiedUploader ? 1 : 0.5,
+                  cursor: isVerifiedUploader ? 'pointer' : 'not-allowed'
                 }}
                 title={isVerifiedUploader ? 'Add new supported chip' : 'Account verification pending'}
               >
@@ -380,17 +380,17 @@ export default function DatabasePage() {
 
       {/* Segmented Tab Controls */}
       <div style={{ display: 'flex', gap: '10px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '14px', marginBottom: '24px' }}>
-        <button 
+        <button
           onClick={() => {
             setActiveTab('firmware');
             setSearch('');
             setSearchQuery('');
-          }} 
+          }}
           className="btn"
-          style={{ 
-            width: 'auto', 
-            padding: '8px 16px', 
-            fontSize: '0.84rem', 
+          style={{
+            width: 'auto',
+            padding: '8px 16px',
+            fontSize: '0.84rem',
             height: '36px',
             backgroundColor: activeTab === 'firmware' ? 'var(--accent)' : 'transparent',
             border: activeTab === 'firmware' ? '1px solid var(--accent)' : '1px solid rgba(255, 255, 255, 0.1)',
@@ -400,17 +400,17 @@ export default function DatabasePage() {
         >
           📁 Firmware Database
         </button>
-        <button 
+        <button
           onClick={() => {
             setActiveTab('chips');
             setSearch('');
             setSearchQuery('');
-          }} 
+          }}
           className="btn"
-          style={{ 
-            width: 'auto', 
-            padding: '8px 16px', 
-            fontSize: '0.84rem', 
+          style={{
+            width: 'auto',
+            padding: '8px 16px',
+            fontSize: '0.84rem',
             height: '36px',
             backgroundColor: activeTab === 'chips' ? 'var(--accent)' : 'transparent',
             border: activeTab === 'chips' ? '1px solid var(--accent)' : '1px solid rgba(255, 255, 255, 0.1)',
@@ -439,7 +439,7 @@ export default function DatabasePage() {
             </h3>
             <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>Requires admin approval to be visible to public users</span>
           </div>
-          
+
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
               <thead>
@@ -470,23 +470,23 @@ export default function DatabasePage() {
                     </td>
                     <td style={{ padding: '12px 8px', textAlign: 'right' }}>
                       <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                        <button 
+                        <button
                           onClick={() => handleApproveModel(model.id)}
-                          className="btn btn-accent" 
+                          className="btn btn-accent"
                           style={{ padding: '4px 10px', fontSize: '0.78rem', height: '28px', width: 'auto' }}
                         >
                           Approve
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleMergeModel(model.id, model.model_name)}
-                          className="btn btn-ghost" 
+                          className="btn btn-ghost"
                           style={{ padding: '4px 10px', fontSize: '0.78rem', height: '28px', border: '1px solid var(--accent)', color: '#8487d4', width: 'auto' }}
                         >
                           Merge
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleRejectModel(model.id, model.model_name)}
-                          className="btn btn-ghost" 
+                          className="btn btn-ghost"
                           style={{ padding: '4px 10px', fontSize: '0.78rem', height: '28px', border: '1px solid #ef4444', color: '#f87171', width: 'auto' }}
                         >
                           Reject
@@ -517,7 +517,7 @@ export default function DatabasePage() {
             </h3>
             <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>Requires admin approval to be added to the supported database</span>
           </div>
-          
+
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
               <thead>
@@ -540,16 +540,16 @@ export default function DatabasePage() {
                     <td style={{ padding: '12px 8px' }}>{formatBytes(chip.size)}</td>
                     <td style={{ padding: '12px 8px', textAlign: 'right' }}>
                       <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                        <button 
+                        <button
                           onClick={() => handleApproveChip(chip.id)}
-                          className="btn btn-accent" 
+                          className="btn btn-accent"
                           style={{ padding: '4px 10px', fontSize: '0.78rem', height: '28px', width: 'auto' }}
                         >
                           Approve
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleRejectChip(chip.id, chip.model)}
-                          className="btn btn-ghost" 
+                          className="btn btn-ghost"
                           style={{ padding: '4px 10px', fontSize: '0.78rem', height: '28px', border: '1px solid #ef4444', color: '#f87171', width: 'auto' }}
                         >
                           Reject
@@ -577,7 +577,7 @@ export default function DatabasePage() {
         </div>
 
         {activeTab === 'firmware' && (
-          <select 
+          <select
             className={styles.filterSelect}
             value={category}
             onChange={(e) => setCategory(e.target.value)}
@@ -631,26 +631,26 @@ export default function DatabasePage() {
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                             <span>{fw.device_model}</span>
                             <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                              <span style={{ 
-                                fontSize: '0.68rem', 
-                                fontWeight: 600, 
-                                color: fw.is_dump ? '#eab308' : '#60a5fa', 
-                                textTransform: 'uppercase', 
-                                letterSpacing: '0.03em' 
+                              <span style={{
+                                fontSize: '0.68rem',
+                                fontWeight: 600,
+                                color: fw.is_dump ? '#eab308' : '#60a5fa',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.03em'
                               }}>
                                 {fw.is_dump ? '📁 Dump (From Device)' : '⚡ Official Release'}
                               </span>
                               {fw.is_approved === false && (
-                                <span style={{ 
-                                  fontSize: '0.68rem', 
-                                  fontWeight: 600, 
-                                  color: '#ef4444', 
+                                <span style={{
+                                  fontSize: '0.68rem',
+                                  fontWeight: 600,
+                                  color: '#ef4444',
                                   backgroundColor: 'rgba(239, 68, 68, 0.1)',
                                   border: '1px solid rgba(239, 68, 68, 0.3)',
                                   padding: '1px 5px',
                                   borderRadius: '4px',
-                                  textTransform: 'uppercase', 
-                                  letterSpacing: '0.03em' 
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.03em'
                                 }}>
                                   Pending Review
                                 </span>
@@ -666,7 +666,7 @@ export default function DatabasePage() {
                         <td style={{ fontFamily: 'monospace' }}>{fw.version}</td>
                         <td>
                           <span className={styles.descText} title={fw.description || 'No description'}>
-                            {fw.description || '—'}
+                            {fw.description || '-'}
                           </span>
                         </td>
                         <td>{formatBytes(fw.file_size)}</td>
@@ -680,7 +680,7 @@ export default function DatabasePage() {
                         <td style={{ textAlign: 'center' }}>{fw.downloads_count}</td>
                         <td>
                           <div className={styles.actionCell}>
-                            <a 
+                            <a
                               href={`/api/firmware/${fw.id}/download`}
                               className={styles.actionIconBtn}
                               title="Download firmware"
@@ -688,7 +688,7 @@ export default function DatabasePage() {
                               <Download size={15} />
                             </a>
                             {canDelete && (
-                              <button 
+                              <button
                                 onClick={() => handleDelete(fw.id, fw.device_model)}
                                 className={`${styles.actionIconBtn} ${styles.deleteBtn}`}
                                 title="Delete firmware"
@@ -773,8 +773,8 @@ export default function DatabasePage() {
 
       {/* Modals */}
       {showUploadModal && (
-        <UploadModal 
-          onClose={() => setShowUploadModal(false)} 
+        <UploadModal
+          onClose={() => setShowUploadModal(false)}
           onSuccess={() => {
             setShowUploadModal(false);
             setCategory('All');
@@ -786,7 +786,7 @@ export default function DatabasePage() {
       )}
 
       {showAddChipModal && (
-        <AddChipModal 
+        <AddChipModal
           onClose={() => setShowAddChipModal(false)}
           onSuccess={() => {
             setShowAddChipModal(false);

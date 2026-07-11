@@ -4,7 +4,7 @@ import Navbar from '@/components/Navbar';
 import SnakeBackground from '@/components/SnakeBackground';
 
 export const metadata = {
-  title: 'EEFlasher — Downloads & Firmware Database',
+  title: 'EEFlasher - Downloads & Firmware Database',
   description: 'Download EEFlasher, a modern USB flash and EEPROM programmer. Access the community firmware database to find and download ROM dumps for routers, receivers, and TVs.',
   icons: {
     icon: '/Assets/EEFlasher.ico',
