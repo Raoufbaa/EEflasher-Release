@@ -1,6 +1,6 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "feat: implement initial core architecture including MVVM view models, USB hardware detection services, and device communication protocols",
+  "ReleaseNotes": "feat: add UsbDeviceDetector service to identify connected programmer hardware via WMI",
   "SupportedVersions": [
     "1.0.21",
     "1.0.20",
