@@ -1,0 +1,426 @@
+name: EEFlasher CI/CD
+
+on:
+  repository_dispatch:
+    types: [trigger-release]
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: 'Commit SHA from main repo to build (optional)'
+        required: false
+        default: 'main'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            runtime: win-x64
+            platform: windows
+          - os: ubuntu-latest
+            runtime: linux-x64
+            platform: linux
+    
+    steps:
+      - name: Checkout Main Repo
+        uses: actions/checkout@v4
+        with:
+          repository: Raoufbaa/EEFlasher
+          token: ${{ secrets.EEFLASHER_RELEASES_PAT }}
+          ref: ${{ github.event.client_payload.sha || github.event.inputs.commit_sha || 'main' }}
+          fetch-depth: 0
+      
+      - name: Install .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      
+      - name: Restore dependencies (Windows)
+        if: matrix.platform == 'windows'
+        run: dotnet restore EEFlasher.csproj
+      
+      - name: Clean (Windows)
+        if: matrix.platform == 'windows'
+        run: dotnet clean EEFlasher.csproj --configuration Release
+      
+      - name: Build x64 (Windows)
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          Write-Host "Building x64..."
+          dotnet publish EEFlasher.csproj `
+            -c Release `
+            -r win-x64 `
+            /p:Platform=x64 `
+            --self-contained true `
+            /p:PublishSingleFile=true `
+            /p:IncludeNativeLibrariesForSelfExtract=true `
+            /p:EnableCompressionInSingleFile=true
+          
+          Write-Host "Copying x64 hardware DLLs..."
+          if (Test-Path "Assets\Hardware\x64\*.dll") {
+            Copy-Item -Path "Assets\Hardware\x64\*.dll" -Destination "bin\x64\Release\net10.0\win-x64\publish\" -Force
+            Write-Host "  Hardware DLLs copied"
+          } else {
+            Write-Host "  Warning: Hardware DLLs not found, skipping..."
+          }
+          
+          Write-Host "Copying chip database..."
+          if (Test-Path "Assets\ChipDatabase") {
+            New-Item -ItemType Directory -Force -Path "bin\x64\Release\net10.0\win-x64\publish\Assets\ChipDatabase" | Out-Null
+            Copy-Item -Path "Assets\ChipDatabase\*" -Destination "bin\x64\Release\net10.0\win-x64\publish\Assets\ChipDatabase\" -Recurse -Force
+            Write-Host "  Chip database copied"
+          } else {
+            Write-Host "  Warning: Chip database not found, skipping..."
+          }
+          
+          Write-Host "Copying Drivers..."
+          if (Test-Path "Assets\Hardware\Drivers") {
+            New-Item -ItemType Directory -Force -Path "bin\x64\Release\net10.0\win-x64\publish\Assets\Hardware\Drivers" | Out-Null
+            Copy-Item -Path "Assets\Hardware\Drivers\*" -Destination "bin\x64\Release\net10.0\win-x64\publish\Assets\Hardware\Drivers\" -Recurse -Force
+            Write-Host "  Drivers copied"
+          } else {
+            Write-Host "  Warning: Drivers not found, skipping..."
+          }
+          
+          Write-Host "Copying Firmware..."
+          if (Test-Path "Assets\Hardware\Firmware") {
+            New-Item -ItemType Directory -Force -Path "bin\x64\Release\net10.0\win-x64\publish\Assets\Hardware\Firmware" | Out-Null
+            Copy-Item -Path "Assets\Hardware\Firmware\*" -Destination "bin\x64\Release\net10.0\win-x64\publish\Assets\Hardware\Firmware\" -Recurse -Force
+            Write-Host "  Firmware copied"
+          } else {
+            Write-Host "  Warning: Firmware not found, skipping..."
+          }
+          
+          New-Item -ItemType Directory -Force -Path "publish\x64" | Out-Null
+          Copy-Item -Path "bin\x64\Release\net10.0\win-x64\publish\*" -Destination "publish\x64\" -Recurse -Force
+      
+      - name: Build x86 (Windows)
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          Write-Host "Building x86..."
+          dotnet publish EEFlasher.csproj `
+            -c Release `
+            -r win-x86 `
+            /p:Platform=x86 `
+            --self-contained true `
+            /p:PublishSingleFile=true `
+            /p:IncludeNativeLibrariesForSelfExtract=true `
+            /p:EnableCompressionInSingleFile=true
+          
+          Write-Host "Copying x86 hardware DLLs..."
+          if (Test-Path "Assets\Hardware\x86\*.dll") {
+            Copy-Item -Path "Assets\Hardware\x86\*.dll" -Destination "bin\x86\Release\net10.0\win-x86\publish\" -Force
+            Write-Host "  Hardware DLLs copied"
+          } else {
+            Write-Host "  Warning: Hardware DLLs not found, skipping..."
+          }
+          
+          Write-Host "Copying chip database..."
+          if (Test-Path "Assets\ChipDatabase") {
+            New-Item -ItemType Directory -Force -Path "bin\x86\Release\net10.0\win-x86\publish\Assets\ChipDatabase" | Out-Null
+            Copy-Item -Path "Assets\ChipDatabase\*" -Destination "bin\x86\Release\net10.0\win-x86\publish\Assets\ChipDatabase\" -Recurse -Force
+            Write-Host "  Chip database copied"
+          } else {
+            Write-Host "  Warning: Chip database not found, skipping..."
+          }
+          
+          Write-Host "Copying Drivers..."
+          if (Test-Path "Assets\Hardware\Drivers") {
+            New-Item -ItemType Directory -Force -Path "bin\x86\Release\net10.0\win-x86\publish\Assets\Hardware\Drivers" | Out-Null
+            Copy-Item -Path "Assets\Hardware\Drivers\*" -Destination "bin\x86\Release\net10.0\win-x86\publish\Assets\Hardware\Drivers\" -Recurse -Force
+            Write-Host "  Drivers copied"
+          } else {
+            Write-Host "  Warning: Drivers not found, skipping..."
+          }
+          
+          Write-Host "Copying Firmware..."
+          if (Test-Path "Assets\Hardware\Firmware") {
+            New-Item -ItemType Directory -Force -Path "bin\x86\Release\net10.0\win-x86\publish\Assets\Hardware\Firmware" | Out-Null
+            Copy-Item -Path "Assets\Hardware\Firmware\*" -Destination "bin\x86\Release\net10.0\win-x86\publish\Assets\Hardware\Firmware\" -Recurse -Force
+            Write-Host "  Firmware copied"
+          } else {
+            Write-Host "  Warning: Firmware not found, skipping..."
+          }
+          
+          New-Item -ItemType Directory -Force -Path "publish\x86" | Out-Null
+          Copy-Item -Path "bin\x86\Release\net10.0\win-x86\publish\*" -Destination "publish\x86\" -Recurse -Force
+      
+      - name: Restore dependencies (Linux)
+        if: matrix.platform == 'linux'
+        run: dotnet restore
+      
+      - name: Build (Linux)
+        if: matrix.platform == 'linux'
+        run: dotnet build --configuration Release --no-restore
+      
+      - name: Run tests
+        run: dotnet test --configuration Release --no-build --verbosity normal
+        continue-on-error: true
+      
+      - name: Publish (Linux)
+        if: matrix.platform == 'linux'
+        run: dotnet publish --configuration Release --runtime ${{ matrix.runtime }} --self-contained true -p:PublishSingleFile=true -p:PublishTrimmed=false --output ./publish
+      
+      - name: Download and Install Inno Setup
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          $innoUrl = "https://jrsoftware.org/download.php/is.exe"
+          $innoInstaller = "$env:TEMP\innosetup.exe"
+          Invoke-WebRequest -Uri $innoUrl -OutFile $innoInstaller
+          Start-Process -FilePath $innoInstaller -Args "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-" -Wait
+      
+      - name: Build Installer with Inno Setup
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          $innoCompiler = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $innoCompiler)) {
+            Write-Error "Inno Setup compiler not found at $innoCompiler"
+            exit 1
+          }
+          
+          # Extract version from EEFlasher.csproj
+          $csprojContent = Get-Content -Path "EEFlasher.csproj" -Raw
+          if ($csprojContent -match '<Version>(.*?)</Version>') {
+            $version = $Matches[1].Trim()
+          } else {
+            $version = "1.1"
+          }
+          Write-Host "Extracted version for Inno Setup: $version"
+          
+          Write-Host "Building x64 installer..."
+          & $innoCompiler "/DMyAppVersion=$version" "setup.iss"
+          Write-Host "Building x86 installer..."
+          & $innoCompiler "/DMyAppVersion=$version" "setup-x86.iss"
+      
+      - name: Package Windows Builds
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path ./publish/x64/* -DestinationPath EEFlasher-win-x64.zip
+          Compress-Archive -Path ./publish/x86/* -DestinationPath EEFlasher-win-x86.zip
+      
+      - name: Package Linux Build
+        if: matrix.platform == 'linux'
+        run: tar -czf EEFlasher-linux-x64.tar.gz -C ./publish .
+      
+      - name: Upload Windows x64 Artifact
+        if: matrix.platform == 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-x64-package
+          path: EEFlasher-win-x64.zip
+          retention-days: 90
+      
+      - name: Upload Windows x86 Artifact
+        if: matrix.platform == 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-x86-package
+          path: EEFlasher-win-x86.zip
+          retention-days: 90
+      
+      - name: Upload Windows x64 Installer
+        if: matrix.platform == 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-x64-installer
+          path: Output/EEFlasher_Setup.exe
+          retention-days: 90
+      
+      - name: Upload Windows x86 Installer
+        if: matrix.platform == 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-x86-installer
+          path: Output/EEFlasher_Setup_x86.exe
+          retention-days: 90
+      
+      - name: Upload Linux Artifact
+        if: matrix.platform == 'linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-package
+          path: EEFlasher-linux-x64.tar.gz
+          retention-days: 90
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout Release Repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.EEFLASHER_RELEASES_PAT }}
+      
+      - name: Checkout Main Repo
+        uses: actions/checkout@v4
+        with:
+          repository: Raoufbaa/EEFlasher
+          token: ${{ secrets.EEFLASHER_RELEASES_PAT }}
+          ref: ${{ github.event.client_payload.sha || github.event.inputs.commit_sha || 'main' }}
+          path: main-repo
+          fetch-depth: 0
+      
+      - name: Extract version from csproj
+        id: get_version
+        run: |
+          VERSION=$(python3 -c "import re; content = open('main-repo/EEFlasher.csproj').read(); print(re.search(r'<Version>(.*?)</Version>', content).group(1).strip())")
+          echo "version=v$VERSION" >> $GITHUB_OUTPUT
+          echo "version_number=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: v$VERSION"
+      
+      - name: Get Main Repo Commit Info
+        id: main_info
+        env:
+          PAYLOAD_SHA: ${{ github.event.client_payload.sha }}
+          PAYLOAD_MSG: ${{ github.event.client_payload.message }}
+          PAYLOAD_TIME: ${{ github.event.client_payload.timestamp }}
+        run: |
+          if [ -n "$PAYLOAD_SHA" ]; then
+            echo "sha=$PAYLOAD_SHA" >> $GITHUB_OUTPUT
+            echo "timestamp=$PAYLOAD_TIME" >> $GITHUB_OUTPUT
+            echo "message<<EOF" >> $GITHUB_OUTPUT
+            echo "$PAYLOAD_MSG" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            cd main-repo
+            echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+            echo "timestamp=$(git log -1 --pretty=%aI)" >> $GITHUB_OUTPUT
+            echo "message<<EOF" >> $GITHUB_OUTPUT
+            git log -1 --pretty=%B >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            cd ..
+          fi
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+      
+      - name: Update version.json in release repo
+        env:
+          COMMIT_MSG: ${{ steps.main_info.outputs.message }}
+        run: |
+          NEW_VERSION="${{ steps.get_version.outputs.version_number }}"
+
+          if [ -f version.json ]; then
+            EXISTING=$(jq -r '.SupportedVersions // [] | .[]' version.json)
+          else
+            EXISTING=""
+          fi
+
+          ALL_VERSIONS=$(printf "%s\n%s" "$NEW_VERSION" "$EXISTING" | awk '!seen[$0]++' | head -3)
+          SUPPORTED_JSON=$(echo "$ALL_VERSIONS" | jq -R . | jq -s .)
+
+          jq -n \
+            --arg dl "https://github.com/Raoufbaa/EEflasher-Release/releases/latest" \
+            --arg notes "$COMMIT_MSG" \
+            --argjson supported "$SUPPORTED_JSON" \
+            '{
+              "DownloadUrl": $dl,
+              "ReleaseNotes": $notes,
+              "SupportedVersions": $supported,
+              "AppDisabled": false,
+              "AppDisabledMessage": ""
+            }' > version.json
+          
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add version.json
+          git commit -m "Update version.json for $NEW_VERSION" || echo "No changes to commit"
+          git push
+      
+      - name: Create Versioned Release
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.EEFLASHER_RELEASES_PAT }}
+          tag_name: ${{ steps.get_version.outputs.version }}
+          name: "EEFlasher ${{ steps.get_version.outputs.version }}"
+          body: |
+            ## EEFlasher Release ${{ steps.get_version.outputs.version }}
+            
+            **Build Date:** ${{ steps.main_info.outputs.timestamp }}
+            **Commit:** ${{ steps.main_info.outputs.sha }}
+            
+            ### Changes
+            ${{ steps.main_info.outputs.message }}
+            
+            ### What's Included
+            - EEFlasher application (Windows x64/x86, Linux x64)
+            - Windows Installers (x64 and x86)
+            
+            ### Download
+            | Platform | Installer | Portable |
+            |---|---|---|
+            | Windows x64 | `EEFlasher_Setup.exe` | `EEFlasher-win-x64.zip` |
+            | Windows x86 | `EEFlasher_Setup_x86.exe` | `EEFlasher-win-x86.zip` |
+            | Linux x64 | - | `EEFlasher-linux-x64.tar.gz` |
+            
+            ### System Requirements
+            - Windows 10 or later (x64/x86) / Ubuntu 20.04+ (x64)
+            - .NET 10 Runtime (self-contained, no install required)
+          draft: false
+          prerelease: false
+          files: |
+            ./artifacts/windows-x64-package/EEFlasher-win-x64.zip
+            ./artifacts/windows-x86-package/EEFlasher-win-x86.zip
+            ./artifacts/windows-x64-installer/EEFlasher_Setup.exe
+            ./artifacts/windows-x86-installer/EEFlasher_Setup_x86.exe
+            ./artifacts/linux-package/EEFlasher-linux-x64.tar.gz
+      
+      - name: Update Latest Release
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.EEFLASHER_RELEASES_PAT }}
+          tag_name: latest
+          name: "Latest Development Build"
+          body: |
+            ## ⚡ Latest EEFlasher Build
+            
+            This is the most recent build from the main branch.
+            
+            **Version:** ${{ steps.get_version.outputs.version }}
+            **Build Date:** ${{ steps.main_info.outputs.timestamp }}
+            **Commit:** ${{ steps.main_info.outputs.sha }}
+            
+            ### ⚠️ Note
+            This is a development build. For stable releases, check the versioned releases.
+            
+            ### Download
+            - **Windows x64 (Installer):** `EEFlasher_Setup.exe`
+            - **Windows x64 (Portable):** `EEFlasher-win-x64.zip`
+            - **Windows x86 (Installer):** `EEFlasher_Setup_x86.exe`
+            - **Windows x86 (Portable):** `EEFlasher-win-x86.zip`
+            - **Linux x64:** `EEFlasher-linux-x64.tar.gz`
+          draft: false
+          prerelease: true
+          files: |
+            ./artifacts/windows-x64-package/EEFlasher-win-x64.zip
+            ./artifacts/windows-x86-package/EEFlasher-win-x86.zip
+            ./artifacts/windows-x64-installer/EEFlasher_Setup.exe
+            ./artifacts/windows-x86-installer/EEFlasher_Setup_x86.exe
+            ./artifacts/linux-package/EEFlasher-linux-x64.tar.gz
+      
+      - name: Upload Combined Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: EEFlasher-${{ steps.get_version.outputs.version }}
+          path: |
+            ./artifacts/windows-x64-package/EEFlasher-win-x64.zip
+            ./artifacts/windows-x86-package/EEFlasher-win-x86.zip
+            ./artifacts/windows-x64-installer/EEFlasher_Setup.exe
+            ./artifacts/windows-x86-installer/EEFlasher_Setup_x86.exe
+            ./artifacts/linux-package/EEFlasher-linux-x64.tar.gz
+          retention-days: 90
