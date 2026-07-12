@@ -315,8 +315,8 @@ jobs:
         run: |
           NEW_VERSION="${{ steps.get_version.outputs.version_number }}"
 
-          if [ -f version.json ]; then
-            EXISTING=$(jq -r '.SupportedVersions // [] | .[]' version.json)
+          if [ -f public/version.json ]; then
+            EXISTING=$(jq -r '.SupportedVersions // [] | .[]' public/version.json)
           else
             EXISTING=""
           fi
@@ -334,11 +334,11 @@ jobs:
               "SupportedVersions": $supported,
               "AppDisabled": false,
               "AppDisabledMessage": ""
-            }' > version.json
+            }' > public/version.json
           
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add version.json
+          git add public/version.json
           git commit -m "Update version.json for $NEW_VERSION" || echo "No changes to commit"
           git push
       

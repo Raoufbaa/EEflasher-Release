@@ -459,15 +459,15 @@ export default function DatabasePage() {
           <div className={styles.warningBannerLeft}>
             <AlertTriangle size={18} />
             <span>
-              {resendMessage 
-                ? resendMessage 
+              {resendMessage
+                ? resendMessage
                 : "Your uploader account is pending verification. File uploads, deletions, and chip additions are disabled."
               }
             </span>
           </div>
           <div className={styles.warningBannerActions}>
             {!resendMessage && (
-              <button 
+              <button
                 onClick={handleResendVerification}
                 disabled={resending}
                 className={`btn ${styles.bannerActionBtn} ${styles.bannerBtnWarning}`}
@@ -476,14 +476,14 @@ export default function DatabasePage() {
               </button>
             )}
             {resendMessage && resendError && (
-              <button 
+              <button
                 onClick={() => { setResendMessage(''); setResendError(false); }}
                 className={`btn ${styles.bannerActionBtn} ${styles.bannerBtnDanger}`}
               >
                 Try Again
               </button>
             )}
-            <button 
+            <button
               onClick={() => setShowVerifyModal(true)}
               className={`btn btn-accent ${styles.bannerActionBtn} ${styles.bannerBtnAccent}`}
             >
@@ -551,7 +551,7 @@ export default function DatabasePage() {
           className={`btn ${styles.tabBtn} ${activeTab === 'chips' ? styles.tabBtnActive : ''}`}
         >
           <Cpu size={14} className={styles.tabIcon} />
-          💾 Supported Chips List
+          Supported Chips List
         </button>
       </div>
 
@@ -915,7 +915,7 @@ export default function DatabasePage() {
 
       {/* OTP Verification Modal */}
       {showVerifyModal && (
-        <div 
+        <div
           style={{
             position: 'fixed',
             top: 0,
@@ -931,7 +931,7 @@ export default function DatabasePage() {
             animation: 'fadeUp 0.3s ease both'
           }}
         >
-          <div 
+          <div
             style={{
               background: 'var(--surface)',
               border: '1px solid var(--border)',
@@ -956,7 +956,7 @@ export default function DatabasePage() {
             </p>
 
             {otpError && (
-              <div 
+              <div
                 style={{
                   background: 'rgba(239, 68, 68, 0.1)',
                   border: '1px solid rgba(239, 68, 68, 0.25)',
@@ -974,7 +974,7 @@ export default function DatabasePage() {
             )}
 
             {otpSuccess && (
-              <div 
+              <div
                 style={{
                   background: 'rgba(34, 197, 94, 0.1)',
                   border: '1px solid rgba(34, 197, 94, 0.25)',
@@ -1023,7 +1023,7 @@ export default function DatabasePage() {
             </div>
 
             <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
-              <button 
+              <button
                 onClick={closeVerifyModal}
                 disabled={verifyingOtp}
                 className="btn btn-ghost"
@@ -1031,7 +1031,7 @@ export default function DatabasePage() {
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={handleVerifyOtp}
                 disabled={verifyingOtp || otpDigits.some(d => !d) || !!otpSuccess}
                 className="btn btn-accent"
