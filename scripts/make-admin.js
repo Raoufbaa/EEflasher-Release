@@ -54,7 +54,7 @@ async function main() {
 
     // Update status
     await client.query(
-      "UPDATE users SET is_admin = TRUE, verified = TRUE WHERE id = $1",
+      "UPDATE users SET is_admin = TRUE, verified = 'true' WHERE id = $1",
       [user.id]
     );
 

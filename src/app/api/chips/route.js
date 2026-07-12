@@ -90,10 +90,17 @@ export async function POST(req) {
     return NextResponse.json({ error: "Access Denied. Your account must be verified before you can suggest chips." }, { status: 403 });
   }
 
+  let body;
   try {
-    const body = await req.json();
+    body = await req.json();
+  } catch (err) {
+    return NextResponse.json(
+      { error: "Invalid JSON payload." },
+      { status: 400 }
+    );
+  }
 
-    // Validate body
+  try {
     const validation = chipSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(

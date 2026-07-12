@@ -573,3 +573,13 @@
     justify-content: center;
   }
 }
+
+.btnWidthAuto {
+  width: auto;
+}
+
+.dbBtn {
+  width: auto;
+  border: 1px solid var(--accent);
+  color: #8487d4;
+}

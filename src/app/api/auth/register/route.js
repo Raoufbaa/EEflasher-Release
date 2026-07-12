@@ -100,7 +100,7 @@ export async function POST(req) {
     // Save user with name and profile image to database
     await query(
       "INSERT INTO users (email, password_hash, verified, is_admin, name, profile_image) VALUES ($1, $2, $3, $4, $5, $6)",
-      [email, passwordHash, verifiedVal, is_admin, validatedName, profileImageUrl]
+      [lowerEmail, passwordHash, verifiedVal, is_admin, validatedName, profileImageUrl]
     );
  
     if (!isFirstUser) {

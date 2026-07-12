@@ -455,8 +455,8 @@ export default function DatabasePage() {
     <main className={styles.dbPage}>
       {/* Warning banner for unverified uploaders */}
       {session && !isVerifiedUploader && (
-        <div className={styles.warningBanner} style={{ flexWrap: 'wrap', gap: '12px', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className={styles.warningBanner}>
+          <div className={styles.warningBannerLeft}>
             <AlertTriangle size={18} />
             <span>
               {resendMessage 
@@ -465,23 +465,12 @@ export default function DatabasePage() {
               }
             </span>
           </div>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div className={styles.warningBannerActions}>
             {!resendMessage && (
               <button 
                 onClick={handleResendVerification}
                 disabled={resending}
-                className="btn"
-                style={{
-                  height: '30px',
-                  fontSize: '0.8rem',
-                  padding: '0 12px',
-                  backgroundColor: 'rgba(245, 158, 11, 0.15)',
-                  borderColor: 'rgba(245, 158, 11, 0.3)',
-                  color: '#fbbf24',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  cursor: 'pointer'
-                }}
+                className={`btn ${styles.bannerActionBtn} ${styles.bannerBtnWarning}`}
               >
                 {resending ? 'Sending...' : 'Resend Email'}
               </button>
@@ -489,33 +478,14 @@ export default function DatabasePage() {
             {resendMessage && resendError && (
               <button 
                 onClick={() => { setResendMessage(''); setResendError(false); }}
-                className="btn"
-                style={{
-                  height: '30px',
-                  fontSize: '0.8rem',
-                  padding: '0 12px',
-                  backgroundColor: 'rgba(239, 68, 68, 0.15)',
-                  borderColor: 'rgba(239, 68, 68, 0.3)',
-                  color: '#f87171',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  cursor: 'pointer'
-                }}
+                className={`btn ${styles.bannerActionBtn} ${styles.bannerBtnDanger}`}
               >
                 Try Again
               </button>
             )}
             <button 
               onClick={() => setShowVerifyModal(true)}
-              className="btn btn-accent"
-              style={{
-                height: '30px',
-                fontSize: '0.8rem',
-                padding: '0 12px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                cursor: 'pointer'
-              }}
+              className={`btn btn-accent ${styles.bannerActionBtn} ${styles.bannerBtnAccent}`}
             >
               Verify Code
             </button>
@@ -527,7 +497,7 @@ export default function DatabasePage() {
       <div className={styles.headerRow}>
         <div>
           <h2>{activeTab === 'firmware' ? 'Firmware Database' : 'Supported Chips Directory'}</h2>
-          <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginTop: '4px' }}>
+          <p>
             {activeTab === 'firmware'
               ? 'Find and download verified ROMs and dump files for various devices.'
               : 'Browse and search our database of supported EEPROM and Flash memory chips.'}
@@ -539,13 +509,7 @@ export default function DatabasePage() {
               <button
                 onClick={() => setShowUploadModal(true)}
                 disabled={!isVerifiedUploader}
-                className="btn btn-accent"
-                style={{
-                  width: 'auto',
-                  gap: '6px',
-                  opacity: isVerifiedUploader ? 1 : 0.5,
-                  cursor: isVerifiedUploader ? 'pointer' : 'not-allowed'
-                }}
+                className={`btn btn-accent ${styles.headerUploadBtn}`}
                 title={isVerifiedUploader ? 'Upload new firmware file' : 'Account verification pending'}
               >
                 <Plus size={16} />
@@ -555,13 +519,7 @@ export default function DatabasePage() {
               <button
                 onClick={() => setShowAddChipModal(true)}
                 disabled={!isVerifiedUploader}
-                className="btn btn-accent"
-                style={{
-                  width: 'auto',
-                  gap: '6px',
-                  opacity: isVerifiedUploader ? 1 : 0.5,
-                  cursor: isVerifiedUploader ? 'pointer' : 'not-allowed'
-                }}
+                className={`btn btn-accent ${styles.headerUploadBtn}`}
                 title={isVerifiedUploader ? 'Add new supported chip' : 'Account verification pending'}
               >
                 <Plus size={16} />
@@ -573,24 +531,14 @@ export default function DatabasePage() {
       </div>
 
       {/* Segmented Tab Controls */}
-      <div style={{ display: 'flex', gap: '10px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '14px', marginBottom: '24px' }}>
+      <div className={styles.tabsContainer}>
         <button
           onClick={() => {
             setActiveTab('firmware');
             setSearch('');
             setSearchQuery('');
           }}
-          className="btn"
-          style={{
-            width: 'auto',
-            padding: '8px 16px',
-            fontSize: '0.84rem',
-            height: '36px',
-            backgroundColor: activeTab === 'firmware' ? 'var(--accent)' : 'transparent',
-            border: activeTab === 'firmware' ? '1px solid var(--accent)' : '1px solid rgba(255, 255, 255, 0.1)',
-            color: activeTab === 'firmware' ? 'var(--white)' : 'var(--muted)',
-            cursor: 'pointer'
-          }}
+          className={`btn ${styles.tabBtn} ${activeTab === 'firmware' ? styles.tabBtnActive : ''}`}
         >
           📁 Firmware Database
         </button>
@@ -600,88 +548,69 @@ export default function DatabasePage() {
             setSearch('');
             setSearchQuery('');
           }}
-          className="btn"
-          style={{
-            width: 'auto',
-            padding: '8px 16px',
-            fontSize: '0.84rem',
-            height: '36px',
-            backgroundColor: activeTab === 'chips' ? 'var(--accent)' : 'transparent',
-            border: activeTab === 'chips' ? '1px solid var(--accent)' : '1px solid rgba(255, 255, 255, 0.1)',
-            color: activeTab === 'chips' ? 'var(--white)' : 'var(--muted)',
-            cursor: 'pointer'
-          }}
+          className={`btn ${styles.tabBtn} ${activeTab === 'chips' ? styles.tabBtnActive : ''}`}
         >
-          <Cpu size={14} style={{ marginRight: '6px', verticalAlign: 'middle', display: 'inline' }} />
+          <Cpu size={14} className={styles.tabIcon} />
           💾 Supported Chips List
         </button>
       </div>
 
       {/* Admin Panel: Pending Models Review (Firmware Tab only) */}
       {activeTab === 'firmware' && session && session.user.is_admin === true && pendingModels.length > 0 && (
-        <div style={{
-          backgroundColor: 'var(--surface)',
-          border: '2px dashed rgba(239, 68, 68, 0.2)',
-          borderRadius: '12px',
-          padding: '20px',
-          marginBottom: '24px'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
-            <h3 style={{ color: '#ef4444', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem', margin: 0 }}>
+        <div className={styles.adminReviewPanel}>
+          <div className={styles.adminReviewHeader}>
+            <h3 className={styles.adminReviewTitle}>
               <ShieldAlert size={20} />
               Pending Device Models Review ({pendingModels.length})
             </h3>
-            <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>Requires admin approval to be visible to public users</span>
+            <span className={styles.adminReviewSubtitle}>Requires admin approval to be visible to public users</span>
           </div>
 
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+          <div className={styles.adminTableWrapper}>
+            <table className={styles.adminTable}>
               <thead>
-                <tr style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)', textAlign: 'left' }}>
-                  <th style={{ padding: '8px', color: 'var(--muted)' }}>Device Model</th>
-                  <th style={{ padding: '8px', color: 'var(--muted)' }}>Type</th>
-                  <th style={{ padding: '8px', color: 'var(--muted)' }}>Uploads</th>
-                  <th style={{ padding: '8px', color: 'var(--muted)' }}>Submitted</th>
-                  <th style={{ padding: '8px', color: 'var(--muted)', textAlign: 'right' }}>Actions</th>
+                <tr className={styles.adminTableHeaderRow}>
+                  <th className={styles.adminTableHeader}>Device Model</th>
+                  <th className={styles.adminTableHeader}>Type</th>
+                  <th className={styles.adminTableHeader}>Uploads</th>
+                  <th className={styles.adminTableHeader}>Submitted</th>
+                  <th className={`${styles.adminTableHeader} ${styles.adminTableCellRight}`}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {pendingModels.map(model => (
-                  <tr key={model.id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                    <td style={{ padding: '12px 8px', fontWeight: 600, color: 'var(--white)' }}>{model.model_name}</td>
-                    <td style={{ padding: '12px 8px' }}>
+                  <tr key={model.id} className={styles.adminTableRow}>
+                    <td className={styles.adminTableCellModel}>{model.model_name}</td>
+                    <td className={styles.adminTableCell}>
                       <span className={`${styles.deviceBadge} ${getCategoryBadgeClass(model.device_type)}`}>
                         {model.device_type}
                       </span>
                     </td>
-                    <td style={{ padding: '12px 8px' }}>{model.firmwares_count} firmware(s)</td>
-                    <td style={{ padding: '12px 8px', color: 'var(--muted)', fontSize: '0.8rem' }}>
+                    <td className={styles.adminTableCell}>{model.firmwares_count} firmware(s)</td>
+                    <td className={`${styles.adminTableCell} ${styles.adminTableCellDate}`}>
                       {new Date(model.created_at).toLocaleDateString(undefined, {
                         year: 'numeric',
                         month: 'short',
                         day: 'numeric'
                       })}
                     </td>
-                    <td style={{ padding: '12px 8px', textAlign: 'right' }}>
-                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                    <td className={`${styles.adminTableCell} ${styles.adminTableCellRight}`}>
+                      <div className={styles.adminActions}>
                         <button
                           onClick={() => handleApproveModel(model.id)}
-                          className="btn btn-accent"
-                          style={{ padding: '4px 10px', fontSize: '0.78rem', height: '28px', width: 'auto' }}
+                          className={`btn btn-accent ${styles.adminBtn}`}
                         >
                           Approve
                         </button>
                         <button
                           onClick={() => handleMergeModel(model.id, model.model_name)}
-                          className="btn btn-ghost"
-                          style={{ padding: '4px 10px', fontSize: '0.78rem', height: '28px', border: '1px solid var(--accent)', color: '#8487d4', width: 'auto' }}
+                          className={`btn btn-ghost ${styles.adminBtn} ${styles.adminBtnGhostAccent}`}
                         >
                           Merge
                         </button>
                         <button
                           onClick={() => handleRejectModel(model.id, model.model_name)}
-                          className="btn btn-ghost"
-                          style={{ padding: '4px 10px', fontSize: '0.78rem', height: '28px', border: '1px solid #ef4444', color: '#f87171', width: 'auto' }}
+                          className={`btn btn-ghost ${styles.adminBtn} ${styles.adminBtnGhostDanger}`}
                         >
                           Reject
                         </button>
@@ -697,54 +626,46 @@ export default function DatabasePage() {
 
       {/* Admin Panel: Pending Chips Review (Chips Tab only) */}
       {activeTab === 'chips' && session && session.user.is_admin === true && pendingChips.length > 0 && (
-        <div style={{
-          backgroundColor: 'rgba(239, 68, 68, 0.05)',
-          border: '1px solid rgba(239, 68, 68, 0.2)',
-          borderRadius: '12px',
-          padding: '20px',
-          marginBottom: '24px'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
-            <h3 style={{ color: '#ef4444', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem', margin: 0 }}>
+        <div className={styles.adminReviewPanel}>
+          <div className={styles.adminReviewHeader}>
+            <h3 className={styles.adminReviewTitle}>
               <ShieldAlert size={20} />
               Pending Chips Review ({pendingChips.length})
             </h3>
-            <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>Requires admin approval to be added to the supported database</span>
+            <span className={styles.adminReviewSubtitle}>Requires admin approval to be added to the supported database</span>
           </div>
 
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+          <div className={styles.adminTableWrapper}>
+            <table className={styles.adminTable}>
               <thead>
-                <tr style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)', textAlign: 'left' }}>
-                  <th style={{ padding: '8px', color: 'var(--muted)' }}>Manufacturer</th>
-                  <th style={{ padding: '8px', color: 'var(--muted)' }}>Model</th>
-                  <th style={{ padding: '8px', color: 'var(--muted)' }}>Hex ID</th>
-                  <th style={{ padding: '8px', color: 'var(--muted)' }}>Protocol</th>
-                  <th style={{ padding: '8px', color: 'var(--muted)' }}>Size</th>
-                  <th style={{ padding: '8px', color: 'var(--muted)', textAlign: 'right' }}>Actions</th>
+                <tr className={styles.adminTableHeaderRow}>
+                  <th className={styles.adminTableHeader}>Manufacturer</th>
+                  <th className={styles.adminTableHeader}>Model</th>
+                  <th className={styles.adminTableHeader}>Hex ID</th>
+                  <th className={styles.adminTableHeader}>Protocol</th>
+                  <th className={styles.adminTableHeader}>Size</th>
+                  <th className={`${styles.adminTableHeader} ${styles.adminTableCellRight}`}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {pendingChips.map(chip => (
-                  <tr key={chip.id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                    <td style={{ padding: '12px 8px', fontWeight: 600, color: 'var(--white)' }}>{chip.manufacturer}</td>
-                    <td style={{ padding: '12px 8px', fontWeight: 600, color: 'var(--white)' }}>{chip.model}</td>
-                    <td style={{ padding: '12px 8px', fontFamily: 'monospace' }}>{chip.idHex}</td>
-                    <td style={{ padding: '12px 8px' }}>{chip.protocol}</td>
-                    <td style={{ padding: '12px 8px' }}>{formatBytes(chip.size)}</td>
-                    <td style={{ padding: '12px 8px', textAlign: 'right' }}>
-                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                  <tr key={chip.id} className={styles.adminTableRow}>
+                    <td className={styles.adminTableCellModel}>{chip.manufacturer}</td>
+                    <td className={styles.adminTableCellModel}>{chip.model}</td>
+                    <td className={styles.adminTableCell} style={{ fontFamily: 'monospace' }}>{chip.idHex}</td>
+                    <td className={styles.adminTableCell}>{chip.protocol}</td>
+                    <td className={styles.adminTableCell}>{formatBytes(chip.size)}</td>
+                    <td className={`${styles.adminTableCell} ${styles.adminTableCellRight}`}>
+                      <div className={styles.adminActions}>
                         <button
                           onClick={() => handleApproveChip(chip.id)}
-                          className="btn btn-accent"
-                          style={{ padding: '4px 10px', fontSize: '0.78rem', height: '28px', width: 'auto' }}
+                          className={`btn btn-accent ${styles.adminBtn}`}
                         >
                           Approve
                         </button>
                         <button
                           onClick={() => handleRejectChip(chip.id, chip.model)}
-                          className="btn btn-ghost"
-                          style={{ padding: '4px 10px', fontSize: '0.78rem', height: '28px', border: '1px solid #ef4444', color: '#f87171', width: 'auto' }}
+                          className={`btn btn-ghost ${styles.adminBtn} ${styles.adminBtnGhostDanger}`}
                         >
                           Reject
                         </button>
@@ -790,7 +711,7 @@ export default function DatabasePage() {
           {activeTab === 'firmware' && (
             loading ? (
               <div className={styles.emptyState}>
-                <div className={styles.spinner} style={{ width: '24px', height: '24px' }} />
+                <div className="spinner" style={{ width: '24px', height: '24px' }} />
                 <span>Loading firmware repository...</span>
               </div>
             ) : firmwares.length === 0 ? (
@@ -905,7 +826,7 @@ export default function DatabasePage() {
           {activeTab === 'chips' && (
             chipsLoading ? (
               <div className={styles.emptyState}>
-                <div className={styles.spinner} style={{ width: '24px', height: '24px' }} />
+                <div className="spinner" style={{ width: '24px', height: '24px' }} />
                 <span>Loading supported chips directory...</span>
               </div>
             ) : chips.length === 0 ? (
@@ -1031,7 +952,7 @@ export default function DatabasePage() {
 
             <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--white)', marginBottom: '8px' }}>Confirm Verification</h3>
             <p style={{ fontSize: '0.84rem', color: 'var(--muted)', textAlign: 'center', marginBottom: '24px' }}>
-              We've sent a 6-digit OTP code to your email. Please enter it below.
+              We&apos;ve sent a 6-digit OTP code to your email. Please enter it below.
             </p>
 
             {otpError && (

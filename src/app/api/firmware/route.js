@@ -59,8 +59,10 @@ export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const search = searchParams.get('search') || '';
   const deviceType = searchParams.get('device_type') || '';
-  const page = parseInt(searchParams.get('page') || '1', 10);
-  const limit = parseInt(searchParams.get('limit') || '10', 10);
+  let page = parseInt(searchParams.get('page') || '1', 10);
+  let limit = parseInt(searchParams.get('limit') || '10', 10);
+  if (isNaN(page) || page < 1) page = 1;
+  if (isNaN(limit) || limit < 1 || limit > 100) limit = 10;
   const offset = (page - 1) * limit;
 
   // Retrieve token if present to check uploader/admin visibility
@@ -179,10 +181,17 @@ export async function POST(req) {
     );
   }
 
+  let body;
   try {
-    const body = await req.json();
+    body = await req.json();
+  } catch (err) {
+    return NextResponse.json(
+      { error: "Invalid JSON payload." },
+      { status: 400 }
+    );
+  }
 
-    // Validate schema
+  try {
     const validation = firmwareSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(

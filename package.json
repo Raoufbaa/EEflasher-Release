@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "make-admin": "node scripts/make-admin.js",
+    "migrate": "node database/migrate.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1069.0",

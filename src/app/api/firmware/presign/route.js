@@ -54,10 +54,17 @@ export async function POST(req) {
     );
   }
 
+  let body;
   try {
-    const body = await req.json();
+    body = await req.json();
+  } catch (err) {
+    return NextResponse.json(
+      { error: "Invalid JSON payload." },
+      { status: 400 }
+    );
+  }
 
-    // Validate request body
+  try {
     const validation = presignSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(

@@ -57,8 +57,18 @@ export async function POST(req) {
     return NextResponse.json({ error: "Unauthorized. Admin privileges required." }, { status: 401 });
   }
 
+  let body;
   try {
-    const { action, modelId, typoModelId, canonicalModelName, deviceType } = await req.json();
+    body = await req.json();
+  } catch (err) {
+    return NextResponse.json(
+      { error: "Invalid JSON payload." },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const { action, modelId, typoModelId, canonicalModelName, deviceType } = body;
 
     if (action === 'approve') {
       if (!modelId) {

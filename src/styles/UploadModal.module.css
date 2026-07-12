@@ -1,8 +1,8 @@
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(2px);
+  background: var(--overlay-bg);
+  backdrop-filter: var(--blur-xs);
   z-index: 10000;
   display: flex;
   align-items: flex-start;
@@ -202,6 +202,10 @@
   cursor: pointer;
   transition: background var(--trans), color var(--trans);
   text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .suggestionItem:hover {
@@ -288,6 +292,7 @@
 
 /* Progress bar styling */
 .progressContainer {
+  margin-top: 14px;
   margin-bottom: 14px;
 }
 
@@ -344,6 +349,10 @@
   width: 100%;
 }
 
+.versionInputRow input {
+  flex: 1;
+}
+
 .unknownToggle {
   display: flex;
   align-items: center;
@@ -374,4 +383,74 @@
   height: 16px !important;
   margin: 0 !important;
   cursor: pointer;
+}
+
+/* Refactored Reusable Styles & Utilities */
+.errorAlert {
+  background: var(--red-bg);
+  border: 1px solid var(--red-border);
+  color: var(--red-l);
+  font-size: 0.82rem;
+  padding: 10px 14px;
+  border-radius: var(--r-sm);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.successAlert {
+  background: var(--green-bg);
+  border: 1px solid var(--green-border);
+  color: var(--green-l);
+  font-size: 0.9rem;
+  padding: 12px 16px;
+  border-radius: var(--r-sm);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.fileInputHidden {
+  display: none;
+}
+
+.fileCardNameRow {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.fileIcon {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.checkingText {
+  font-size: 0.74rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.modelSuccessText {
+  font-size: 0.74rem;
+  color: var(--green-l);
+  margin-top: 2px;
+}
+
+.btnAuto {
+  width: auto !important;
+}
+
+.helpText {
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.submitBtnRowLarge {
+  margin-top: 24px !important;
+}
+
+.modalContentAddChip {
+  max-width: 550px !important;
 }

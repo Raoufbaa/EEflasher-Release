@@ -77,21 +77,21 @@ export default function AddChipModal({ onClose, onSuccess }) {
 
   return createPortal(
     <div className={styles.modalOverlay}>
-      <div className={styles.modalContent} style={{ maxWidth: '550px' }}>
+      <div className={`${styles.modalContent} ${styles.modalContentAddChip}`}>
         <h3>Submit New Chip to Database</h3>
         <button className={styles.closeBtn} onClick={onClose} disabled={loading}>
           <X size={20} />
         </button>
 
         {error && (
-          <div className={styles.errorAlert} style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px' }}>
+          <div className={styles.errorAlert}>
             <AlertTriangle size={16} />
             <span>{error}</span>
           </div>
         )}
 
         {successMsg && (
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', backgroundColor: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)', padding: '12px 16px', borderRadius: '8px', color: '#4ade80', fontSize: '0.9rem', marginBottom: '16px' }}>
+          <div className={styles.successAlert}>
             <span>{successMsg}</span>
           </div>
         )}
@@ -153,7 +153,7 @@ export default function AddChipModal({ onClose, onSuccess }) {
                 value={size}
                 onChange={(e) => setSize(Number(e.target.value))}
               />
-              <span style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '3px' }}>
+              <span className={styles.helpText}>
                 4MB = 4,194,304 | 8MB = 8,388,608 | 16MB = 16,777,216
               </span>
             </div>
@@ -191,11 +191,10 @@ export default function AddChipModal({ onClose, onSuccess }) {
             </div>
           </div>
 
-          <div className={styles.submitBtnRow} style={{ marginTop: '24px' }}>
+          <div className={`${styles.submitBtnRow} ${styles.submitBtnRowLarge}`}>
             <button
               type="button"
-              className="btn btn-ghost"
-              style={{ width: 'auto' }}
+              className={`btn btn-ghost ${styles.btnAuto}`}
               onClick={onClose}
               disabled={loading}
             >
@@ -203,8 +202,7 @@ export default function AddChipModal({ onClose, onSuccess }) {
             </button>
             <button
               type="submit"
-              className="btn btn-accent"
-              style={{ width: 'auto' }}
+              className={`btn btn-accent ${styles.btnAuto}`}
               disabled={loading}
             >
               {loading ? 'Submitting...' : 'Submit Chip'}

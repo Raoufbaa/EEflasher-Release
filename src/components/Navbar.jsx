@@ -85,7 +85,7 @@ export default function Navbar() {
 
       <div className={styles.authContainer}>
         {status === 'loading' ? (
-          <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>...</span>
+          <span className={styles.loadingDots}>...</span>
         ) : session ? (
           <div className={styles.dropdownContainer} ref={dropdownRef}>
             <button

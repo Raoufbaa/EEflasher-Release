@@ -47,8 +47,18 @@ export async function POST(req) {
     return NextResponse.json({ error: "Unauthorized. Admin privileges required." }, { status: 401 });
   }
 
+  let body;
   try {
-    const { action, chipId } = await req.json();
+    body = await req.json();
+  } catch (err) {
+    return NextResponse.json(
+      { error: "Invalid JSON payload." },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const { action, chipId } = body;
 
     if (!chipId) {
       return NextResponse.json({ error: "Missing chipId" }, { status: 400 });

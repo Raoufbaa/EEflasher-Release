@@ -25,7 +25,16 @@ export async function POST(req) {
       );
     }
 
-    const { otp } = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch (err) {
+      return NextResponse.json(
+        { error: "Invalid JSON payload." },
+        { status: 400 }
+      );
+    }
+    const { otp } = body;
 
     if (!otp || typeof otp !== 'string' || !/^\d{6}$/.test(otp)) {
       return NextResponse.json(

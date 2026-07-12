@@ -133,11 +133,11 @@ export default function Home() {
         <p>A cross-platform replacement for AsProgrammer - built on .NET 10 and Avalonia with a clean dark UI, faster write speeds, and full cancellation support.</p>
 
         <div className={styles.heroActions}>
-          <a className={`${styles.btn} ${styles.btnAccent}`} style={{ width: 'auto' }} href="https://github.com/Raoufbaa/EEflasher-Release/releases/latest/download/EEFlasher_Setup.exe">
+          <a className={`${styles.btn} ${styles.btnAccent} ${styles.btnWidthAuto}`} href="https://github.com/Raoufbaa/EEflasher-Release/releases/latest/download/EEFlasher_Setup.exe">
             <ArrowDown size={16} />
             Download for Windows x64
           </a>
-          <Link href="/database" className={`${styles.btn} ${styles.btnGhost}`} style={{ width: 'auto', border: '1px solid var(--accent)', color: '#8487d4' }}>
+          <Link href="/database" className={`${styles.btn} ${styles.btnGhost} ${styles.dbBtn}`}>
             <Cpu size={16} />
             Firmware Database
           </Link>

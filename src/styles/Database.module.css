@@ -14,6 +14,12 @@
   flex-wrap: wrap;
 }
 
+.headerRow p {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
 .headerRow h2 {
   font-size: 1.8rem;
   font-weight: 800;
@@ -111,9 +117,9 @@
 }
 
 .badgeReceiver { background: rgba(91, 95, 199, 0.12); color: #8487d4; border: 1px solid rgba(91, 95, 199, 0.2); }
-.badgeRouter { background: rgba(34, 197, 94, 0.12); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.2); }
-.badgeTV { background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.2); }
-.badgeTVBox { background: rgba(14, 165, 233, 0.12); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.2); }
+.badgeRouter { background: var(--green-bg); color: var(--green-l); border: 1px solid var(--green-border); }
+.badgeTV { background: var(--amber-bg); color: var(--amber-l); border: 1px solid var(--amber-border); }
+.badgeTVBox { background: var(--blue-bg); color: var(--blue-l); border: 1px solid var(--blue-border); }
 .badgeOther { background: rgba(255, 255, 255, 0.04); color: var(--muted); border: 1px solid var(--border); }
 
 .descText {
@@ -193,9 +199,9 @@
 }
 
 .warningBanner {
-  background: rgba(245, 158, 11, 0.08);
-  border: 1px solid rgba(245, 158, 11, 0.22);
-  color: #fbbf24;
+  background: var(--amber-bg);
+  border: 1px solid var(--amber-border);
+  color: var(--amber-l);
   padding: 12px 18px;
   border-radius: var(--r-sm);
   margin-bottom: 24px;
@@ -203,12 +209,14 @@
   font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: space-between;
   animation: fadeUp 0.3s ease both;
 }
 
 .warningBanner svg {
-  color: #f59e0b;
+  color: var(--amber);
   flex-shrink: 0;
 }
 
@@ -279,5 +287,198 @@
     font-size: 0.65rem;
     padding: 2px 6px;
   }
+}
+
+/* Banner Layout details */
+.warningBannerLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.warningBannerActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.bannerActionBtn {
+  height: 30px;
+  font-size: 0.8rem;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  font-weight: 600;
+  transition: background var(--trans), border-color var(--trans);
+}
+
+.bannerBtnWarning {
+  background-color: var(--amber-bg);
+  border-color: var(--amber-border);
+  color: var(--amber-l);
+}
+
+.bannerBtnWarning:hover {
+  background-color: rgba(245, 158, 11, 0.25);
+}
+
+.bannerBtnDanger {
+  background-color: var(--red-bg);
+  border-color: var(--red-border);
+  color: var(--red-l);
+}
+
+.bannerBtnDanger:hover {
+  background-color: rgba(239, 68, 68, 0.25);
+}
+
+.bannerBtnAccent {
+  border-radius: var(--r-sm);
+}
+
+.headerUploadBtn {
+  width: auto;
+  gap: 6px;
+}
+
+.headerUploadBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Tab Layout details */
+.tabsContainer {
+  display: flex;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 14px;
+  margin-bottom: 24px;
+}
+
+.tabBtn {
+  width: auto;
+  padding: 8px 16px;
+  font-size: 0.84rem;
+  height: 36px;
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all var(--trans);
+}
+
+.tabBtnActive {
+  background-color: var(--accent);
+  border: 1px solid var(--accent);
+  color: var(--white);
+}
+
+.tabIcon {
+  margin-right: 6px;
+  vertical-align: middle;
+  display: inline;
+}
+
+/* Admin Review Panel */
+.adminReviewPanel {
+  background-color: var(--surface);
+  border: 2px dashed var(--red-border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.adminReviewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.adminReviewTitle {
+  color: var(--red);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.adminReviewSubtitle {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.adminTableWrapper {
+  overflow-x: auto;
+}
+
+.adminTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.adminTableHeaderRow {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: left;
+}
+
+.adminTableHeader {
+  padding: 8px;
+  color: var(--muted);
+}
+
+.adminTableRow {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.adminTableCellModel {
+  padding: 12px 8px;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.adminTableCell {
+  padding: 12px 8px;
+}
+
+.adminTableCellDate {
+  padding: 12px 8px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.adminTableCellRight {
+  padding: 12px 8px;
+  text-align: right;
+}
+
+.adminActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.adminBtn {
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  height: 28px;
+  width: auto;
+}
+
+.adminBtnGhostAccent {
+  border: 1px solid var(--accent);
+  color: #8487d4;
+}
+
+.adminBtnGhostDanger {
+  border: 1px solid var(--red-l);
+  color: var(--red-l);
 }
 

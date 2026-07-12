@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import styles from '@/styles/SnakeBackground.module.css';
 
 export default function SnakeBackground() {
   const canvasRef = useRef(null);
@@ -123,13 +124,7 @@ export default function SnakeBackground() {
     <canvas
       ref={canvasRef}
       id="bgCanvas"
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: -1,
-        pointerEvents: 'none',
-        opacity: 0.12,
-      }}
+      className={styles.canvasBg}
     />
   );
 }

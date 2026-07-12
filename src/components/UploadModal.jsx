@@ -330,7 +330,7 @@ export default function UploadModal({ onClose, onSuccess }) {
         </button>
 
         {error && (
-          <div className={styles.errorAlert} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div className={styles.errorAlert}>
             <AlertTriangle size={16} />
             <span>{error}</span>
           </div>
@@ -350,7 +350,7 @@ export default function UploadModal({ onClose, onSuccess }) {
               <input
                 type="file"
                 ref={fileInputRef}
-                style={{ display: 'none' }}
+                className={styles.fileInputHidden}
                 onChange={handleFileChange}
               />
               <UploadCloud size={32} className={styles.dropzoneIcon} />
@@ -360,8 +360,8 @@ export default function UploadModal({ onClose, onSuccess }) {
           ) : (
             <div className={styles.fileInfoCard}>
               <div className={styles.fileDetails}>
-                <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                  <File size={16} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+                <div className={styles.fileCardNameRow}>
+                  <File size={16} className={styles.fileIcon} />
                   <span className={styles.fileName}>{file.name}</span>
                 </div>
                 <span className={styles.fileSize}>{formatBytes(file.size)}</span>
@@ -416,7 +416,6 @@ export default function UploadModal({ onClose, onSuccess }) {
                         <li
                           key={idx}
                           className={styles.suggestionItem}
-                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}
                           onMouseDown={() => handleSelectSuggestion(suggestion.name)}
                         >
                           <span>{suggestion.name}</span>
@@ -427,8 +426,8 @@ export default function UploadModal({ onClose, onSuccess }) {
                       ))}
                     </ul>
                   )}
-                  {isCheckingModel && <span style={{ fontSize: '0.74rem', color: 'var(--muted)', marginTop: '2px' }}>Checking model name...</span>}
-                  {modelMessage && <span style={{ fontSize: '0.74rem', color: '#4ade80', marginTop: '2px' }}>{modelMessage}</span>}
+                  {isCheckingModel && <span className={styles.checkingText}>Checking model name...</span>}
+                  {modelMessage && <span className={styles.modelSuccessText}>{modelMessage}</span>}
                 </div>
               </div>
               {isNewModel && (
@@ -488,7 +487,6 @@ export default function UploadModal({ onClose, onSuccess }) {
                     placeholder={isUnknownVersion ? "Unknown" : "e.g. v1.2.3"}
                     value={version}
                     onChange={(e) => setVersion(e.target.value)}
-                    style={{ flex: 1 }}
                   />
                   <label className={`${styles.unknownToggle} ${isUnknownVersion ? styles.unknownToggleChecked : ''}`}>
                     <input
@@ -522,16 +520,14 @@ export default function UploadModal({ onClose, onSuccess }) {
               <div className={styles.submitBtnRow}>
                 <button
                   type="button"
-                  className="btn btn-ghost"
-                  style={{ width: 'auto' }}
+                  className={`btn btn-ghost ${styles.btnAuto}`}
                   onClick={onClose}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="btn btn-accent"
-                  style={{ width: 'auto' }}
+                  className={`btn btn-accent ${styles.btnAuto}`}
                 >
                   Start Upload
                 </button>
@@ -540,7 +536,7 @@ export default function UploadModal({ onClose, onSuccess }) {
           )}
 
           {loading && (
-            <div className={styles.progressContainer} style={{ marginTop: '14px' }}>
+            <div className={styles.progressContainer}>
               <div className={styles.progressLabel}>
                 <span>{statusText}</span>
                 <span>{uploadProgress}%</span>

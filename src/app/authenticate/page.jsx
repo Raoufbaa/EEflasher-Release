@@ -27,7 +27,7 @@ export default function Authenticate() {
     return (
       <div className={styles.authPage}>
         <div className={styles.authCard} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '200px', gap: '12px' }}>
-          <div className={styles.spinner} style={{ width: '32px', height: '32px' }} />
+          <div className="spinner" style={{ width: '32px', height: '32px' }} />
           <p style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>Verifying session...</p>
         </div>
       </div>
@@ -205,7 +205,7 @@ export default function Authenticate() {
           </div>
 
           <button type="submit" className={styles.submitBtn} disabled={loading}>
-            {loading && <div className={styles.spinner} />}
+            {loading && <div className="spinner" />}
             <span>{mode === 'login' ? 'Sign In' : 'Register'}</span>
           </button>
         </form>
