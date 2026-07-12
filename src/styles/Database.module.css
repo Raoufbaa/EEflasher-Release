@@ -2,7 +2,7 @@
   position: relative;
   width: min(100%, 1100px);
   margin: 0 auto;
-  padding: 120px 20px 64px;
+  padding: 100px 5px 10px;
 }
 
 .headerRow {
@@ -116,11 +116,35 @@
   white-space: nowrap;
 }
 
-.badgeReceiver { background: rgba(91, 95, 199, 0.12); color: #8487d4; border: 1px solid rgba(91, 95, 199, 0.2); }
-.badgeRouter { background: var(--green-bg); color: var(--green-l); border: 1px solid var(--green-border); }
-.badgeTV { background: var(--amber-bg); color: var(--amber-l); border: 1px solid var(--amber-border); }
-.badgeTVBox { background: var(--blue-bg); color: var(--blue-l); border: 1px solid var(--blue-border); }
-.badgeOther { background: rgba(255, 255, 255, 0.04); color: var(--muted); border: 1px solid var(--border); }
+.badgeReceiver {
+  background: rgba(91, 95, 199, 0.12);
+  color: #8487d4;
+  border: 1px solid rgba(91, 95, 199, 0.2);
+}
+
+.badgeRouter {
+  background: var(--green-bg);
+  color: var(--green-l);
+  border: 1px solid var(--green-border);
+}
+
+.badgeTV {
+  background: var(--amber-bg);
+  color: var(--amber-l);
+  border: 1px solid var(--amber-border);
+}
+
+.badgeTVBox {
+  background: var(--blue-bg);
+  color: var(--blue-l);
+  border: 1px solid var(--blue-border);
+}
+
+.badgeOther {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
 
 .descText {
   color: var(--muted);
@@ -222,17 +246,13 @@
 
 /* Responsive adjustments for mobile/tablet */
 @media (max-width: 768px) {
-  .dbPage {
-    padding-top: 170px; /* Make space for the stacked mobile navbar */
-  }
-  
   .headerRow {
     flex-direction: column;
     align-items: stretch;
     gap: 16px;
     margin-bottom: 20px;
   }
-  
+
   .headerRow h2 {
     font-size: 1.5rem;
   }
@@ -243,46 +263,43 @@
     gap: 12px;
     margin-bottom: 20px;
   }
-  
+
   .searchBox {
     width: 100%;
     min-width: unset;
   }
-  
+
   .filterSelect {
     width: 100%;
     min-width: unset;
   }
 
   /* Hide Description and Uploaded Date columns to preserve table readability */
-  .fwTable th:nth-child(4), /* Description */
+  .fwTable th:nth-child(4),
+  /* Description */
   .fwTable td:nth-child(4),
-  .fwTable th:nth-child(6), /* Uploaded */
+  .fwTable th:nth-child(6),
+  /* Uploaded */
   .fwTable td:nth-child(6) {
     display: none;
   }
 }
 
 @media (max-width: 480px) {
-  .dbPage {
-    padding-top: 200px; /* Even more space for wrapped navbar links */
-    padding-left: 12px;
-    padding-right: 12px;
-  }
 
-  /* Hide Size and Downloads counts on very small viewports */
-  .fwTable th:nth-child(5), /* Size */
+  .fwTable th:nth-child(5),
   .fwTable td:nth-child(5),
-  .fwTable th:nth-child(7), /* Downloads */
+  .fwTable th:nth-child(7),
   .fwTable td:nth-child(7) {
     display: none;
   }
-  
-  .fwTable th, .fwTable td {
+
+  .fwTable th,
+  .fwTable td {
     padding: 10px 12px;
     font-size: 0.8rem;
   }
-  
+
   .deviceBadge {
     font-size: 0.65rem;
     padding: 2px 6px;
@@ -624,6 +641,7 @@
     gap: 8px 16px;
     padding: 12px 16px;
   }
+
   .fwDescText {
     width: 100%;
     order: 3;
@@ -639,19 +657,20 @@
     gap: 8px;
     padding: 12px;
   }
+
   .fwFileLeft {
     width: 100%;
     min-width: unset;
   }
+
   .fwFileRight {
     width: 100%;
     justify-content: space-between;
     gap: 8px;
   }
+
   .fwDownloadsText {
     min-width: unset;
     text-align: left;
   }
 }
-
-

@@ -340,7 +340,7 @@ export default function DatabasePage() {
 
   const toggleModelExpand = async (modelId) => {
     const isCurrentlyExpanded = !!expandedModels[modelId];
-    
+
     setExpandedModels(prev => ({
       ...prev,
       [modelId]: !isCurrentlyExpanded
@@ -777,7 +777,7 @@ export default function DatabasePage() {
                     const isExpanded = !!expandedModels[model.id];
                     return (
                       <Fragment key={model.id}>
-                        <tr 
+                        <tr
                           onClick={() => toggleModelExpand(model.id)}
                           style={{ cursor: 'pointer' }}
                         >
@@ -848,7 +848,7 @@ export default function DatabasePage() {
                                           <span className={fw.is_dump ? styles.badgeDump : styles.badgeOfficial}>
                                             {fw.is_dump ? 'Dump' : 'Official'}
                                           </span>
-                                          <span className={styles.fwVersionText}>v{fw.version}</span>
+                                          <span className={styles.fwVersionText}>{fw.version}</span>
                                           <span className={styles.fwSizeText}>{formatBytes(fw.file_size)}</span>
                                         </div>
 
@@ -865,7 +865,7 @@ export default function DatabasePage() {
                                             })}
                                           </span>
                                           <span className={styles.fwDownloadsText}>{fw.downloads_count} downloads</span>
-                                          
+
                                           <div className={styles.actionCell}>
                                             <a
                                               href={`/api/firmware/${fw.id}/download`}

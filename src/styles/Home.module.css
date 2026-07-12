@@ -2,7 +2,7 @@
   position: relative;
   width: min(100%, 1100px);
   margin: 0 auto;
-  padding: 108px 20px 64px;
+  padding: 100px 5px 10px;
 }
 
 /* ─── hero ─── */
@@ -22,8 +22,8 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--accent);
-  background: rgba(91,95,199,0.1);
-  border: 1px solid rgba(91,95,199,0.2);
+  background: rgba(91, 95, 199, 0.1);
+  border: 1px solid rgba(91, 95, 199, 0.2);
   padding: 5px 12px;
   border-radius: 999px;
   margin-bottom: 20px;
@@ -556,10 +556,14 @@
 
 /* Responsive adjustment */
 @media (max-width: 860px) {
-  .downloads, .threeCol {
+
+  .downloads,
+  .threeCol {
     grid-template-columns: 1fr;
   }
-  .twoCol, .reqGrid {
+
+  .twoCol,
+  .reqGrid {
     grid-template-columns: 1fr;
   }
 }
@@ -569,6 +573,7 @@
     flex-direction: column;
     align-items: stretch;
   }
+
   .heroActions .btn {
     justify-content: center;
   }

@@ -19,7 +19,6 @@
   width: 100%;
   max-width: 600px;
   padding: 20px 24px;
-  /* Tightened padding */
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   animation: fadeUp 0.3s ease both;
   position: relative;
@@ -29,8 +28,6 @@
   font-size: 1.2rem;
   font-weight: 800;
   color: var(--white);
-  margin-bottom: 12px;
-  /* Reduced margin */
   letter-spacing: -0.02em;
 }
 
@@ -58,17 +55,14 @@
   border-radius: var(--r-sm);
   background: var(--surface2);
   padding: 20px 16px;
-  /* Tightened padding */
   text-align: center;
   cursor: pointer;
   transition: border-color var(--trans), background var(--trans);
-  margin-bottom: 14px;
-  /* Reduced spacing */
+  margin-bottom: 5px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  /* Reduced gap */
 }
 
 .dropzone:hover,
@@ -153,11 +147,8 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  /* Reduced gap */
-  margin-bottom: 10px;
-  /* Reduced margin */
+  margin-bottom: 5px;
   position: relative;
-  /* Setup relative positioning for dropdown suggestions */
 }
 
 .formGroup label {
