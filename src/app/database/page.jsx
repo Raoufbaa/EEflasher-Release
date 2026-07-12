@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { useSession } from 'next-auth/react';
-import { Search, Download, Trash2, Plus, Database as DbIcon, AlertTriangle, ShieldAlert, Cpu } from 'lucide-react';
+import { Search, Download, Trash2, Plus, Database as DbIcon, AlertTriangle, ShieldAlert, Cpu, ChevronDown, ChevronRight } from 'lucide-react';
 import UploadModal from '@/components/UploadModal';
 import AddChipModal from '@/components/AddChipModal';
 import styles from '@/styles/Database.module.css';
@@ -24,7 +24,10 @@ const DEVICE_CATEGORIES = [
 
 export default function DatabasePage() {
   const { data: session, update: updateSession } = useSession();
-  const [firmwares, setFirmwares] = useState([]);
+  const [deviceModels, setDeviceModels] = useState([]);
+  const [expandedModels, setExpandedModels] = useState({});
+  const [modelFirmwares, setModelFirmwares] = useState({});
+  const [loadingModelFirmwares, setLoadingModelFirmwares] = useState({});
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
 
@@ -335,7 +338,33 @@ export default function DatabasePage() {
     return () => clearTimeout(handler);
   }, [search]);
 
-  // Initial load or filter change -> reset list and load page 1 for firmwares
+  const toggleModelExpand = async (modelId) => {
+    const isCurrentlyExpanded = !!expandedModels[modelId];
+    
+    setExpandedModels(prev => ({
+      ...prev,
+      [modelId]: !isCurrentlyExpanded
+    }));
+
+    if (!isCurrentlyExpanded && !modelFirmwares[modelId]) {
+      setLoadingModelFirmwares(prev => ({ ...prev, [modelId]: true }));
+      try {
+        const res = await fetch(`/api/firmware?model_id=${modelId}&t=${Date.now()}`);
+        if (!res.ok) throw new Error('Failed to load firmwares for this model');
+        const data = await res.json();
+        setModelFirmwares(prev => ({
+          ...prev,
+          [modelId]: data.firmwares || []
+        }));
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingModelFirmwares(prev => ({ ...prev, [modelId]: false }));
+      }
+    }
+  };
+
+  // Initial load or filter change -> reset list and load page 1 for models
   useEffect(() => {
     if (activeTab !== 'firmware') return;
     const resetAndFetch = async () => {
@@ -345,11 +374,13 @@ export default function DatabasePage() {
         const res = await fetch(
           `/api/firmware?search=${encodeURIComponent(searchQuery)}&device_type=${encodeURIComponent(typeFilter)}&page=1&limit=10&t=${Date.now()}`
         );
-        if (!res.ok) throw new Error('Failed to load firmwares');
+        if (!res.ok) throw new Error('Failed to load models');
         const data = await res.json();
-        setFirmwares(data.firmwares || []);
+        setDeviceModels(data.models || []);
         setPagination(data.pagination || { totalItems: 0, totalPages: 1, currentPage: 1, limit: 10 });
         setPage(1);
+        setExpandedModels({});
+        setModelFirmwares({});
       } catch (err) {
         console.error(err);
       } finally {
@@ -395,7 +426,7 @@ export default function DatabasePage() {
       );
       if (!res.ok) throw new Error('Failed to load more');
       const data = await res.json();
-      setFirmwares(prev => [...prev, ...(data.firmwares || [])]);
+      setDeviceModels(prev => [...prev, ...(data.models || [])]);
       setPagination(data.pagination || { totalItems: 0, totalPages: 1, currentPage: nextPage, limit: 10 });
       setPage(nextPage);
     } catch (err) {
@@ -405,9 +436,9 @@ export default function DatabasePage() {
     }
   };
 
-  const handleDelete = async (id, model) => {
+  const handleDelete = async (id, modelName, modelId) => {
     if (!isVerifiedUploader) return;
-    if (!window.confirm(`Are you sure you want to delete the firmware for "${model}"?`)) {
+    if (!window.confirm(`Are you sure you want to delete the firmware for "${modelName}"?`)) {
       return;
     }
 
@@ -421,7 +452,17 @@ export default function DatabasePage() {
         throw new Error(data.error || 'Failed to delete firmware');
       }
 
-      // Increment refresh trigger to trigger a clean programmatic reload
+      if (modelId) {
+        setModelFirmwares(prev => {
+          const updated = { ...prev };
+          if (updated[modelId]) {
+            updated[modelId] = updated[modelId].filter(f => f.id !== id);
+          }
+          return updated;
+        });
+      }
+
+      // Increment refresh trigger to trigger a clean programmatic reload of the models list
       setRefreshTrigger(prev => prev + 1);
     } catch (err) {
       alert(err.message);
@@ -714,107 +755,148 @@ export default function DatabasePage() {
                 <div className="spinner" style={{ width: '24px', height: '24px' }} />
                 <span>Loading firmware repository...</span>
               </div>
-            ) : firmwares.length === 0 ? (
+            ) : deviceModels.length === 0 ? (
               <div className={styles.emptyState}>
                 <DbIcon size={40} className={styles.emptyStateIcon} />
-                <h4>No firmwares found</h4>
+                <h4>No device models found</h4>
                 <p>Try refining your search query or choosing another category.</p>
               </div>
             ) : (
               <table className={styles.fwTable}>
                 <thead>
                   <tr>
+                    <th style={{ width: '40px' }}></th>
                     <th>Device Model</th>
                     <th>Category</th>
-                    <th>Version</th>
-                    <th>Description</th>
-                    <th>Size</th>
-                    <th>Uploaded</th>
-                    <th>Downloads</th>
-                    <th>Actions</th>
+                    <th>Available Files</th>
+                    <th>Latest Activity</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {firmwares.map((fw) => {
-                    const isOwner = session?.user?.id === fw.uploaded_by;
-                    const isAdmin = session?.user?.is_admin === true;
-                    const canDelete = session && isVerifiedUploader && (isOwner || isAdmin);
-
+                  {deviceModels.map((model) => {
+                    const isExpanded = !!expandedModels[model.id];
                     return (
-                      <tr key={fw.id}>
-                        <td style={{ fontWeight: 600, color: 'var(--white)' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-start' }}>
-                            <span>{fw.device_model}</span>
-                            <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                              <span style={{
-                                fontSize: '0.6rem',
-                                fontWeight: 600,
-                                color: fw.is_dump ? '#eab308' : '#60a5fa',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.03em',
-                                whiteSpace: 'nowrap'
-                              }}>
-                                {fw.is_dump ? 'Dump (From Device)' : 'Official Release'}
-                              </span>
-                              {fw.is_approved === false && (
-                                <>
-                                  <span style={{ fontSize: '0.6rem', color: 'var(--muted)' }}>/</span>
-                                  <span style={{
-                                    fontSize: '0.6rem',
-                                    fontWeight: 600,
-                                    color: '#ef4444',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.03em',
-                                    whiteSpace: 'nowrap'
-                                  }}>
-                                    Pending
-                                  </span>
-                                </>
+                      <Fragment key={model.id}>
+                        <tr 
+                          onClick={() => toggleModelExpand(model.id)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <td style={{ textAlign: 'center' }}>
+                            {isExpanded ? (
+                              <ChevronDown size={18} className={styles.expandIcon} />
+                            ) : (
+                              <ChevronRight size={18} className={styles.expandIcon} />
+                            )}
+                          </td>
+                          <td style={{ fontWeight: 600, color: 'var(--white)' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-start' }}>
+                              <span>{model.model_name}</span>
+                              {model.is_approved === false && (
+                                <span style={{
+                                  fontSize: '0.6rem',
+                                  fontWeight: 600,
+                                  color: '#ef4444',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.03em',
+                                  whiteSpace: 'nowrap'
+                                }}>
+                                  Pending Approval
+                                </span>
                               )}
                             </div>
-                          </div>
-                        </td>
-                        <td>
-                          <span className={`${styles.deviceBadge} ${getCategoryBadgeClass(fw.device_type)}`}>
-                            {fw.device_type}
-                          </span>
-                        </td>
-                        <td style={{ fontFamily: 'monospace' }}>{fw.version}</td>
-                        <td>
-                          <span className={styles.descText} title={fw.description || 'No description'}>
-                            {fw.description || '-'}
-                          </span>
-                        </td>
-                        <td>{formatBytes(fw.file_size)}</td>
-                        <td style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-                          {new Date(fw.created_at).toLocaleDateString(undefined, {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                          })}
-                        </td>
-                        <td style={{ textAlign: 'center' }}>{fw.downloads_count}</td>
-                        <td>
-                          <div className={styles.actionCell}>
-                            <a
-                              href={`/api/firmware/${fw.id}/download`}
-                              className={styles.actionIconBtn}
-                              title="Download firmware"
-                            >
-                              <Download size={15} />
-                            </a>
-                            {canDelete && (
-                              <button
-                                onClick={() => handleDelete(fw.id, fw.device_model)}
-                                className={`${styles.actionIconBtn} ${styles.deleteBtn}`}
-                                title="Delete firmware"
-                              >
-                                <Trash2 size={15} />
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
+                          </td>
+                          <td>
+                            <span className={`${styles.deviceBadge} ${getCategoryBadgeClass(model.device_type)}`}>
+                              {model.device_type}
+                            </span>
+                          </td>
+                          <td>
+                            <span style={{ fontWeight: 500, color: 'var(--text)' }}>
+                              {model.firmware_count} {model.firmware_count === 1 ? 'file' : 'files'}
+                            </span>
+                          </td>
+                          <td style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+                            {new Date(model.latest_upload).toLocaleDateString(undefined, {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </td>
+                        </tr>
+                        {isExpanded && (
+                          <tr className={styles.expandedRow}>
+                            <td colSpan={5} className={styles.expandedCell}>
+                              {loadingModelFirmwares[model.id] ? (
+                                <div className={styles.nestedLoading}>
+                                  <div className="spinner" style={{ width: '16px', height: '16px' }} />
+                                  <span>Fetching available firmware files...</span>
+                                </div>
+                              ) : !modelFirmwares[model.id] || modelFirmwares[model.id].length === 0 ? (
+                                <div className={styles.nestedEmpty}>
+                                  <span>No firmware files found for this model.</span>
+                                </div>
+                              ) : (
+                                <div className={styles.nestedContainer}>
+                                  {modelFirmwares[model.id].map((fw) => {
+                                    const isOwner = session?.user?.id === fw.uploaded_by;
+                                    const isAdmin = session?.user?.is_admin === true;
+                                    const canDelete = session && isVerifiedUploader && (isOwner || isAdmin);
+
+                                    return (
+                                      <div key={fw.id} className={styles.fwFileRow}>
+                                        <div className={styles.fwFileLeft}>
+                                          <span className={fw.is_dump ? styles.badgeDump : styles.badgeOfficial}>
+                                            {fw.is_dump ? 'Dump' : 'Official'}
+                                          </span>
+                                          <span className={styles.fwVersionText}>v{fw.version}</span>
+                                          <span className={styles.fwSizeText}>{formatBytes(fw.file_size)}</span>
+                                        </div>
+
+                                        <div className={styles.fwDescText} title={fw.description || 'No description'}>
+                                          {fw.description || '-'}
+                                        </div>
+
+                                        <div className={styles.fwFileRight}>
+                                          <span className={styles.fwDateText} title={fw.checksum ? `SHA-256: ${fw.checksum}` : 'No Checksum'}>
+                                            Uploaded {new Date(fw.created_at).toLocaleDateString(undefined, {
+                                              month: 'short',
+                                              day: 'numeric',
+                                              year: 'numeric'
+                                            })}
+                                          </span>
+                                          <span className={styles.fwDownloadsText}>{fw.downloads_count} downloads</span>
+                                          
+                                          <div className={styles.actionCell}>
+                                            <a
+                                              href={`/api/firmware/${fw.id}/download`}
+                                              className={styles.actionIconBtn}
+                                              title="Download firmware"
+                                            >
+                                              <Download size={14} />
+                                            </a>
+                                            {canDelete && (
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleDelete(fw.id, model.model_name, model.id);
+                                                }}
+                                                className={`${styles.actionIconBtn} ${styles.deleteBtn}`}
+                                                title="Delete firmware"
+                                              >
+                                                <Trash2 size={14} />
+                                              </button>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
                     );
                   })}
                 </tbody>

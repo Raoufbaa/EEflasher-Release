@@ -71,17 +71,47 @@ export async function GET(req) {
     secret: process.env.NEXTAUTH_SECRET,
     secureCookie: process.env.NODE_ENV === 'production',
   });
-  const userId = token?.id || null;
   const isAdmin = token?.is_admin === true;
 
+  const modelId = searchParams.get('model_id');
+
+  // Case 1: Fetch individual firmwares for a specific device model
+  if (modelId) {
+    try {
+      let queryText = `
+        SELECT f.id, f.version, f.description, f.file_key, f.file_name, f.file_size, f.checksum, f.downloads_count, f.uploaded_by, f.created_at, f.is_dump,
+               m.model_name AS device_model, m.device_type AS device_type, m.approved AS is_approved,
+               u.email as uploader_name
+        FROM firmwares f
+        JOIN device_models m ON f.model_id = m.id
+        LEFT JOIN users u ON f.uploaded_by = u.id
+        WHERE f.model_id = $1
+      `;
+      const params = [modelId];
+      if (!isAdmin) {
+        queryText += ` AND m.approved = TRUE`;
+      }
+      queryText += ` ORDER BY f.created_at DESC`;
+      
+      const result = await query(queryText, params);
+      return NextResponse.json({ firmwares: result.rows });
+    } catch (err) {
+      console.error("Error retrieving firmwares for model:", err);
+      return NextResponse.json(
+        { error: "Failed to retrieve firmware list for this model." },
+        { status: 500 }
+      );
+    }
+  }
+
+  // Case 2: Fetch unique device models list
   try {
     let queryText = `
-      SELECT f.id, f.version, f.description, f.file_key, f.file_name, f.file_size, f.checksum, f.downloads_count, f.uploaded_by, f.created_at, f.is_dump,
-             m.model_name AS device_model, m.device_type AS device_type, m.approved AS is_approved,
-             u.email as uploader_name
-      FROM firmwares f
-      JOIN device_models m ON f.model_id = m.id
-      LEFT JOIN users u ON f.uploaded_by = u.id
+      SELECT m.id, m.model_name, m.device_type, m.approved AS is_approved,
+             COUNT(f.id) AS firmware_count,
+             MAX(f.created_at) AS latest_upload
+      FROM device_models m
+      JOIN firmwares f ON f.model_id = m.id
       WHERE 1=1
     `;
     const params = [];
@@ -104,6 +134,8 @@ export async function GET(req) {
       paramCounter++;
     }
 
+    queryText += ` GROUP BY m.id, m.model_name, m.device_type, m.approved`;
+
     // Count query for pagination totals
     const countQuery = `
       SELECT COUNT(*) as total
@@ -113,14 +145,14 @@ export async function GET(req) {
     const totalItems = parseInt(countResult.rows[0].total, 10);
     const totalPages = Math.ceil(totalItems / limit);
 
-    // Sorting & Pagination
-    queryText += ` ORDER BY f.created_at DESC LIMIT $${paramCounter} OFFSET $${paramCounter + 1}`;
+    // Sorting & Pagination (sorted by latest upload first)
+    queryText += ` ORDER BY latest_upload DESC LIMIT $${paramCounter} OFFSET $${paramCounter + 1}`;
     params.push(limit, offset);
 
     const result = await query(queryText, params);
 
     return NextResponse.json({
-      firmwares: result.rows,
+      models: result.rows,
       pagination: {
         totalItems,
         totalPages,
@@ -129,9 +161,9 @@ export async function GET(req) {
       }
     });
   } catch (err) {
-    console.error("Error retrieving firmwares:", err);
+    console.error("Error retrieving device models:", err);
     return NextResponse.json(
-      { error: "Failed to retrieve firmware list." },
+      { error: "Failed to retrieve device models list." },
       { status: 500 }
     );
   }
