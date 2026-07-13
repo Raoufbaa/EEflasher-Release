@@ -157,7 +157,7 @@
 .actionCell {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
 }
 
 .actionIconBtn {
@@ -246,6 +246,7 @@
 
 /* Responsive adjustments for mobile/tablet */
 @media (max-width: 768px) {
+
   .headerRow {
     flex-direction: column;
     align-items: stretch;
@@ -274,36 +275,204 @@
     min-width: unset;
   }
 
-  /* Hide Description and Uploaded Date columns to preserve table readability */
-  .fwTable th:nth-child(4),
-  /* Description */
-  .fwTable td:nth-child(4),
-  .fwTable th:nth-child(6),
-  /* Uploaded */
-  .fwTable td:nth-child(6) {
-    display: none;
+  /* Turn tables into cards on mobile/tablet */
+  .fwTable thead {
+    display: none !important;
+  }
+
+  .fwTable tbody {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  .firmwareTable tr:not(.expandedRow) {
+    display: grid !important;
+    grid-template-columns: 35px 1fr auto !important;
+    grid-template-areas:
+      "chevron model badge"
+      ". files date" !important;
+    padding: 14px 10px !important;
+    gap: 0px !important;
+    align-items: center !important;
+    border-bottom: 1px solid var(--border) !important;
+  }
+
+  .firmwareTable tr:not(.expandedRow) td {
+    display: flex !important;
+    align-items: center !important;
+    padding: 0 !important;
+    border-bottom: none !important;
+    background: transparent !important;
+  }
+
+  .firmwareTable tr:not(.expandedRow) td:nth-child(1) {
+    grid-area: chevron;
+    justify-content: center;
+  }
+
+  .firmwareTable tr:not(.expandedRow) td:nth-child(2) {
+    grid-area: model;
+    font-size: 0.95rem;
+  }
+
+  .firmwareTable tr:not(.expandedRow) td:nth-child(3) {
+    grid-area: badge;
+    justify-content: flex-end;
+  }
+
+  .firmwareTable tr:not(.expandedRow) td:nth-child(4) {
+    grid-area: files;
+    font-size: 0.8rem;
+    color: var(--text);
+  }
+
+  .firmwareTable tr:not(.expandedRow) td:nth-child(4)::before {
+    content: "Files: ";
+    color: var(--muted);
+    font-weight: 600;
+    margin-right: 4px;
+  }
+
+  .firmwareTable tr:not(.expandedRow) td:nth-child(5) {
+    grid-area: date;
+    font-size: 0.78rem;
+    color: var(--muted);
+    justify-content: flex-end;
+  }
+
+  .firmwareTable tr:not(.expandedRow) td:nth-child(5)::before {
+    content: "Updated: ";
+    color: var(--muted);
+    font-weight: 500;
+    margin-right: 4px;
+  }
+
+  .expandedRow {
+    display: block !important;
+    width: 100% !important;
+    background-color: rgba(0, 0, 0, 0.2) !important;
+  }
+
+  .expandedCell {
+    display: block !important;
+    width: 100% !important;
+    padding: 0 !important;
+    border-bottom: 1px solid var(--border) !important;
+  }
+
+  .chipsTable tr {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-areas:
+      "manufacturer model"
+      "jedec protocol"
+      "size pagesize"
+      "spicmd vcc" !important;
+    padding: 14px 12px !important;
+    gap: 8px 12px !important;
+    border-bottom: 1px solid var(--border) !important;
+  }
+
+  .chipsTable td {
+    display: flex !important;
+    align-items: center !important;
+    padding: 0 !important;
+    border-bottom: none !important;
+    font-size: 0.82rem;
+    background: transparent !important;
+  }
+
+  .chipsTable td:nth-child(1) {
+    grid-area: manufacturer;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .chipsTable td:nth-child(2) {
+    grid-area: model;
+    font-size: 0.9rem;
+    font-weight: 600;
+    justify-content: flex-end;
+    text-align: right;
+  }
+
+  .chipsTable td:nth-child(3) {
+    grid-area: jedec;
+    font-family: monospace;
+  }
+
+  .chipsTable td:nth-child(3)::before {
+    content: "JEDEC: ";
+    color: var(--muted);
+    font-weight: 600;
+    margin-right: 4px;
+  }
+
+  .chipsTable td:nth-child(4) {
+    grid-area: size;
+  }
+
+  .chipsTable td:nth-child(4)::before {
+    content: "Size: ";
+    color: var(--muted);
+    font-weight: 600;
+    margin-right: 4px;
+  }
+
+  .chipsTable td:nth-child(5) {
+    grid-area: pagesize;
+    justify-content: flex-end;
+    text-align: right;
+  }
+
+  .chipsTable td:nth-child(5)::before {
+    content: "Page: ";
+    color: var(--muted);
+    font-weight: 600;
+    margin-right: 4px;
+  }
+
+  .chipsTable td:nth-child(6) {
+    grid-area: protocol;
+    justify-content: flex-end;
+  }
+
+  .chipsTable td:nth-child(7) {
+    grid-area: spicmd;
+    font-family: monospace;
+  }
+
+  .chipsTable td:nth-child(7)::before {
+    content: "CMD: ";
+    color: var(--muted);
+    font-weight: 600;
+    margin-right: 4px;
+  }
+
+  .chipsTable td:nth-child(8) {
+    grid-area: vcc;
+    justify-content: flex-end;
+    text-align: right;
+  }
+
+  .chipsTable td:nth-child(8)::before {
+    content: "VCC: ";
+    color: var(--muted);
+    font-weight: 600;
+    margin-right: 4px;
   }
 }
 
 @media (max-width: 480px) {
-
-  .fwTable th:nth-child(5),
-  .fwTable td:nth-child(5),
-  .fwTable th:nth-child(7),
-  .fwTable td:nth-child(7) {
-    display: none;
-  }
-
-  .fwTable th,
-  .fwTable td {
-    padding: 10px 12px;
-    font-size: 0.8rem;
-  }
-
   .deviceBadge {
     font-size: 0.65rem;
     padding: 2px 6px;
   }
+
+  .actionCell {
+    flex-direction: column;
+  }
+
 }
 
 /* Banner Layout details */
@@ -566,6 +735,7 @@
   gap: 10px;
   flex-shrink: 0;
   min-width: 180px;
+  order: 1;
 }
 
 .badgeDump {
@@ -614,6 +784,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  order: 2;
 }
 
 .fwFileRight {
@@ -621,6 +792,7 @@
   align-items: center;
   gap: 16px;
   flex-shrink: 0;
+  order: 3;
 }
 
 .fwDateText {
@@ -647,6 +819,12 @@
     order: 3;
     flex: none;
     margin-top: 2px;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .fwFileRight {
+    order: 2;
   }
 }
 
@@ -661,16 +839,24 @@
   .fwFileLeft {
     width: 100%;
     min-width: unset;
+    order: 1;
   }
 
   .fwFileRight {
     width: 100%;
     justify-content: space-between;
     gap: 8px;
+    order: 2;
   }
 
   .fwDownloadsText {
     min-width: unset;
     text-align: left;
+  }
+
+  .fwDescText {
+    width: 100%;
+    order: 3;
+    margin-top: 4px;
   }
 }

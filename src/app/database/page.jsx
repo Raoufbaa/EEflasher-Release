@@ -762,7 +762,7 @@ export default function DatabasePage() {
                 <p>Try refining your search query or choosing another category.</p>
               </div>
             ) : (
-              <table className={styles.fwTable}>
+              <table className={`${styles.fwTable} ${styles.firmwareTable}`}>
                 <thead>
                   <tr>
                     <th style={{ width: '40px' }}></th>
@@ -918,7 +918,7 @@ export default function DatabasePage() {
                 <p>Try refining your search query.</p>
               </div>
             ) : (
-              <table className={styles.fwTable}>
+              <table className={`${styles.fwTable} ${styles.chipsTable}`}>
                 <thead>
                   <tr>
                     <th>Manufacturer</th>
