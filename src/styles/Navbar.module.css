@@ -21,6 +21,7 @@
   display: flex;
   align-items: center;
   gap: 9px;
+  order: 1;
 }
 
 .navBrand img {
@@ -36,10 +37,22 @@
   color: var(--white);
 }
 
-.navLinks {
+.navLinksLeft,
+.navLinksRight {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.navLinksLeft {
+  margin-left: auto;
+  order: 2;
+}
+
+.navLinksRight {
+  margin-right: auto;
+  margin-left: 4px;
+  order: 3;
 }
 
 .navLink {
@@ -48,6 +61,9 @@
   padding: 6px 12px;
   border-radius: var(--r-sm);
   transition: color var(--trans), background var(--trans);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .navLink:hover {
@@ -61,10 +77,19 @@
   border: 1px solid rgba(91, 95, 199, 0.2);
 }
 
+.navIcon {
+  display: none;
+}
+
+.navText {
+  display: inline;
+}
+
 .authContainer {
   display: flex;
   align-items: center;
   gap: 12px;
+  order: 4;
 }
 
 .authInfo {
@@ -110,43 +135,7 @@
   background: var(--surface2);
 }
 
-@media (max-width: 768px) {
-  .navbar {
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    padding: 12px;
-    top: 10px;
-    width: calc(100% - 10px);
-    border-radius: 12px;
-  }
 
-  .navLinks {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 2px;
-    width: 100%;
-  }
-
-  .navLink {
-    font-size: 0.78rem;
-    padding: 4px 8px;
-  }
-
-  .authContainer {
-    justify-content: center;
-    width: 100%;
-    border-top: 1px solid var(--border);
-    padding-top: 8px;
-    margin-top: 2px;
-    gap: 8px;
-  }
-
-  .authInfo {
-    align-items: center;
-  }
-}
 
 /* Dropdown / Avatar Styles */
 .dropdownContainer {
@@ -331,17 +320,154 @@
   transform: scale(0.98);
 }
 
-@media (max-width: 768px) {
-  .dropdownMenu {
-    right: auto;
-    left: 50%;
-    --translateX: -50%;
-    top: calc(100% + 12px);
-    transform-origin: top center;
+@keyframes dropdownSlideUp {
+  from {
+    transform: translate(-50%, 30px) scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0) scale(1);
+    opacity: 1;
   }
 }
 
 .loadingDots {
   font-size: 0.8rem;
   color: var(--muted);
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    position: fixed;
+    bottom: 0;
+    top: auto;
+    left: 0;
+    width: 100vw;
+    transform: none;
+    border-radius: 0;
+    border: none;
+    border-top: 1px solid var(--border2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 47px;
+    padding: 0 24px;
+    background: rgba(11, 14, 16, 0.95);
+    backdrop-filter: var(--blur-lg);
+    z-index: 1000;
+    animation: none;
+  }
+
+  .navBrand {
+    display: none;
+  }
+
+  .navLinksLeft,
+  .navLinksRight {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .navLinksLeft {
+    order: 1;
+    margin-left: 0;
+  }
+
+  .navLinksRight {
+    order: 3;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .navLink {
+    font-size: 0.78rem;
+    padding: 6px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .navIcon {
+    display: block;
+    color: var(--muted);
+    transition: color var(--trans);
+  }
+
+  .navLink:hover .navIcon,
+  .navActive .navIcon {
+    color: var(--white);
+  }
+
+  .navActive {
+    background: transparent !important;
+    border: none !important;
+  }
+
+  .navActive .navIcon {
+    color: var(--accent) !important;
+  }
+
+  .navText {
+    display: none;
+  }
+
+  .authContainer {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0;
+    gap: 0;
+    z-index: 1010;
+  }
+
+  .dropdownContainer {
+    transform: translateY(-23.5px);
+  }
+
+  .avatarBtn {
+    background: var(--bg);
+    border: 2px solid var(--border2);
+    padding: 4px;
+    border-radius: 50%;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease;
+  }
+
+  .avatarBtn:hover {
+    transform: scale(1.05);
+  }
+
+  .avatarImg {
+    width: 38px;
+    height: 38px;
+    border: 2px solid var(--accent);
+  }
+
+  .dropdownMenu {
+    position: fixed;
+    bottom: 55px;
+    top: auto;
+    left: 50%;
+    transform: translate(-50%, 0);
+    width: 95vw;
+    max-width: 480px;
+    min-width: unset;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: #0b0e10;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+    transform-origin: bottom center;
+    animation: dropdownSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+    padding: 20px 24px;
+    z-index: 1020;
+  }
 }

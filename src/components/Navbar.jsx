@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import styles from '@/styles/Navbar.module.css';
+import { Download, Zap, Cpu, Database } from 'lucide-react';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -47,40 +48,21 @@ export default function Navbar() {
         <span>EEFlasher</span>
       </Link>
 
-      <div className={styles.navLinks}>
+      <div className={styles.navLinksLeft}>
         <Link
           href={isHome ? '#downloads' : '/#downloads'}
-          className={`${styles.navLink}`}
+          className={styles.navLink}
         >
-          Downloads
+          <Download size={20} className={styles.navIcon} />
+          <span className={styles.navText}>Downloads</span>
         </Link>
         <Link
           href={isHome ? '#features' : '/#features'}
-          className={`${styles.navLink}`}
-        >
-          Features
-        </Link>
-        <Link
-          href={isHome ? '#hardware' : '/#hardware'}
-          className={`${styles.navLink}`}
-        >
-          Hardware
-        </Link>
-        <Link
-          href="/database"
-          className={`${styles.navLink} ${pathname === '/database' ? styles.navActive : ''}`}
-        >
-          Database
-        </Link>
-        <Link
-          href="https://github.com/Raoufbaa/EEflasher-Release"
-          target="_blank"
-          rel="noopener noreferrer"
           className={styles.navLink}
         >
-          GitHub
+          <Zap size={20} className={styles.navIcon} />
+          <span className={styles.navText}>Features</span>
         </Link>
-
       </div>
 
       <div className={styles.authContainer}>
@@ -153,6 +135,24 @@ export default function Navbar() {
           </Link>
         )}
       </div>
+
+      <div className={styles.navLinksRight}>
+        <Link
+          href={isHome ? '#hardware' : '/#hardware'}
+          className={styles.navLink}
+        >
+          <Cpu size={20} className={styles.navIcon} />
+          <span className={styles.navText}>Hardware</span>
+        </Link>
+        <Link
+          href="/database"
+          className={`${styles.navLink} ${pathname === '/database' ? styles.navActive : ''}`}
+        >
+          <Database size={20} className={styles.navIcon} />
+          <span className={styles.navText}>Database</span>
+        </Link>
+      </div>
     </nav>
   );
 }
+
