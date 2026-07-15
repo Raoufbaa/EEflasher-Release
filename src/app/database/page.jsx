@@ -51,6 +51,7 @@ export default function DatabasePage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [initialUploadData, setInitialUploadData] = useState(null);
 
   // A local refresh trigger incremented to force list reload programmatically without page reloads
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -363,6 +364,23 @@ export default function DatabasePage() {
       }
     }
   };
+
+  // Check URL parameters for desktop save online redirection
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('upload') === 'true') {
+        const fileName = params.get('fileName') || '';
+        const fileSize = parseInt(params.get('fileSize') || '0', 10);
+        const checksum = params.get('checksum') || '';
+        const deviceModel = params.get('deviceModel') || '';
+        setInitialUploadData({ fileName, fileSize, checksum, deviceModel });
+        setShowUploadModal(true);
+        // Clean URL parameters from display to keep it clean
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+  }, []);
 
   // Initial load or filter change -> reset list and load page 1 for models
   useEffect(() => {
@@ -972,14 +990,19 @@ export default function DatabasePage() {
       {/* Modals */}
       {showUploadModal && (
         <UploadModal
-          onClose={() => setShowUploadModal(false)}
+          onClose={() => {
+            setShowUploadModal(false);
+            setInitialUploadData(null);
+          }}
           onSuccess={() => {
             setShowUploadModal(false);
+            setInitialUploadData(null);
             setCategory('All');
             setSearch('');
             setSearchQuery('');
             setRefreshTrigger(prev => prev + 1);
           }}
+          initialData={initialUploadData}
         />
       )}
 

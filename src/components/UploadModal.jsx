@@ -47,17 +47,17 @@ function isValidModelName(name) {
 }
 
 
-export default function UploadModal({ onClose, onSuccess }) {
+export default function UploadModal({ onClose, onSuccess, initialData = null }) {
   const [file, setFile] = useState(null);
-  const [deviceModel, setDeviceModel] = useState('');
-  const [deviceType, setDeviceType] = useState('Receiver');
+  const [deviceModel, setDeviceModel] = useState(initialData?.deviceModel || '');
+  const [deviceType, setDeviceType] = useState(initialData ? 'EEPROM Dump' : 'Receiver');
   const [customType, setCustomType] = useState('');
-  const [version, setVersion] = useState('');
-  const [description, setDescription] = useState('');
+  const [version, setVersion] = useState(initialData ? '1.0.0' : '');
+  const [description, setDescription] = useState(initialData ? `Firmware dump for ${initialData.deviceModel}` : '');
   const [dragActive, setDragActive] = useState(false);
 
-  const [isUnknownVersion, setIsUnknownVersion] = useState(false);
-  const [isDump, setIsDump] = useState(false); // default to false (Clean / Official Release)
+  const [isUnknownVersion, setIsUnknownVersion] = useState(initialData ? true : false);
+  const [isDump, setIsDump] = useState(initialData ? true : false); // default to false, or true if initialData is provided
   const [isCheckingModel, setIsCheckingModel] = useState(false);
   const [isNewModel, setIsNewModel] = useState(false);
   const [modelMessage, setModelMessage] = useState('');
@@ -84,6 +84,35 @@ export default function UploadModal({ onClose, onSuccess }) {
       clearTimeout(timer);
     };
   }, []);
+
+  useEffect(() => {
+    if (initialData?.deviceModel) {
+      const initCheck = async () => {
+        const localFormatted = formatModelName(initialData.deviceModel);
+        if (!isValidModelName(localFormatted)) return;
+        setIsCheckingModel(true);
+        try {
+          const res = await fetch(`/api/firmware/check-model?model=${encodeURIComponent(localFormatted)}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.exists) {
+              setDeviceModel(formatModelName(data.recommendedName));
+              setModelMessage(data.isApproved ? 'Matched existing device model.' : 'Matched existing pending model.');
+              setIsNewModel(false);
+            } else {
+              setIsNewModel(true);
+              setModelMessage('');
+            }
+          }
+        } catch (err) {
+          console.warn('Failed to pre-check model:', err);
+        } finally {
+          setIsCheckingModel(false);
+        }
+      };
+      initCheck();
+    }
+  }, [initialData]);
 
   // Close suggestions on click outside
   useEffect(() => {
@@ -229,8 +258,14 @@ export default function UploadModal({ onClose, onSuccess }) {
 
 
     try {
-      // 1. Calculate SHA-256 Checksum
-      const checksum = await calculateChecksum(file);
+      // 1. Calculate SHA-256 Checksum (or use pre-calculated checksum from desktop if file matches)
+      const isMatchingDesktopFile = initialData && 
+        file.name === initialData.fileName && 
+        file.size === initialData.fileSize;
+      
+      const checksum = isMatchingDesktopFile && initialData.checksum
+        ? initialData.checksum
+        : await calculateChecksum(file);
 
       // 2. Fetch Pre-signed S3 PUT URL
       setStatusText('Retrieving Backblaze B2 upload credentials...');
@@ -333,6 +368,26 @@ export default function UploadModal({ onClose, onSuccess }) {
           <div className={styles.errorAlert}>
             <AlertTriangle size={16} />
             <span>{error}</span>
+          </div>
+        )}
+
+        {initialData && !file && (
+          <div style={{
+            background: 'rgba(74, 158, 255, 0.1)',
+            border: '1px solid rgba(74, 158, 255, 0.3)',
+            borderRadius: '4px',
+            padding: '10px 12px',
+            marginBottom: '15px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            fontSize: '13px',
+            color: '#4a9eff'
+          }}>
+            <File size={18} style={{ flexShrink: 0 }} />
+            <span>
+              <strong>Autofilled from Desktop:</strong> Please select or drag the file <strong>{initialData.fileName}</strong> ({(initialData.fileSize / 1024 / 1024).toFixed(2)} MB) to complete the upload.
+            </span>
           </div>
         )}
 
