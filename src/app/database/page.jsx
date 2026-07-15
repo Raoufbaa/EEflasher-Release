@@ -374,7 +374,8 @@ export default function DatabasePage() {
         const fileSize = parseInt(params.get('fileSize') || '0', 10);
         const checksum = params.get('checksum') || '';
         const deviceModel = params.get('deviceModel') || '';
-        setInitialUploadData({ fileName, fileSize, checksum, deviceModel });
+        const deviceType = params.get('deviceType') || '';
+        setInitialUploadData({ fileName, fileSize, checksum, deviceModel, deviceType });
         setShowUploadModal(true);
         // Clean URL parameters from display to keep it clean
         window.history.replaceState({}, document.title, window.location.pathname);

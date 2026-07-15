@@ -50,7 +50,7 @@ function isValidModelName(name) {
 export default function UploadModal({ onClose, onSuccess, initialData = null }) {
   const [file, setFile] = useState(null);
   const [deviceModel, setDeviceModel] = useState(initialData?.deviceModel || '');
-  const [deviceType, setDeviceType] = useState(initialData ? 'EEPROM Dump' : 'Receiver');
+  const [deviceType, setDeviceType] = useState(initialData?.deviceType || (initialData ? 'EEPROM Dump' : 'Receiver'));
   const [customType, setCustomType] = useState('');
   const [version, setVersion] = useState(initialData ? '1.0.0' : '');
   const [description, setDescription] = useState(initialData ? `Firmware dump for ${initialData.deviceModel}` : '');
