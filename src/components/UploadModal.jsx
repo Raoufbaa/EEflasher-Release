@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, UploadCloud, File, AlertTriangle } from 'lucide-react';
+import { X, UploadCloud, File, AlertTriangle, CheckCircle } from 'lucide-react';
 import styles from '@/styles/UploadModal.module.css';
 
 const DEVICE_TYPES = ['Receiver', 'Router', 'TV', 'TV Box', 'Desktop BIOS', 'Laptop BIOS', 'EC Firmware', 'EEPROM Dump', 'Automotive', 'Printer', 'Other'];
@@ -49,6 +49,7 @@ function isValidModelName(name) {
 
 export default function UploadModal({ onClose, onSuccess, initialData = null }) {
   const [file, setFile] = useState(null);
+  const [preUploadedFileKey, setPreUploadedFileKey] = useState(initialData?.fileKey || null);
   const [deviceModel, setDeviceModel] = useState(initialData?.deviceModel || '');
   const [deviceType, setDeviceType] = useState(initialData?.deviceType || (initialData ? 'EEPROM Dump' : 'Receiver'));
   const [customType, setCustomType] = useState('');
@@ -242,7 +243,7 @@ export default function UploadModal({ onClose, onSuccess, initialData = null }) 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!file) {
+    if (!preUploadedFileKey && !file) {
       setError('Please select a firmware file first.');
       return;
     }
@@ -254,63 +255,71 @@ export default function UploadModal({ onClose, onSuccess, initialData = null }) 
 
     setLoading(true);
     setError('');
-    setStatusText('Initializing upload...');
-
 
     try {
-      // 1. Calculate SHA-256 Checksum (or use pre-calculated checksum from desktop if file matches)
-      const isMatchingDesktopFile = initialData && 
-        file.name === initialData.fileName && 
-        file.size === initialData.fileSize;
-      
-      const checksum = isMatchingDesktopFile && initialData.checksum
-        ? initialData.checksum
-        : await calculateChecksum(file);
+      let finalFileKey = preUploadedFileKey;
+      let finalFileName = file ? file.name : initialData.fileName;
+      let finalFileSize = file ? file.size : initialData.fileSize;
+      let finalChecksum = initialData?.checksum;
 
-      // 2. Fetch Pre-signed S3 PUT URL
-      setStatusText('Retrieving Backblaze B2 upload credentials...');
-      const presignRes = await fetch('/api/firmware/presign', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          file_name: file.name,
-          file_size: file.size,
-          file_type: file.type || 'application/octet-stream'
-        })
-      });
+      if (!preUploadedFileKey) {
+        setStatusText('Initializing upload...');
+        
+        // 1. Calculate SHA-256 Checksum
+        const isMatchingDesktopFile = initialData && 
+          file.name === initialData.fileName && 
+          file.size === initialData.fileSize;
+        
+        finalChecksum = isMatchingDesktopFile && initialData.checksum
+          ? initialData.checksum
+          : await calculateChecksum(file);
 
-      const presignData = await presignRes.json();
-      if (!presignRes.ok) {
-        throw new Error(presignData.error || 'Failed to authorize upload.');
+        // 2. Fetch Pre-signed S3 PUT URL
+        setStatusText('Retrieving Backblaze B2 upload credentials...');
+        const presignRes = await fetch('/api/firmware/presign', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            file_name: file.name,
+            file_size: file.size,
+            file_type: file.type || 'application/octet-stream'
+          })
+        });
+
+        const presignData = await presignRes.json();
+        if (!presignRes.ok) {
+          throw new Error(presignData.error || 'Failed to authorize upload.');
+        }
+
+        const { upload_url, file_key } = presignData;
+        finalFileKey = file_key;
+
+        // 3. Upload File directly to Backblaze B2 with progress tracking
+        setStatusText('Uploading firmware to Backblaze storage...');
+        await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('PUT', upload_url);
+          xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+
+          xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable) {
+              const percent = Math.round((event.loaded / event.total) * 100);
+              setUploadProgress(percent);
+            }
+          };
+
+          xhr.onload = () => {
+            if (xhr.status === 200) {
+              resolve();
+            } else {
+              reject(new Error(`Backblaze storage returned HTTP ${xhr.status}.`));
+            }
+          };
+
+          xhr.onerror = () => reject(new Error('Network error uploading file.'));
+          xhr.send(file);
+        });
       }
-
-      const { upload_url, file_key } = presignData;
-
-      // 3. Upload File directly to Backblaze B2 with progress tracking
-      setStatusText('Uploading firmware to Backblaze storage...');
-      await new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open('PUT', upload_url);
-        xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
-
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            const percent = Math.round((event.loaded / event.total) * 100);
-            setUploadProgress(percent);
-          }
-        };
-
-        xhr.onload = () => {
-          if (xhr.status === 200) {
-            resolve();
-          } else {
-            reject(new Error(`Backblaze storage returned HTTP ${xhr.status}.`));
-          }
-        };
-
-        xhr.onerror = () => reject(new Error('Network error uploading file.'));
-        xhr.send(file);
-      });
 
       // 4. Save metadata to Postgres Database
       setStatusText('Saving firmware details to database...');
@@ -324,10 +333,10 @@ export default function UploadModal({ onClose, onSuccess, initialData = null }) 
           device_type: finalType,
           version,
           description,
-          file_key,
-          file_name: file.name,
-          file_size: file.size,
-          checksum,
+          file_key: finalFileKey,
+          file_name: finalFileName,
+          file_size: finalFileSize,
+          checksum: finalChecksum,
           is_dump: isDump
         })
       });
@@ -371,7 +380,7 @@ export default function UploadModal({ onClose, onSuccess, initialData = null }) 
           </div>
         )}
 
-        {initialData && !file && (
+        {initialData && !file && !preUploadedFileKey && (
           <div style={{
             background: 'rgba(74, 158, 255, 0.1)',
             border: '1px solid rgba(74, 158, 255, 0.3)',
@@ -392,8 +401,29 @@ export default function UploadModal({ onClose, onSuccess, initialData = null }) 
         )}
 
         <form onSubmit={handleSubmit}>
-          {/* File Dropzone */}
-          {!file ? (
+          {/* File Dropzone or Pre-Uploaded Status */}
+          {preUploadedFileKey ? (
+            <div className={styles.fileInfoCard} style={{ borderColor: '#4caf50', background: 'rgba(76, 175, 80, 0.05)' }}>
+              <div className={styles.fileDetails}>
+                <div className={styles.fileCardNameRow}>
+                  <CheckCircle size={18} style={{ color: '#4caf50', marginRight: '6px', flexShrink: 0 }} />
+                  <span className={styles.fileName}>{initialData.fileName}</span>
+                </div>
+                <span className={styles.fileSize} style={{ color: '#4caf50', fontSize: '12px', display: 'block', marginTop: '2px' }}>
+                  {formatBytes(initialData.fileSize)} — Streamed directly from EEFlasher Desktop App
+                </span>
+              </div>
+              {!loading && (
+                <button
+                  type="button"
+                  className={styles.removeFileBtn}
+                  onClick={() => setPreUploadedFileKey(null)}
+                >
+                  <X size={18} />
+                </button>
+              )}
+            </div>
+          ) : !file ? (
             <div
               className={`${styles.dropzone} ${dragActive ? styles.dropzoneActive : ''}`}
               onDragEnter={handleDrag}
