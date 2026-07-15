@@ -1,12 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "feat: add chip database file and update gitignore to track it",
+  "ReleaseNotes": "chore: bump project version to 1.0.27",
   "SupportedVersions": [
+    "1.0.27",
     "1.0.26",
-    "1.0.24",
-    "1.0.21",
-    "1.0.20",
-    "1.0.19"
+    "1.0.24"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
