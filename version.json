@@ -1,6 +1,6 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "feat: implement responsive toolbar layout and main view-model infrastructure for hardware flasher",
+  "ReleaseNotes": "feat: implement MainViewModel and LocalHttpServerService to manage hardware operations and web integration",
   "SupportedVersions": [
     "1.0.28",
     "1.0.27",
