@@ -217,55 +217,18 @@ export async function POST(req) {
     );
   }
 
-  const contentType = req.headers.get('content-type') || '';
-  let data;
-  let fileToUpload = null;
-
-  if (contentType.includes('multipart/form-data')) {
-    let formData;
-    try {
-      formData = await req.formData();
-    } catch (err) {
-      return NextResponse.json(
-        { error: "Invalid form data payload." },
-        { status: 400 }
-      );
-    }
-
-    const file = formData.get('file');
-    if (!file) {
-      return NextResponse.json(
-        { error: "No file provided for upload." },
-        { status: 400 }
-      );
-    }
-
-    fileToUpload = file;
-
-    data = {
-      device_model: formData.get('device_model') || '',
-      device_type: formData.get('device_type') || '',
-      version: formData.get('version') || '',
-      description: formData.get('description') || '',
-      file_key: 'pending', // temporary placeholder so zod schema validation passes
-      file_name: file.name,
-      file_size: Number(formData.get('file_size') || file.size),
-      checksum: formData.get('checksum') || '',
-      is_dump: formData.get('is_dump') === 'true'
-    };
-  } else {
-    try {
-      data = await req.json();
-    } catch (err) {
-      return NextResponse.json(
-        { error: "Invalid JSON payload." },
-        { status: 400 }
-      );
-    }
+  let body;
+  try {
+    body = await req.json();
+  } catch (err) {
+    return NextResponse.json(
+      { error: "Invalid JSON payload." },
+      { status: 400 }
+    );
   }
 
   try {
-    const validation = firmwareSchema.safeParse(data);
+    const validation = firmwareSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(
         { error: validation.error.issues.map(e => e.message).join(", ") },
@@ -273,7 +236,7 @@ export async function POST(req) {
       );
     }
 
-    let {
+    const {
       device_model,
       device_type,
       version,
@@ -291,34 +254,6 @@ export async function POST(req) {
         { error: "Invalid device model name. Please provide a specific model number containing alphanumeric characters (e.g. TL-WR841N) rather than a generic device type name." },
         { status: 400 }
       );
-    }
-
-    // Stream upload file directly to Backblaze B2 if provided
-    if (fileToUpload) {
-      try {
-        const uniqueId = crypto.randomUUID();
-        const cleanFileName = file_name.replace(/[^a-zA-Z0-9.-]/g, "_");
-        file_key = `firmwares/${uniqueId}-${cleanFileName}`;
-
-        const fileStream = fileToUpload.stream();
-        const nodeStream = Readable.fromWeb(fileStream);
-
-        const uploadParams = {
-          Bucket: process.env.B2_BUCKET_NAME,
-          Key: file_key,
-          Body: nodeStream,
-          ContentType: fileToUpload.type || 'application/octet-stream',
-          ContentLength: file_size,
-        };
-
-        await s3Client.send(new PutObjectCommand(uploadParams));
-      } catch (err) {
-        console.error("Backblaze B2 streaming upload failed:", err);
-        return NextResponse.json(
-          { error: "Failed to upload firmware binary to Backblaze storage." },
-          { status: 500 }
-        );
-      }
     }
 
     // Unify normalized name

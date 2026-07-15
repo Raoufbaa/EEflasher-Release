@@ -89,6 +89,17 @@ export default function UploadModal({ onClose, onSuccess, initialData = null }) 
     };
   }, []);
 
+  const handleClose = async () => {
+    if (isFromApp) {
+      try {
+        await fetch('http://127.0.0.1:56321/stop');
+      } catch (e) {
+        console.warn("Failed to stop local companion server on close:", e);
+      }
+    }
+    onClose();
+  };
+
   useEffect(() => {
     if (initialData?.deviceModel) {
       const initCheck = async () => {
@@ -291,56 +302,36 @@ export default function UploadModal({ onClose, onSuccess, initialData = null }) 
       let finalFileSize = file ? file.size : (isFromApp ? (initialData?.fileSize || appFileInfo?.fileSize) : initialData.fileSize);
       let finalChecksum = file ? null : (isFromApp ? (initialData?.checksum || appFileInfo?.checksum) : initialData?.checksum);
 
+      // 1. Fetch file from local companion server if using the desktop integration
+      let fileBlob = file;
       if (isFromApp) {
         setStatusText('Fetching binary stream from EEFlasher Desktop App...');
         const localRes = await fetch('http://127.0.0.1:56321/firmware');
         if (!localRes.ok) {
           throw new Error('Failed to retrieve file from local EEFlasher App. Is the app still open?');
         }
-        const fileBlob = await localRes.blob();
-        
-        setStatusText('Streaming firmware to website and Backblaze B2...');
-        const formData = new FormData();
-        const finalType = deviceType === 'Other' ? customType : deviceType;
+        const blob = await localRes.blob();
+        fileBlob = new File([blob], finalFileName, { type: 'application/octet-stream' });
+      }
 
-        formData.append('device_model', deviceModel);
-        formData.append('device_type', finalType);
-        formData.append('version', version);
-        formData.append('description', description);
-        formData.append('checksum', finalChecksum);
-        formData.append('is_dump', isDump ? 'true' : 'false');
-        formData.append('file', fileBlob, finalFileName);
-
-        const uploadRes = await fetch('/api/firmware', {
-          method: 'POST',
-          body: formData
-        });
-
-        const uploadData = await uploadRes.json();
-        if (!uploadRes.ok) {
-          throw new Error(uploadData.error || 'Failed to stream and save firmware.');
-        }
-      } else if (!preUploadedFileKey) {
+      // If we don't have a pre-uploaded file key (i.e. we are uploading it now)
+      if (!preUploadedFileKey) {
         setStatusText('Initializing upload...');
         
-        // 1. Calculate SHA-256 Checksum
-        const isMatchingDesktopFile = initialData && 
-          file.name === initialData.fileName && 
-          file.size === initialData.fileSize;
-        
-        finalChecksum = isMatchingDesktopFile && initialData.checksum
-          ? initialData.checksum
-          : await calculateChecksum(file);
+        // Calculate SHA-256 Checksum (if not already known from desktop)
+        if (!finalChecksum) {
+          finalChecksum = await calculateChecksum(fileBlob);
+        }
 
-        // 2. Fetch Pre-signed S3 PUT URL
+        // 2. Fetch Pre-signed S3 PUT URL (bypassing Vercel payload limit)
         setStatusText('Retrieving Backblaze B2 upload credentials...');
         const presignRes = await fetch('/api/firmware/presign', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            file_name: file.name,
-            file_size: file.size,
-            file_type: file.type || 'application/octet-stream'
+            file_name: finalFileName,
+            file_size: finalFileSize,
+            file_type: 'application/octet-stream'
           })
         });
 
@@ -353,11 +344,11 @@ export default function UploadModal({ onClose, onSuccess, initialData = null }) 
         finalFileKey = file_key;
 
         // 3. Upload File directly to Backblaze B2 with progress tracking
-        setStatusText('Uploading firmware to Backblaze storage...');
+        setStatusText('Uploading firmware directly to Backblaze storage...');
         await new Promise((resolve, reject) => {
           const xhr = new XMLHttpRequest();
           xhr.open('PUT', upload_url);
-          xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+          xhr.setRequestHeader('Content-Type', 'application/octet-stream');
 
           xhr.upload.onprogress = (event) => {
             if (event.lengthComputable) {
@@ -375,57 +366,41 @@ export default function UploadModal({ onClose, onSuccess, initialData = null }) 
           };
 
           xhr.onerror = () => reject(new Error('Network error uploading file.'));
-          xhr.send(file);
+          xhr.send(fileBlob);
         });
+      }
 
-        // 4. Save metadata to Postgres Database
-        setStatusText('Saving firmware details to database...');
-        const finalType = deviceType === 'Other' ? customType : deviceType;
+      // 4. Save metadata to Postgres Database
+      setStatusText('Saving firmware details to database...');
+      const finalType = deviceType === 'Other' ? customType : deviceType;
 
-        const saveRes = await fetch('/api/firmware', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            device_model: deviceModel,
-            device_type: finalType,
-            version,
-            description,
-            file_key: finalFileKey,
-            file_name: finalFileName,
-            file_size: finalFileSize,
-            checksum: finalChecksum,
-            is_dump: isDump
-          })
-        });
+      const saveRes = await fetch('/api/firmware', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          device_model: deviceModel,
+          device_type: finalType,
+          version,
+          description,
+          file_key: finalFileKey,
+          file_name: finalFileName,
+          file_size: finalFileSize,
+          checksum: finalChecksum,
+          is_dump: isDump
+        })
+      });
 
-        const saveData = await saveRes.json();
-        if (!saveRes.ok) {
-          throw new Error(saveData.error || 'Failed to save firmware metadata.');
-        }
-      } else {
-        // 4. Save metadata to Postgres Database
-        setStatusText('Saving firmware details to database...');
-        const finalType = deviceType === 'Other' ? customType : deviceType;
+      const saveData = await saveRes.json();
+      if (!saveRes.ok) {
+        throw new Error(saveData.error || 'Failed to save firmware metadata.');
+      }
 
-        const saveRes = await fetch('/api/firmware', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            device_model: deviceModel,
-            device_type: finalType,
-            version,
-            description,
-            file_key: finalFileKey,
-            file_name: finalFileName,
-            file_size: finalFileSize,
-            checksum: finalChecksum,
-            is_dump: isDump
-          })
-        });
-
-        const saveData = await saveRes.json();
-        if (!saveRes.ok) {
-          throw new Error(saveData.error || 'Failed to save firmware metadata.');
+      // 5. Signal local server to shutdown
+      if (isFromApp) {
+        try {
+          await fetch('http://127.0.0.1:56321/stop');
+        } catch (e) {
+          console.warn("Failed to stop local companion server:", e);
         }
       }
 
@@ -452,7 +427,7 @@ export default function UploadModal({ onClose, onSuccess, initialData = null }) 
     <div className={styles.modalOverlay}>
       <div className={styles.modalContent}>
         <h3>Upload New Firmware</h3>
-        <button className={styles.closeBtn} onClick={onClose} disabled={loading}>
+        <button className={styles.closeBtn} onClick={handleClose} disabled={loading}>
           <X size={20} />
         </button>
 
@@ -725,7 +700,7 @@ export default function UploadModal({ onClose, onSuccess, initialData = null }) 
                 <button
                   type="button"
                   className={`btn btn-ghost ${styles.btnAuto}`}
-                  onClick={onClose}
+                  onClick={handleClose}
                 >
                   Cancel
                 </button>
