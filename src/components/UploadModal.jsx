@@ -50,6 +50,9 @@ function isValidModelName(name) {
 export default function UploadModal({ onClose, onSuccess, initialData = null }) {
   const [file, setFile] = useState(null);
   const [preUploadedFileKey, setPreUploadedFileKey] = useState(initialData?.fileKey || null);
+  const [isFromApp, setIsFromApp] = useState(initialData?.fromApp || false);
+  const [appFileInfo, setAppFileInfo] = useState(initialData?.fromApp ? initialData : null);
+  const [checkingApp, setCheckingApp] = useState(false);
   const [deviceModel, setDeviceModel] = useState(initialData?.deviceModel || '');
   const [deviceType, setDeviceType] = useState(initialData?.deviceType || (initialData ? 'EEPROM Dump' : 'Receiver'));
   const [customType, setCustomType] = useState('');
@@ -186,6 +189,32 @@ export default function UploadModal({ onClose, onSuccess, initialData = null }) 
     }
   };
 
+  const detectFromLocalApp = async () => {
+    setCheckingApp(true);
+    setError('');
+    try {
+      const res = await fetch('http://127.0.0.1:56321/info');
+      if (!res.ok) throw new Error('Local server returned error');
+      const data = await res.json();
+      if (data.status === 'no_file') {
+        setError('No firmware file is loaded in the EEFlasher Desktop App. Please read a chip or open a file in the app first.');
+      } else if (data.status === 'ready') {
+        setIsFromApp(true);
+        setAppFileInfo(data);
+        setDeviceModel(formatModelName(data.deviceModel));
+        setDeviceType(data.deviceType || 'Receiver');
+        setError('');
+      } else {
+        throw new Error('Invalid response from app');
+      }
+    } catch (err) {
+      console.warn("Failed to connect to local app:", err);
+      setError('Could not connect to EEFlasher Desktop App. Make sure the app is running on this computer.');
+    } finally {
+      setCheckingApp(false);
+    }
+  };
+
   const calculateChecksum = async (selectedFile) => {
     setStatusText('Generating file checksum locally...');
     const arrayBuffer = await selectedFile.arrayBuffer();
@@ -243,7 +272,7 @@ export default function UploadModal({ onClose, onSuccess, initialData = null }) 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!preUploadedFileKey && !file) {
+    if (!isFromApp && !preUploadedFileKey && !file) {
       setError('Please select a firmware file first.');
       return;
     }
@@ -258,11 +287,40 @@ export default function UploadModal({ onClose, onSuccess, initialData = null }) 
 
     try {
       let finalFileKey = preUploadedFileKey;
-      let finalFileName = file ? file.name : initialData.fileName;
-      let finalFileSize = file ? file.size : initialData.fileSize;
-      let finalChecksum = initialData?.checksum;
+      let finalFileName = file ? file.name : (isFromApp ? (initialData?.fileName || appFileInfo?.fileName) : initialData.fileName);
+      let finalFileSize = file ? file.size : (isFromApp ? (initialData?.fileSize || appFileInfo?.fileSize) : initialData.fileSize);
+      let finalChecksum = file ? null : (isFromApp ? (initialData?.checksum || appFileInfo?.checksum) : initialData?.checksum);
 
-      if (!preUploadedFileKey) {
+      if (isFromApp) {
+        setStatusText('Fetching binary stream from EEFlasher Desktop App...');
+        const localRes = await fetch('http://127.0.0.1:56321/firmware');
+        if (!localRes.ok) {
+          throw new Error('Failed to retrieve file from local EEFlasher App. Is the app still open?');
+        }
+        const fileBlob = await localRes.blob();
+        
+        setStatusText('Streaming firmware to website and Backblaze B2...');
+        const formData = new FormData();
+        const finalType = deviceType === 'Other' ? customType : deviceType;
+
+        formData.append('device_model', deviceModel);
+        formData.append('device_type', finalType);
+        formData.append('version', version);
+        formData.append('description', description);
+        formData.append('checksum', finalChecksum);
+        formData.append('is_dump', isDump ? 'true' : 'false');
+        formData.append('file', fileBlob, finalFileName);
+
+        const uploadRes = await fetch('/api/firmware', {
+          method: 'POST',
+          body: formData
+        });
+
+        const uploadData = await uploadRes.json();
+        if (!uploadRes.ok) {
+          throw new Error(uploadData.error || 'Failed to stream and save firmware.');
+        }
+      } else if (!preUploadedFileKey) {
         setStatusText('Initializing upload...');
         
         // 1. Calculate SHA-256 Checksum
@@ -319,31 +377,56 @@ export default function UploadModal({ onClose, onSuccess, initialData = null }) 
           xhr.onerror = () => reject(new Error('Network error uploading file.'));
           xhr.send(file);
         });
-      }
 
-      // 4. Save metadata to Postgres Database
-      setStatusText('Saving firmware details to database...');
-      const finalType = deviceType === 'Other' ? customType : deviceType;
+        // 4. Save metadata to Postgres Database
+        setStatusText('Saving firmware details to database...');
+        const finalType = deviceType === 'Other' ? customType : deviceType;
 
-      const saveRes = await fetch('/api/firmware', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          device_model: deviceModel,
-          device_type: finalType,
-          version,
-          description,
-          file_key: finalFileKey,
-          file_name: finalFileName,
-          file_size: finalFileSize,
-          checksum: finalChecksum,
-          is_dump: isDump
-        })
-      });
+        const saveRes = await fetch('/api/firmware', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            device_model: deviceModel,
+            device_type: finalType,
+            version,
+            description,
+            file_key: finalFileKey,
+            file_name: finalFileName,
+            file_size: finalFileSize,
+            checksum: finalChecksum,
+            is_dump: isDump
+          })
+        });
 
-      const saveData = await saveRes.json();
-      if (!saveRes.ok) {
-        throw new Error(saveData.error || 'Failed to save firmware metadata.');
+        const saveData = await saveRes.json();
+        if (!saveRes.ok) {
+          throw new Error(saveData.error || 'Failed to save firmware metadata.');
+        }
+      } else {
+        // 4. Save metadata to Postgres Database
+        setStatusText('Saving firmware details to database...');
+        const finalType = deviceType === 'Other' ? customType : deviceType;
+
+        const saveRes = await fetch('/api/firmware', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            device_model: deviceModel,
+            device_type: finalType,
+            version,
+            description,
+            file_key: finalFileKey,
+            file_name: finalFileName,
+            file_size: finalFileSize,
+            checksum: finalChecksum,
+            is_dump: isDump
+          })
+        });
+
+        const saveData = await saveRes.json();
+        if (!saveRes.ok) {
+          throw new Error(saveData.error || 'Failed to save firmware metadata.');
+        }
       }
 
       setStatusText('Complete!');
@@ -380,7 +463,7 @@ export default function UploadModal({ onClose, onSuccess, initialData = null }) 
           </div>
         )}
 
-        {initialData && !file && !preUploadedFileKey && (
+        {initialData && !file && !preUploadedFileKey && !isFromApp && (
           <div style={{
             background: 'rgba(74, 158, 255, 0.1)',
             border: '1px solid rgba(74, 158, 255, 0.3)',
@@ -402,7 +485,31 @@ export default function UploadModal({ onClose, onSuccess, initialData = null }) 
 
         <form onSubmit={handleSubmit}>
           {/* File Dropzone or Pre-Uploaded Status */}
-          {preUploadedFileKey ? (
+          {isFromApp ? (
+            <div className={styles.fileInfoCard} style={{ borderColor: '#4a9eff', background: 'rgba(74, 158, 255, 0.05)' }}>
+              <div className={styles.fileDetails}>
+                <div className={styles.fileCardNameRow}>
+                  <CheckCircle size={18} style={{ color: '#4a9eff', marginRight: '6px', flexShrink: 0 }} />
+                  <span className={styles.fileName}>{initialData?.fileName || appFileInfo?.fileName}</span>
+                </div>
+                <span className={styles.fileSize} style={{ color: '#4a9eff', fontSize: '12px', display: 'block', marginTop: '2px' }}>
+                  {formatBytes(initialData?.fileSize || appFileInfo?.fileSize)} — Ready to stream from EEFlasher Desktop App
+                </span>
+              </div>
+              {!loading && (
+                <button
+                  type="button"
+                  className={styles.removeFileBtn}
+                  onClick={() => {
+                    setIsFromApp(false);
+                    setAppFileInfo(null);
+                  }}
+                >
+                  <X size={18} />
+                </button>
+              )}
+            </div>
+          ) : preUploadedFileKey ? (
             <div className={styles.fileInfoCard} style={{ borderColor: '#4caf50', background: 'rgba(76, 175, 80, 0.05)' }}>
               <div className={styles.fileDetails}>
                 <div className={styles.fileCardNameRow}>
@@ -424,23 +531,35 @@ export default function UploadModal({ onClose, onSuccess, initialData = null }) 
               )}
             </div>
           ) : !file ? (
-            <div
-              className={`${styles.dropzone} ${dragActive ? styles.dropzoneActive : ''}`}
-              onDragEnter={handleDrag}
-              onDragOver={handleDrag}
-              onDragLeave={handleDrag}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current.click()}
-            >
-              <input
-                type="file"
-                ref={fileInputRef}
-                className={styles.fileInputHidden}
-                onChange={handleFileChange}
-              />
-              <UploadCloud size={32} className={styles.dropzoneIcon} />
-              <span className={styles.dropzoneText}>Drag & drop file or click to browse</span>
-              <span className={styles.dropzoneSub}>Supports bin, rom, hex up to 128MB</span>
+            <div className={styles.dropzoneContainer}>
+              <div
+                className={`${styles.dropzone} ${dragActive ? styles.dropzoneActive : ''}`}
+                onDragEnter={handleDrag}
+                onDragOver={handleDrag}
+                onDragLeave={handleDrag}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current.click()}
+              >
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className={styles.fileInputHidden}
+                  onChange={handleFileChange}
+                />
+                <UploadCloud size={32} className={styles.dropzoneIcon} />
+                <span className={styles.dropzoneText}>Drag & drop file or click to browse</span>
+                <span className={styles.dropzoneSub}>Supports bin, rom, hex up to 128MB</span>
+              </div>
+              <div className={styles.appDetectContainer}>
+                <button
+                  type="button"
+                  onClick={detectFromLocalApp}
+                  className={styles.appDetectBtn}
+                  disabled={checkingApp || loading}
+                >
+                  {checkingApp ? 'Connecting to App...' : '📥 Select File loaded in EEFlasher Desktop App'}
+                </button>
+              </div>
             </div>
           ) : (
             <div className={styles.fileInfoCard}>

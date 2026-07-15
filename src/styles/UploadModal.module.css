@@ -445,3 +445,36 @@
 .modalContentAddChip {
   max-width: 550px !important;
 }
+
+.appDetectContainer {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.appDetectBtn {
+  background: rgba(91, 95, 199, 0.08);
+  border: 1px dashed var(--accent);
+  color: var(--accent);
+  border-radius: var(--r-sm);
+  padding: 10px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: background var(--trans), border-color var(--trans), color var(--trans), transform var(--trans);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.appDetectBtn:hover {
+  background: var(--accent);
+  color: var(--white);
+  border-style: solid;
+  transform: translateY(-1px);
+}
+
+.appDetectBtn:active {
+  transform: translateY(0);
+}

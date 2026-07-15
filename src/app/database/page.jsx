@@ -376,7 +376,8 @@ export default function DatabasePage() {
         const deviceModel = params.get('deviceModel') || '';
         const deviceType = params.get('deviceType') || '';
         const fileKey = params.get('fileKey') || '';
-        setInitialUploadData({ fileName, fileSize, checksum, deviceModel, deviceType, fileKey });
+        const fromApp = params.get('fromApp') === 'true';
+        setInitialUploadData({ fileName, fileSize, checksum, deviceModel, deviceType, fileKey, fromApp });
         setShowUploadModal(true);
         // Clean URL parameters from display to keep it clean
         window.history.replaceState({}, document.title, window.location.pathname);
