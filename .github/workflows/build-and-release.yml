@@ -331,9 +331,11 @@ jobs:
               "AppDisabledMessage": ""
             }' > public/version.json
           
+          cp public/version.json version.json
+          
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add public/version.json
+          git add public/version.json version.json
           git commit -m "Update version.json for $NEW_VERSION" || echo "No changes to commit"
           git push
       
