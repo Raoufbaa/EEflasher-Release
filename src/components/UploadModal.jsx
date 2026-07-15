@@ -311,7 +311,7 @@ export default function UploadModal({ onClose, onSuccess, initialData = null }) 
           throw new Error('Failed to retrieve file from local EEFlasher App. Is the app still open?');
         }
         const blob = await localRes.blob();
-        fileBlob = new File([blob], finalFileName, { type: 'application/octet-stream' });
+        fileBlob = new window.File([blob], finalFileName, { type: 'application/octet-stream' });
       }
 
       // If we don't have a pre-uploaded file key (i.e. we are uploading it now)
