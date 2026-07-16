@@ -90,14 +90,19 @@
 
 2. **Build (Self-Contained - Recommended)**
    
-   **Easy Way - Full Build (x64 + x86):**
-   ```bash
-   build.bat
+   **Interactive Build Menu:**
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File .\build.ps1
    ```
    
    **Quick Build (x64 only):**
-   ```bash
-   build-simple.bat
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File .\build.ps1 -Platform x64
+   ```
+
+   **Silent Full Build (x64 + x86):**
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File .\build.ps1 -Silent
    ```
    
    This creates a **single executable** with .NET 10 bundled - no installation required!
@@ -338,7 +343,7 @@ EEFlasher/
 │   └── Hardware/          # Platform-specific DLLs
 │       ├── x64/           # 64-bit DLLs (CH341DLLA64.DLL, CH347DLLA64.DLL)
 │       └── x86/           # 32-bit DLLs (CH341DLL.DLL, CH347DLL.DLL)
-├── build.bat              # Build script for both platforms
+├── build.ps1              # Unified build script (interactive & silent)
 └── HARDWARE_DLLS.md       # DLL documentation
 
 ```
