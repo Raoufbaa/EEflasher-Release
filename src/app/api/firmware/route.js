@@ -73,7 +73,6 @@ export async function GET(req) {
   const token = await getToken({
     req,
     secret: process.env.NEXTAUTH_SECRET,
-    secureCookie: process.env.NODE_ENV === 'production',
   });
   const isAdmin = token?.is_admin === true;
 
@@ -178,7 +177,6 @@ export async function POST(req) {
   const token = await getToken({
     req,
     secret: process.env.NEXTAUTH_SECRET,
-    secureCookie: process.env.NODE_ENV === 'production',
   });
   if (!token) {
     return NextResponse.json(

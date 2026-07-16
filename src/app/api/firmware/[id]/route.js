@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { query } from '@/lib/db';
-import { s3Client } from '@/lib/b2';
-import { DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { deleteFileFromB2 } from '@/lib/b2';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
@@ -12,7 +11,6 @@ export async function DELETE(req, { params }) {
   const token = await getToken({
     req,
     secret: process.env.NEXTAUTH_SECRET,
-    secureCookie: process.env.NODE_ENV === 'production',
   });
   if (!token) {
     return NextResponse.json(
@@ -78,13 +76,9 @@ export async function DELETE(req, { params }) {
       );
     }
 
-    // 2. Delete file from Backblaze B2
+    // 2. Delete file from Backblaze B2 (all versions)
     try {
-      await s3Client.send(new DeleteObjectCommand({
-        Bucket: process.env.B2_BUCKET_NAME,
-        Key: file_key,
-      }));
-      console.log(`✓ Deleted file from B2: ${file_key}`);
+      await deleteFileFromB2(file_key);
     } catch (b2Err) {
       // If the file is already gone from B2, it is safe to proceed.
       // Otherwise, we fail to avoid leaving orphaned files in the storage bucket.
@@ -101,7 +95,6 @@ export async function DELETE(req, { params }) {
 
     // 3. Delete record from PostgreSQL
     await query("DELETE FROM firmwares WHERE id = $1", [id]);
-    console.log(`✓ Deleted firmware record from database: ${id}`);
 
     return NextResponse.json({ message: "Firmware deleted successfully." });
   } catch (err) {

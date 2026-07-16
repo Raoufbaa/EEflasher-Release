@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { query } from '@/lib/db';
-import { s3Client } from '@/lib/b2';
-import { DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { deleteFileFromB2 } from '@/lib/b2';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +17,6 @@ async function verifyAdmin(req) {
   const token = await getToken({
     req,
     secret: process.env.NEXTAUTH_SECRET,
-    secureCookie: process.env.NODE_ENV === 'production',
   });
   if (!token) return false;
 
@@ -142,11 +140,7 @@ export async function POST(req) {
 
       for (const fw of firmwaresRes.rows) {
         try {
-          await s3Client.send(new DeleteObjectCommand({
-            Bucket: process.env.B2_BUCKET_NAME,
-            Key: fw.file_key,
-          }));
-          console.log(`✓ Deleted file from B2 for rejected model: ${fw.file_key}`);
+          await deleteFileFromB2(fw.file_key);
         } catch (b2Err) {
           if (b2Err.name === 'NoSuchKey' || b2Err.code === 'NoSuchKey' || b2Err.$metadata?.httpStatusCode === 404) {
             console.warn(`⚠️ File ${fw.file_key} already deleted from B2.`);
