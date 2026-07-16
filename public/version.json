@@ -1,6 +1,6 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "chore: bump version to 1.0.30",
+  "ReleaseNotes": "added light theme and add button to toggle and change between the theme light /dark",
   "SupportedVersions": [
     "1.0.30",
     "1.0.28",
