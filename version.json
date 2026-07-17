@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "updated app version",
+  "ReleaseNotes": "fixed the light theme in some area and ehnaced the code",
   "SupportedVersions": [
+    "1.0.32",
     "1.0.31",
-    "1.0.30",
-    "1.0.28"
+    "1.0.30"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
