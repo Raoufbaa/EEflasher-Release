@@ -1,6 +1,6 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "fixed the light theme in some area and ehnaced the code",
+  "ReleaseNotes": "feat: add BIOS extraction service and supporting infrastructure for ROM file processing",
   "SupportedVersions": [
     "1.0.32",
     "1.0.31",
