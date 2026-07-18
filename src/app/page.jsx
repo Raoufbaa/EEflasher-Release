@@ -25,87 +25,17 @@ export default function Home() {
   useEffect(() => {
     async function loadRelease() {
       try {
-        const latestRes = await fetch("https://api.github.com/repos/Raoufbaa/EEflasher-Release/releases/latest", {
-          headers: {
-            'Accept': 'application/vnd.github.v3+json'
-          }
-        });
-
-        if (!latestRes.ok) {
-          throw new Error(`HTTP ${latestRes.status}`);
+        const res = await fetch("/api/releases");
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
         }
-
-        const latestData = await latestRes.json();
-        const ver = (latestData.tag_name || latestData.name || "").replace(/^v/i, "");
-        const pub = latestData.published_at
-          ? new Date(latestData.published_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })
-          : "Recently";
-
-        // Fetch ALL releases to get total download counts
-        let allReleases = [];
-        let page = 1;
-        const perPage = 100;
-        while (true) {
-          const allRes = await fetch(`https://api.github.com/repos/Raoufbaa/EEflasher-Release/releases?per_page=${perPage}&page=${page}`, {
-            headers: {
-              'Accept': 'application/vnd.github.v3+json'
-            }
-          });
-
-          if (!allRes.ok) {
-            throw new Error(`HTTP ${allRes.status}`);
-          }
-
-          const releasesPage = await allRes.json();
-          if (!releasesPage || releasesPage.length === 0) {
-            break;
-          }
-          allReleases = allReleases.concat(releasesPage);
-          if (releasesPage.length < perPage) {
-            break;
-          }
-          page++;
+        const data = await res.json();
+        if (data.error) {
+          throw new Error(data.error);
         }
-
-        // Initialize with baseline downloads for deleted releases
-        let total = 450;
-        let winX64Count = 383; // 85% of 450
-        let winX86Count = 67;  // 15% of 450 (the rest)
-        let linuxCount = 0;
-
-        allReleases.forEach(release => {
-          if (release.assets && release.assets.length > 0) {
-            release.assets.forEach(asset => {
-              const count = asset.download_count || 0;
-              total += count;
-
-              if (asset.name.includes('Setup.exe') && !asset.name.includes('x86')) {
-                winX64Count += count;
-              } else if (asset.name.includes('Setup_x86.exe')) {
-                winX86Count += count;
-              } else if (asset.name.includes('win-x64.zip')) {
-                winX64Count += count;
-              } else if (asset.name.includes('win-x86.zip')) {
-                winX86Count += count;
-              } else if (asset.name.includes('linux-x64.tar.gz')) {
-                linuxCount += count;
-              }
-            });
-          }
-        });
-
-        setReleaseInfo({
-          version: ver ? `v${ver}` : "Latest version",
-          name: latestData.name || `v${ver}` || "Latest",
-          date: pub,
-          totalDl: formatNumber(total),
-          winX64: formatNumber(winX64Count),
-          winX86: formatNumber(winX86Count),
-          linuxX64: formatNumber(linuxCount)
-        });
-
+        setReleaseInfo(data);
       } catch (err) {
-        console.error('Failed to fetch release data from GitHub:', err);
+        console.error('Failed to fetch release data from internal API:', err);
 
         // Fallback to local version.json
         try {
