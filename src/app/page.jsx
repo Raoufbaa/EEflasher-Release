@@ -42,21 +42,35 @@ export default function Home() {
           : "Recently";
 
         // Fetch ALL releases to get total download counts
-        const allRes = await fetch("https://api.github.com/repos/Raoufbaa/EEflasher-Release/releases", {
-          headers: {
-            'Accept': 'application/vnd.github.v3+json'
-          }
-        });
+        let allReleases = [];
+        let page = 1;
+        const perPage = 100;
+        while (true) {
+          const allRes = await fetch(`https://api.github.com/repos/Raoufbaa/EEflasher-Release/releases?per_page=${perPage}&page=${page}`, {
+            headers: {
+              'Accept': 'application/vnd.github.v3+json'
+            }
+          });
 
-        if (!allRes.ok) {
-          throw new Error(`HTTP ${allRes.status}`);
+          if (!allRes.ok) {
+            throw new Error(`HTTP ${allRes.status}`);
+          }
+
+          const releasesPage = await allRes.json();
+          if (!releasesPage || releasesPage.length === 0) {
+            break;
+          }
+          allReleases = allReleases.concat(releasesPage);
+          if (releasesPage.length < perPage) {
+            break;
+          }
+          page++;
         }
 
-        const allReleases = await allRes.json();
-
-        let total = 0;
-        let winX64Count = 0;
-        let winX86Count = 0;
+        // Initialize with baseline downloads for deleted releases
+        let total = 450;
+        let winX64Count = 383; // 85% of 450
+        let winX86Count = 67;  // 15% of 450 (the rest)
         let linuxCount = 0;
 
         allReleases.forEach(release => {
