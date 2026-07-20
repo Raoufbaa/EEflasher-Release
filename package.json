@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "make-admin": "node scripts/make-admin.js",
-    "migrate": "node database/migrate.js"
+    "migrate": "node database/migrate.js",
+    "update-chips": "node scripts/update-chips-db.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1069.0",
