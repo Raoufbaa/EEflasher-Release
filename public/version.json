@@ -1,6 +1,6 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "feat: add ChipInfo model and initial chip database JSON, increment application version to 1.0.35",
+  "ReleaseNotes": "feat: add initial chip database records to Chipsliste.json",
   "SupportedVersions": [
     "1.0.35",
     "1.0.34",
