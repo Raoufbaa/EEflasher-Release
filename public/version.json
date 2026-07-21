@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "feat: add initial chip database records to Chipsliste.json",
+  "ReleaseNotes": "added drag and drop feature and enhance the hex editor searches",
   "SupportedVersions": [
+    "1.0.36",
     "1.0.35",
-    "1.0.34",
-    "1.0.33"
+    "1.0.34"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
