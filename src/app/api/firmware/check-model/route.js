@@ -1,15 +1,12 @@
 import { NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
 import { query } from '@/lib/db';
+import { getAuthToken } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req) {
   // Ensure the user is logged in
-  const token = await getToken({
-    req,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+  const token = await getAuthToken(req);
   if (!token) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

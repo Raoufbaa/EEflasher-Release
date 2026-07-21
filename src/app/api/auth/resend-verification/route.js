@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
 import { sendVerificationEmail } from '@/lib/email';
-import { getToken } from 'next-auth/jwt';
+import { getAuthToken } from '@/lib/auth';
 import crypto from 'crypto';
 
 export async function POST(req) {
@@ -10,7 +10,7 @@ export async function POST(req) {
 
   try {
     // Get session token to identify the logged-in user
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    const token = await getAuthToken(req);
     if (!token || !token.email) {
       return NextResponse.json(
         { error: "Unauthorized. You must be logged in to request a verification code." },

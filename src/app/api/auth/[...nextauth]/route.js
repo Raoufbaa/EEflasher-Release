@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { query } from "@/lib/db";
 import bcrypt from "bcryptjs";
+import { checkIsAdmin, checkIsVerified } from "@/lib/auth";
 
 export const authOptions = {
   providers: [
@@ -36,8 +37,8 @@ export const authOptions = {
         return {
           id: user.id,
           email: user.email,
-          verified: user.verified === 'true',
-          is_admin: user.is_admin,
+          verified: checkIsVerified(user),
+          is_admin: checkIsAdmin(user),
           name: user.name,
           profile_image: user.profile_image,
         };
@@ -65,8 +66,8 @@ export const authOptions = {
           );
           const dbUser = result.rows[0];
           if (dbUser) {
-            token.verified = dbUser.verified === 'true';
-            token.is_admin = dbUser.is_admin;
+            token.verified = checkIsVerified(dbUser);
+            token.is_admin = checkIsAdmin(dbUser);
             token.name = dbUser.name;
             token.profile_image = dbUser.profile_image;
           }

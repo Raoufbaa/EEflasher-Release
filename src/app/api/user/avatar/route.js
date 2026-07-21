@@ -1,17 +1,14 @@
 import { NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
 import { query } from '@/lib/db';
 import { s3Client } from '@/lib/b2';
 import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { getAuthToken } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req) {
-  const token = await getToken({
-    req,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+  const token = await getAuthToken(req);
   if (!token) {
     // Return default profile picture if not logged in
     return NextResponse.redirect(new URL('/Assets/profile.jpg', req.url));

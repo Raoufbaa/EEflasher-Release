@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
 import { query } from '@/lib/db';
+import { getAuthToken, checkIsAdmin, checkIsVerified } from '@/lib/auth';
 import { firmwareSchema } from '@/lib/validation';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
 import { s3Client } from '@/lib/b2';
@@ -70,11 +70,8 @@ export async function GET(req) {
   const offset = (page - 1) * limit;
 
   // Retrieve token if present to check uploader/admin visibility
-  const token = await getToken({
-    req,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
-  const isAdmin = token?.is_admin === true;
+  const token = await getAuthToken(req);
+  const isAdmin = checkIsAdmin(token);
 
   const modelId = searchParams.get('model_id');
 
@@ -174,10 +171,7 @@ export async function GET(req) {
 
 export async function POST(req) {
   // Authenticate user with NextAuth JWT
-  const token = await getToken({
-    req,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+  const token = await getAuthToken(req);
   if (!token) {
     return NextResponse.json(
       { error: "Unauthorized. You must be logged in to upload firmware." },
@@ -193,8 +187,8 @@ export async function POST(req) {
       { status: 401 }
     );
   }
-  const isVerified = userResult.rows[0].verified === 'true';
-  const isUserAdmin = userResult.rows[0].is_admin;
+  const isVerified = checkIsVerified(userResult.rows[0]);
+  const isUserAdmin = checkIsAdmin(userResult.rows[0]);
 
   // Check uploader verification if required
   const requireVerification = process.env.REQUIRE_UPLOADER_VERIFICATION === 'true';

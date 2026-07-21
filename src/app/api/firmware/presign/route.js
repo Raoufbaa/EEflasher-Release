@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
 import { s3Client } from '@/lib/b2';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -7,16 +6,14 @@ import { presignSchema } from '@/lib/validation';
 import crypto from 'crypto';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
 import { query } from '@/lib/db';
+import { getAuthToken, checkIsVerified } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 
 export async function POST(req) {
   // Check JWT authorization
-  const token = await getToken({
-    req,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+  const token = await getAuthToken(req);
   if (!token) {
     return NextResponse.json(
       { error: "Unauthorized. You must be logged in to upload firmware." },
@@ -32,7 +29,7 @@ export async function POST(req) {
       { status: 401 }
     );
   }
-  const isVerified = userResult.rows[0].verified === 'true';
+  const isVerified = checkIsVerified(userResult.rows[0]);
 
   // Check uploader verification if required
   const requireVerification = process.env.REQUIRE_UPLOADER_VERIFICATION === 'true';

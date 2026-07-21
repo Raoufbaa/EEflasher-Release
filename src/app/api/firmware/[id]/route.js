@@ -1,17 +1,14 @@
 import { NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
 import { query } from '@/lib/db';
 import { deleteFileFromB2 } from '@/lib/b2';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
+import { getAuthToken, checkIsAdmin, checkIsVerified } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function DELETE(req, { params }) {
   // Authenticate user with NextAuth JWT
-  const token = await getToken({
-    req,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+  const token = await getAuthToken(req);
   if (!token) {
     return NextResponse.json(
       { error: "Unauthorized. You must be logged in to delete firmware." },
@@ -28,8 +25,8 @@ export async function DELETE(req, { params }) {
     );
   }
   const dbUser = userResult.rows[0];
-  const isVerified = dbUser.verified === 'true';
-  const isAdmin = dbUser.is_admin;
+  const isVerified = checkIsVerified(dbUser);
+  const isAdmin = checkIsAdmin(dbUser);
 
   // Check uploader verification if required
   const requireVerification = process.env.REQUIRE_UPLOADER_VERIFICATION === 'true';

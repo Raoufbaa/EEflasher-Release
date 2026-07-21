@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
 import { query } from '@/lib/db';
+import { getAuthToken, checkIsAdmin, checkIsVerified } from '@/lib/auth';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
@@ -24,11 +24,8 @@ export async function GET(req) {
     const includeUnapproved = searchParams.get('all') === 'true';
 
     // Retrieve token if present to check uploader/admin visibility
-    const token = await getToken({
-      req,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
-    const isAdmin = token?.is_admin === true;
+    const token = await getAuthToken(req);
+    const isAdmin = checkIsAdmin(token);
 
     let queryText = `
       SELECT manufacturer, model, chip_id AS id, page_size AS "pageSize", 
@@ -66,10 +63,7 @@ export async function GET(req) {
 
 // POST /api/chips - Submit a new chip
 export async function POST(req) {
-  const token = await getToken({
-    req,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+  const token = await getAuthToken(req);
   if (!token) {
     return NextResponse.json({ error: "Unauthorized. You must be logged in to add chips." }, { status: 401 });
   }
@@ -79,8 +73,8 @@ export async function POST(req) {
   if (userResult.rowCount === 0) {
     return NextResponse.json({ error: "Unauthorized. User account not found." }, { status: 401 });
   }
-  const isVerified = userResult.rows[0].verified === 'true';
-  const isUserAdmin = userResult.rows[0].is_admin;
+  const isVerified = checkIsVerified(userResult.rows[0]);
+  const isUserAdmin = checkIsAdmin(userResult.rows[0]);
 
   // Check uploader verification if required
   const requireVerification = process.env.REQUIRE_UPLOADER_VERIFICATION === 'true';
@@ -131,7 +125,7 @@ export async function POST(req) {
     }
 
     // Auto-approve if uploaded by admin
-    const approved = isUserAdmin === true;
+    const approved = isUserAdmin;
 
     await query(
       `INSERT INTO chips (manufacturer, model, chip_id, page_size, size, spi_command, protocol, vcc, approved, normalized_model)
@@ -159,3 +153,4 @@ export async function POST(req) {
     return NextResponse.json({ error: "Failed to add chip to database." }, { status: 500 });
   }
 }
+

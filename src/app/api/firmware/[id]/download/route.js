@@ -4,7 +4,7 @@ import { s3Client } from '@/lib/b2';
 import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
-import { getToken } from 'next-auth/jwt';
+import { getAuthToken, checkIsAdmin } from '@/lib/auth';
 
 export async function GET(req, { params }) {
   // Await params for Next.js 15 compatibility
@@ -43,11 +43,8 @@ export async function GET(req, { params }) {
     // If the device model is not approved yet, check permissions:
     // Only an administrator can access/download it.
     if (!approved) {
-      const token = await getToken({
-        req,
-        secret: process.env.NEXTAUTH_SECRET,
-      });
-      const isAdmin = token && token.is_admin === true;
+      const token = await getAuthToken(req);
+      const isAdmin = checkIsAdmin(token);
 
       if (!isAdmin) {
         return NextResponse.json(

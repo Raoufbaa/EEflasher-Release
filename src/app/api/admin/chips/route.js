@@ -1,19 +1,16 @@
 import { NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
 import { query } from '@/lib/db';
+import { getAuthToken, checkIsAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 async function verifyAdmin(req) {
-  const token = await getToken({
-    req,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+  const token = await getAuthToken(req);
   if (!token) return false;
 
   const res = await query("SELECT is_admin FROM users WHERE id = $1", [token.id]);
   if (res.rowCount === 0) return false;
-  return res.rows[0].is_admin === true;
+  return checkIsAdmin(res.rows[0]);
 }
 
 // GET /api/admin/chips - List all pending chips

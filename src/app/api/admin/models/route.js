@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
 import { query } from '@/lib/db';
 import { deleteFileFromB2 } from '@/lib/b2';
+import { getAuthToken, checkIsAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,15 +14,12 @@ function formatModelName(name) {
 
 // Helper to check if current logged-in user is an admin
 async function verifyAdmin(req) {
-  const token = await getToken({
-    req,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+  const token = await getAuthToken(req);
   if (!token) return false;
 
   const res = await query("SELECT is_admin FROM users WHERE id = $1", [token.id]);
   if (res.rowCount === 0) return false;
-  return res.rows[0].is_admin === true;
+  return checkIsAdmin(res.rows[0]);
 }
 
 // GET /api/admin/models - Get all unapproved models

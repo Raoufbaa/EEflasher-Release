@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
-import { getToken } from 'next-auth/jwt';
+import { getAuthToken, checkIsVerified } from '@/lib/auth';
 import crypto from 'crypto';
 
 export async function POST(req) {
@@ -17,7 +17,7 @@ export async function POST(req) {
 
   try {
     // Get session token to identify the logged-in user
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    const token = await getAuthToken(req);
     if (!token) {
       return NextResponse.json(
         { error: "Unauthorized. You must be logged in to verify your account." },
@@ -62,7 +62,7 @@ export async function POST(req) {
     const dbUser = userResult.rows[0];
 
     // Check if user is already verified
-    if (dbUser.verified === 'true') {
+    if (checkIsVerified(dbUser)) {
       return NextResponse.json(
         { message: "Your email is already verified." },
         { status: 200 }
