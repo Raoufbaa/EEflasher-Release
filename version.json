@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "added drag and drop feature and enhance the hex editor searches",
+  "ReleaseNotes": "fixed light theme hexeditor colos in light mode and trying to add support to FT232H",
   "SupportedVersions": [
+    "1.0.37",
     "1.0.36",
-    "1.0.35",
-    "1.0.34"
+    "1.0.35"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
