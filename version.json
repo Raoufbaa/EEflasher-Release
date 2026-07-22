@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "fixed hexeditor conversion issue",
+  "ReleaseNotes": "update activity log and it does focus on last log and redesgined the bottom area to be more compact",
   "SupportedVersions": [
+    "1.0.39",
     "1.0.38",
-    "1.0.37",
-    "1.0.36"
+    "1.0.37"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
