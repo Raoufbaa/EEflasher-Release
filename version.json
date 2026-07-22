@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "update activity log and it does focus on last log and redesgined the bottom area to be more compact",
+  "ReleaseNotes": "optimized drag and drop feature and add it in both hexeditor and compar section",
   "SupportedVersions": [
+    "1.0.40",
     "1.0.39",
-    "1.0.38",
-    "1.0.37"
+    "1.0.38"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
