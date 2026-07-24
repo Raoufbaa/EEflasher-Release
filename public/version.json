@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "optimized drag and drop feature and add it in both hexeditor and compar section",
+  "ReleaseNotes": "feat: implement FT232H device hardware abstraction and MPSSE SPI communication support",
   "SupportedVersions": [
+    "1.0.41",
     "1.0.40",
-    "1.0.39",
-    "1.0.38"
+    "1.0.39"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
