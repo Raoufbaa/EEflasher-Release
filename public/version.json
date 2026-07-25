@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "feat: add EneEdiProtocol support and bump version to 1.0.45",
+  "ReleaseNotes": "feat: implement MainViewModel and bump project version",
   "SupportedVersions": [
+    "1.0.46",
     "1.0.45",
-    "1.0.44",
-    "1.0.43"
+    "1.0.44"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
