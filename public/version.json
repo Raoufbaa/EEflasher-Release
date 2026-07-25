@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "feat: implement MainViewModel and bump project version",
+  "ReleaseNotes": "enhancing ene EC chip detection",
   "SupportedVersions": [
+    "1.0.47",
     "1.0.46",
-    "1.0.45",
-    "1.0.44"
+    "1.0.45"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
