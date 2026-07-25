@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "trying to fix and enhance the ft232h chip detection",
+  "ReleaseNotes": "feat: implement ENE EDI protocol for SIO chip communication and flash operations",
   "SupportedVersions": [
+    "1.0.43",
     "1.0.42",
-    "1.0.41",
-    "1.0.40"
+    "1.0.41"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
