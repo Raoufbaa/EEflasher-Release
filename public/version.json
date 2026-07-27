@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "enhancing ene EC chip detection",
+  "ReleaseNotes": "trying to fix chip detection on gigadevice using ch347",
   "SupportedVersions": [
+    "1.0.48",
     "1.0.47",
-    "1.0.46",
-    "1.0.45"
+    "1.0.46"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
