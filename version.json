@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "fixed writing issue on some chips using ch347",
+  "ReleaseNotes": "fix: resolve merge conflicts, encrypted database integration and clean up obsolete protocol files",
   "SupportedVersions": [
+    "1.0.50",
     "1.0.49",
-    "1.0.48",
-    "1.0.47"
+    "1.0.48"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
