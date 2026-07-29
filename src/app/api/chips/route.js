@@ -17,18 +17,134 @@ const chipSchema = z.object({
   vcc: z.string().min(1, "VCC is required").max(20)
 });
 
-// GET /api/chips - Return chips list for desktop app and website
+// In-memory cache for encrypted database payload (0ms response speed for desktop app)
+let cachedEncryptedBuffer = null;
+let lastCacheTime = 0;
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+
+export function invalidateChipCache() {
+  cachedEncryptedBuffer = null;
+  lastCacheTime = 0;
+}
+
+// Simple in-memory rate limiter (max 40 requests/min per IP)
+const rateLimitMap = new Map();
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const windowMs = 60 * 1000;
+  const maxReqs = 40;
+
+  let record = rateLimitMap.get(ip);
+  if (!record || now - record.startTime > windowMs) {
+    record = { startTime: now, count: 1 };
+    rateLimitMap.set(ip, record);
+    return true;
+  }
+
+  record.count++;
+  if (record.count > maxReqs) {
+    return false;
+  }
+  return true;
+}
+
+// GET /api/chips - Return chips list for desktop app (encrypted full sync) or web (paginated JSON)
 export async function GET(req) {
   try {
+    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '127.0.0.1';
+    if (!checkRateLimit(clientIp)) {
+      return NextResponse.json(
+        { error: "Too many requests. Please slow down." },
+        { status: 429, headers: { 'Retry-After': '60' } }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
     const search = searchParams.get('search') || '';
     const includeUnapproved = searchParams.get('all') === 'true';
+    const format = searchParams.get('format');
+    const isEncryptedReq = format === 'enc' || format === 'encrypted' || req.headers.get('x-eeflasher-format') === 'encrypted';
 
     // Retrieve token if present to check uploader/admin visibility
     const token = await getAuthToken(req);
     const isAdmin = checkIsAdmin(token);
 
-    let queryText = `
+    // 1. DESKTOP APP FULL DATABASE SYNC (Requires Authorization Header)
+    if (isEncryptedReq) {
+      const secretKey = process.env.DATABASE_SECRET_KEY || "1fec0e752b9692981b0adf15537b22b6cc7a025038c08714ac4018a4a481b868";
+      const requestKey = req.headers.get('x-eeflasher-key') || searchParams.get('key');
+
+      // Security Guard: Prevent browser users from dumping full database via URL params
+      if (requestKey !== secretKey) {
+        return NextResponse.json(
+          { error: "Access Denied: Full database export requires authorized desktop application headers." },
+          { status: 403 }
+        );
+      }
+
+      // Check fast in-memory cache (< 1ms response time)
+      if (cachedEncryptedBuffer && (Date.now() - lastCacheTime < CACHE_TTL_MS)) {
+        return new Response(cachedEncryptedBuffer, {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/octet-stream',
+            'Content-Disposition': 'attachment; filename="Chipsliste.enc"',
+            'Cache-Control': 'public, max-age=3600'
+          }
+        });
+      }
+
+      // Query full DB for desktop sync
+      let fullQuery = `
+        SELECT manufacturer, model, chip_id AS id, page_size AS "pageSize", 
+               size, spi_command AS "spiCommand", protocol, vcc, approved
+        FROM chips
+        WHERE approved = true
+        ORDER BY manufacturer ASC, model ASC
+      `;
+      const fullResult = await query(fullQuery);
+
+      const spiChips = [];
+      const ecChips = [];
+      for (const chip of fullResult.rows) {
+        const isEc = chip.protocol === 'SPI_EC' || chip.spiCommand === 'KB' || 
+                     ['ENE', 'ITE', 'NUVOTON', 'SMSC', 'MICROCHIP_EC', 'MEC'].includes(chip.manufacturer?.toUpperCase());
+        if (isEc) ecChips.push(chip);
+        else spiChips.push(chip);
+      }
+
+      const syncPayload = {
+        version: "2.2",
+        total: fullResult.rowCount,
+        Spi_Chips: spiChips,
+        EC_Chips: ecChips,
+        chips: fullResult.rows
+      };
+
+      const { encryptDatabase } = await import('@/lib/crypto');
+      const encryptedBuffer = await encryptDatabase(JSON.stringify(syncPayload), secretKey);
+
+      cachedEncryptedBuffer = encryptedBuffer;
+      lastCacheTime = Date.now();
+
+      return new Response(encryptedBuffer, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/octet-stream',
+          'Content-Disposition': 'attachment; filename="Chipsliste.enc"',
+          'Cache-Control': 'public, max-age=3600'
+        }
+      });
+    }
+
+    // 2. WEB FRONTEND QUERY (Paginated: 10 per page, preventing mass database scraping)
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '10', 10)));
+    const offset = (page - 1) * limit;
+
+    let countQuery = "SELECT COUNT(*) FROM chips WHERE 1=1";
+    let dataQuery = `
       SELECT manufacturer, model, chip_id AS id, page_size AS "pageSize", 
              size, spi_command AS "spiCommand", protocol, vcc, approved
       FROM chips
@@ -37,39 +153,64 @@ export async function GET(req) {
     const params = [];
     let paramCounter = 1;
 
-    // Filter unapproved chips from public users unless user is admin
     if (!isAdmin && !includeUnapproved) {
-      queryText += " AND approved = true";
+      countQuery += " AND approved = true";
+      dataQuery += " AND approved = true";
     }
 
     if (search) {
-      queryText += ` AND (manufacturer ILIKE $${paramCounter} OR model ILIKE $${paramCounter} OR chip_id ILIKE $${paramCounter})`;
+      countQuery += ` AND (manufacturer ILIKE $${paramCounter} OR model ILIKE $${paramCounter} OR chip_id ILIKE $${paramCounter})`;
+      dataQuery += ` AND (manufacturer ILIKE $${paramCounter} OR model ILIKE $${paramCounter} OR chip_id ILIKE $${paramCounter})`;
       params.push(`%${search}%`);
       paramCounter++;
     }
 
-    queryText += " ORDER BY manufacturer ASC, model ASC";
-    const result = await query(queryText, params);
-
-    const spiChips = [];
-    const ecChips = [];
-
-    for (const chip of result.rows) {
-      const isEc = chip.protocol === 'SPI_EC' || chip.spiCommand === 'KB' || 
-                   ['ENE', 'ITE', 'NUVOTON', 'SMSC', 'MICROCHIP_EC', 'MEC'].includes(chip.manufacturer?.toUpperCase());
-      if (isEc) {
-        ecChips.push(chip);
-      } else {
-        spiChips.push(chip);
-      }
+    const categoryParam = searchParams.get('category')?.toUpperCase();
+    if (categoryParam === 'EC') {
+      const ecFilter = " AND (protocol = 'SPI_EC' OR spi_command = 'KB' OR UPPER(manufacturer) IN ('ENE', 'ITE', 'NUVOTON', 'SMSC', 'MICROCHIP_EC', 'MEC'))";
+      countQuery += ecFilter;
+      dataQuery += ecFilter;
+    } else if (categoryParam === 'SPI') {
+      const spiFilter = " AND NOT (protocol = 'SPI_EC' OR spi_command = 'KB' OR UPPER(manufacturer) IN ('ENE', 'ITE', 'NUVOTON', 'SMSC', 'MICROCHIP_EC', 'MEC'))";
+      countQuery += spiFilter;
+      dataQuery += spiFilter;
     }
+
+    const countResult = await query(countQuery, params);
+    const totalItems = parseInt(countResult.rows[0].count, 10);
+    const totalPages = Math.ceil(totalItems / limit) || 1;
+
+    dataQuery += ` ORDER BY manufacturer ASC, model ASC LIMIT $${paramCounter} OFFSET $${paramCounter + 1}`;
+    const dataParams = [...params, limit, offset];
+    const dataResult = await query(dataQuery, dataParams);
+
+    // Global counts query for filter button badges
+    const globalCountsResult = await query(`
+      SELECT 
+        COUNT(*) AS total,
+        COUNT(*) FILTER (WHERE NOT (protocol = 'SPI_EC' OR spi_command = 'KB' OR UPPER(manufacturer) IN ('ENE', 'ITE', 'NUVOTON', 'SMSC', 'MICROCHIP_EC', 'MEC'))) AS spi,
+        COUNT(*) FILTER (WHERE (protocol = 'SPI_EC' OR spi_command = 'KB' OR UPPER(manufacturer) IN ('ENE', 'ITE', 'NUVOTON', 'SMSC', 'MICROCHIP_EC', 'MEC'))) AS ec
+      FROM chips
+      WHERE approved = true
+    `);
+    const counts = {
+      total: parseInt(globalCountsResult.rows[0]?.total || 0, 10),
+      spi: parseInt(globalCountsResult.rows[0]?.spi || 0, 10),
+      ec: parseInt(globalCountsResult.rows[0]?.ec || 0, 10)
+    };
 
     return NextResponse.json({
       version: "2.2",
-      total: result.rowCount,
-      Spi_Chips: spiChips,
-      EC_Chips: ecChips,
-      chips: result.rows
+      chips: dataResult.rows,
+      counts: counts,
+      pagination: {
+        currentPage: page,
+        totalPages: totalPages,
+        totalItems: totalItems,
+        limit: limit,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1
+      }
     });
   } catch (err) {
     console.error("Error retrieving chips database:", err);
@@ -170,6 +311,8 @@ export async function POST(req) {
         normalized
       ]
     );
+
+    invalidateChipCache();
 
     return NextResponse.json({
       message: approved ? "Chip added successfully!" : "Chip submitted successfully and is pending admin approval.",

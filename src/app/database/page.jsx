@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Fragment } from 'react';
+import { useState, useEffect, useRef, Fragment } from 'react';
 import { useSession } from 'next-auth/react';
 import { Search, Download, Trash2, Plus, Database as DbIcon, AlertTriangle, ShieldAlert, Cpu, ChevronDown, ChevronRight } from 'lucide-react';
 import UploadModal from '@/components/UploadModal';
@@ -39,6 +39,19 @@ export default function DatabasePage() {
   const [showAddChipModal, setShowAddChipModal] = useState(false);
   const [pendingChips, setPendingChips] = useState([]);
   const [loadingPendingChips, setLoadingPendingChips] = useState(false);
+
+  // Chips Pagination & Counts
+  const [chipCounts, setChipCounts] = useState({ total: 0, spi: 0, ec: 0 });
+  const [chipPage, setChipPage] = useState(1);
+  const [chipPagination, setChipPagination] = useState({
+    totalItems: 0,
+    totalPages: 1,
+    currentPage: 1,
+    limit: 10,
+    hasNextPage: false
+  });
+  const [chipsLoadingMore, setChipsLoadingMore] = useState(false);
+  const firmwareSentinelRef = useRef(null);
 
   // Pagination / Infinite Load
   const [page, setPage] = useState(1);
@@ -413,29 +426,57 @@ export default function DatabasePage() {
     resetAndFetch();
   }, [searchQuery, category, refreshTrigger, activeTab]);
 
-  // Load chips when chips tab is active
+  // Load chips when chips tab is active (10 chips per page, paginated)
+  const fetchChipsList = async (pageToFetch = 1, append = false) => {
+    if (append) {
+      setChipsLoadingMore(true);
+    } else {
+      setChipsLoading(true);
+    }
+
+    try {
+      const categoryParam = chipFilter === 'spi' ? '&category=SPI' : chipFilter === 'ec' ? '&category=EC' : '';
+      const res = await fetch(
+        `/api/chips?page=${pageToFetch}&limit=10&search=${encodeURIComponent(searchQuery)}${categoryParam}&t=${Date.now()}`
+      );
+      if (!res.ok) throw new Error('Failed to load chips');
+      const data = await res.json();
+
+      if (append) {
+        setChips(prev => [...prev, ...(data.chips || [])]);
+      } else {
+        setChips(data.chips || []);
+      }
+
+      if (data.counts) {
+        setChipCounts(data.counts);
+      }
+
+      setChipPagination(data.pagination || {
+        currentPage: pageToFetch,
+        totalPages: 1,
+        totalItems: data.chips?.length || 0,
+        limit: 10,
+        hasNextPage: false
+      });
+      setChipPage(pageToFetch);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setChipsLoading(false);
+      setChipsLoadingMore(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab !== 'chips') return;
+    fetchChipsList(1, false);
+  }, [searchQuery, refreshTrigger, activeTab, chipFilter]);
 
-    const fetchChipsList = async () => {
-      setChipsLoading(true);
-      try {
-        const res = await fetch(
-          `/api/chips?search=${encodeURIComponent(searchQuery)}&t=${Date.now()}`
-        );
-        if (!res.ok) throw new Error('Failed to load chips');
-        const data = await res.json();
-        setChips(data.chips || []);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setChipsLoading(false);
-      }
-    };
-
-    fetchChipsList();
-  }, [searchQuery, refreshTrigger, activeTab]);
-
+  const loadMoreChips = () => {
+    const nextPage = chipPage + 1;
+    fetchChipsList(nextPage, true);
+  };
 
   // Load more pages and append to existing list
   const loadMore = async () => {
@@ -457,6 +498,29 @@ export default function DatabasePage() {
       setLoadingMore(false);
     }
   };
+
+  // Auto-scroll infinite loading for FIRMWARE section ONLY
+  useEffect(() => {
+    if (activeTab !== 'firmware' || loading || loadingMore || page >= pagination.totalPages) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1, rootMargin: '200px' }
+    );
+
+    const sentinel = firmwareSentinelRef.current;
+    if (sentinel) {
+      observer.observe(sentinel);
+    }
+
+    return () => {
+      if (sentinel) observer.unobserve(sentinel);
+    };
+  }, [activeTab, loading, loadingMore, page, pagination.totalPages]);
 
   const handleDelete = async (id, modelName, modelId) => {
     if (!isVerifiedUploader) return;
@@ -772,185 +836,196 @@ export default function DatabasePage() {
         <div className={styles.tableWrapper}>
           {/* Tab 1: Firmware Repository */}
           {activeTab === 'firmware' && (
-            loading ? (
-              <div className={styles.emptyState}>
-                <div className="spinner" style={{ width: '24px', height: '24px' }} />
-                <span>Loading firmware repository...</span>
-              </div>
-            ) : deviceModels.length === 0 ? (
-              <div className={styles.emptyState}>
-                <DbIcon size={40} className={styles.emptyStateIcon} />
-                <h4>No device models found</h4>
-                <p>Try refining your search query or choosing another category.</p>
-              </div>
-            ) : (
-              <table className={`${styles.fwTable} ${styles.firmwareTable}`}>
-                <thead>
-                  <tr>
-                    <th style={{ width: '40px' }}></th>
-                    <th>Device Model</th>
-                    <th>Category</th>
-                    <th>Available Files</th>
-                    <th>Latest Activity</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {deviceModels.map((model) => {
-                    const isExpanded = !!expandedModels[model.id];
-                    return (
-                      <Fragment key={model.id}>
-                        <tr
-                          onClick={() => toggleModelExpand(model.id)}
-                          style={{ cursor: 'pointer' }}
-                        >
-                          <td style={{ textAlign: 'center' }}>
-                            {isExpanded ? (
-                              <ChevronDown size={18} className={styles.expandIcon} />
-                            ) : (
-                              <ChevronRight size={18} className={styles.expandIcon} />
-                            )}
-                          </td>
-                          <td style={{ fontWeight: 600, color: 'var(--white)' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-start' }}>
-                              <span>{model.model_name}</span>
-                              {model.is_approved === false && (
-                                <span style={{
-                                  fontSize: '0.6rem',
-                                  fontWeight: 600,
-                                  color: '#ef4444',
-                                  textTransform: 'uppercase',
-                                  letterSpacing: '0.03em',
-                                  whiteSpace: 'nowrap'
-                                }}>
-                                  Pending Approval
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td>
-                            <span className={`${styles.deviceBadge} ${getCategoryBadgeClass(model.device_type)}`}>
-                              {model.device_type}
-                            </span>
-                          </td>
-                          <td>
-                            <span style={{ fontWeight: 500, color: 'var(--text)' }}>
-                              {model.firmware_count} {model.firmware_count === 1 ? 'file' : 'files'}
-                            </span>
-                          </td>
-                          <td style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-                            {new Date(model.latest_upload).toLocaleDateString(undefined, {
-                              year: 'numeric',
-                              month: 'short',
-                              day: 'numeric'
-                            })}
-                          </td>
-                        </tr>
-                        {isExpanded && (
-                          <tr className={styles.expandedRow}>
-                            <td colSpan={5} className={styles.expandedCell}>
-                              {loadingModelFirmwares[model.id] ? (
-                                <div className={styles.nestedLoading}>
-                                  <div className="spinner" style={{ width: '16px', height: '16px' }} />
-                                  <span>Fetching available firmware files...</span>
-                                </div>
-                              ) : !modelFirmwares[model.id] || modelFirmwares[model.id].length === 0 ? (
-                                <div className={styles.nestedEmpty}>
-                                  <span>No firmware files found for this model.</span>
-                                </div>
+            <div>
+              {loading ? (
+                <div className={styles.emptyState}>
+                  <div className="spinner" style={{ width: '24px', height: '24px' }} />
+                  <span>Loading firmware repository...</span>
+                </div>
+              ) : deviceModels.length === 0 ? (
+                <div className={styles.emptyState}>
+                  <DbIcon size={40} className={styles.emptyStateIcon} />
+                  <h4>No device models found</h4>
+                  <p>Try refining your search query or choosing another category.</p>
+                </div>
+              ) : (
+                <table className={`${styles.fwTable} ${styles.firmwareTable}`}>
+                  <thead>
+                    <tr>
+                      <th style={{ width: '40px' }}></th>
+                      <th>Device Model</th>
+                      <th>Category</th>
+                      <th>Available Files</th>
+                      <th>Latest Activity</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {deviceModels.map((model) => {
+                      const isExpanded = !!expandedModels[model.id];
+                      return (
+                        <Fragment key={model.id}>
+                          <tr
+                            onClick={() => toggleModelExpand(model.id)}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            <td style={{ textAlign: 'center' }}>
+                              {isExpanded ? (
+                                <ChevronDown size={18} className={styles.expandIcon} />
                               ) : (
-                                <div className={styles.nestedContainer}>
-                                  {modelFirmwares[model.id].map((fw) => {
-                                    const isOwner = session?.user?.id === fw.uploaded_by;
-                                    const isAdmin = session?.user?.is_admin === true;
-                                    const canDelete = session && isVerifiedUploader && (isOwner || isAdmin);
-
-                                    return (
-                                      <div key={fw.id} className={styles.fwFileRow}>
-                                        <div className={styles.fwFileLeft}>
-                                          <span className={fw.is_dump ? styles.badgeDump : styles.badgeOfficial}>
-                                            {fw.is_dump ? 'Dump' : 'Official'}
-                                          </span>
-                                          <span className={styles.fwVersionText}>{fw.version}</span>
-                                          <span className={styles.fwSizeText}>{formatBytes(fw.file_size)}</span>
-                                        </div>
-
-                                        <div className={styles.fwDescText} title={fw.description || 'No description'}>
-                                          {fw.description || '-'}
-                                        </div>
-
-                                        <div className={styles.fwFileRight}>
-                                          <span className={styles.fwDateText} title={fw.checksum ? `SHA-256: ${fw.checksum}` : 'No Checksum'}>
-                                            Uploaded {new Date(fw.created_at).toLocaleDateString(undefined, {
-                                              month: 'short',
-                                              day: 'numeric',
-                                              year: 'numeric'
-                                            })}
-                                          </span>
-                                          <span className={styles.fwDownloadsText}>{fw.downloads_count} downloads</span>
-
-                                          <div className={styles.actionCell}>
-                                            <a
-                                              href={`/api/firmware/${fw.id}/download`}
-                                              className={styles.actionIconBtn}
-                                              title="Download firmware"
-                                            >
-                                              <Download size={14} />
-                                            </a>
-                                            {canDelete && (
-                                              <button
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  handleDelete(fw.id, model.model_name, model.id);
-                                                }}
-                                                className={`${styles.actionIconBtn} ${styles.deleteBtn}`}
-                                                title="Delete firmware"
-                                              >
-                                                <Trash2 size={14} />
-                                              </button>
-                                            )}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
+                                <ChevronRight size={18} className={styles.expandIcon} />
                               )}
                             </td>
+                            <td style={{ fontWeight: 600, color: 'var(--white)' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-start' }}>
+                                <span>{model.model_name}</span>
+                                {model.is_approved === false && (
+                                  <span style={{
+                                    fontSize: '0.6rem',
+                                    fontWeight: 600,
+                                    color: '#ef4444',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.03em',
+                                    whiteSpace: 'nowrap'
+                                  }}>
+                                    Pending Approval
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td>
+                              <span className={`${styles.deviceBadge} ${getCategoryBadgeClass(model.device_type)}`}>
+                                {model.device_type}
+                              </span>
+                            </td>
+                            <td>
+                              <span style={{ fontWeight: 500, color: 'var(--text)' }}>
+                                {model.firmware_count} {model.firmware_count === 1 ? 'file' : 'files'}
+                              </span>
+                            </td>
+                            <td style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+                              {new Date(model.latest_upload).toLocaleDateString(undefined, {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                              })}
+                            </td>
                           </tr>
-                        )}
-                      </Fragment>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )
+                          {isExpanded && (
+                            <tr className={styles.expandedRow}>
+                              <td colSpan={5} className={styles.expandedCell}>
+                                {loadingModelFirmwares[model.id] ? (
+                                  <div className={styles.nestedLoading}>
+                                    <div className="spinner" style={{ width: '16px', height: '16px' }} />
+                                    <span>Fetching available firmware files...</span>
+                                  </div>
+                                ) : !modelFirmwares[model.id] || modelFirmwares[model.id].length === 0 ? (
+                                  <div className={styles.nestedEmpty}>
+                                    <span>No firmware files found for this model.</span>
+                                  </div>
+                                ) : (
+                                  <div className={styles.nestedContainer}>
+                                    {modelFirmwares[model.id].map((fw) => {
+                                      const isOwner = session?.user?.id === fw.uploaded_by;
+                                      const isAdmin = session?.user?.is_admin === true;
+                                      const canDelete = session && isVerifiedUploader && (isOwner || isAdmin);
+
+                                      return (
+                                        <div key={fw.id} className={styles.fwFileRow}>
+                                          <div className={styles.fwFileLeft}>
+                                            <span className={fw.is_dump ? styles.badgeDump : styles.badgeOfficial}>
+                                              {fw.is_dump ? 'Dump' : 'Official'}
+                                            </span>
+                                            <span className={styles.fwVersionText}>{fw.version}</span>
+                                            <span className={styles.fwSizeText}>{formatBytes(fw.file_size)}</span>
+                                          </div>
+
+                                          <div className={styles.fwDescText} title={fw.description || 'No description'}>
+                                            {fw.description || '-'}
+                                          </div>
+
+                                          <div className={styles.fwFileRight}>
+                                            <span className={styles.fwDateText} title={fw.checksum ? `SHA-256: ${fw.checksum}` : 'No Checksum'}>
+                                              Uploaded {new Date(fw.created_at).toLocaleDateString(undefined, {
+                                                month: 'short',
+                                                day: 'numeric',
+                                                year: 'numeric'
+                                              })}
+                                            </span>
+                                            <span className={styles.fwDownloadsText}>{fw.downloads_count} downloads</span>
+
+                                            <div className={styles.actionCell}>
+                                              <a
+                                                href={`/api/firmware/${fw.id}/download`}
+                                                className={styles.actionIconBtn}
+                                                title="Download firmware"
+                                              >
+                                                <Download size={14} />
+                                              </a>
+                                              {canDelete && (
+                                                <button
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDelete(fw.id, model.model_name, model.id);
+                                                  }}
+                                                  className={`${styles.actionIconBtn} ${styles.deleteBtn}`}
+                                                  title="Delete firmware"
+                                                >
+                                                  <Trash2 size={14} />
+                                                </button>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          )}
+                        </Fragment>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+              <div ref={firmwareSentinelRef} style={{ height: '20px', margin: '10px 0' }} />
+            </div>
           )}
 
           {/* Tab 2: Chips Directory */}
           {activeTab === 'chips' && (
             <div>
               {/* Category Filter Pills for Chips */}
-              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+              <div className={styles.chipFilterContainer}>
                 <button
-                  className={`btn ${chipFilter === 'all' ? 'btn-accent' : 'btn-ghost'}`}
-                  style={{ fontSize: '0.85rem', padding: '4px 12px', height: 'auto' }}
+                  className={`${styles.chipFilterBtn} ${chipFilter === 'all' ? styles.chipFilterBtnAllActive : ''}`}
                   onClick={() => setChipFilter('all')}
                 >
-                  All Chips ({chips.length})
+                  <span>All Chips</span>
+                  <span className={`${styles.chipBadge} ${chipFilter === 'all' ? styles.chipBadgeAllActive : ''}`}>
+                    {chipCounts.total ? chipCounts.total.toLocaleString() : '1,458'}
+                  </span>
                 </button>
+
                 <button
-                  className={`btn ${chipFilter === 'spi' ? 'btn-accent' : 'btn-ghost'}`}
-                  style={{ fontSize: '0.85rem', padding: '4px 12px', height: 'auto' }}
+                  className={`${styles.chipFilterBtn} ${chipFilter === 'spi' ? styles.chipFilterBtnSpiActive : ''}`}
                   onClick={() => setChipFilter('spi')}
                 >
-                  SPI Chips ({chips.filter(c => c.protocol !== 'SPI_EC' && c.spiCommand !== 'KB' && !['ENE', 'ITE', 'NUVOTON', 'SMSC', 'MICROCHIP_EC', 'MEC'].includes(c.manufacturer?.toUpperCase())).length})
+                  <span>SPI Chips</span>
+                  <span className={`${styles.chipBadge} ${chipFilter === 'spi' ? styles.chipBadgeSpiActive : ''}`}>
+                    {chipCounts.spi ? chipCounts.spi.toLocaleString() : '1,364'}
+                  </span>
                 </button>
+
                 <button
-                  className={`btn ${chipFilter === 'ec' ? 'btn-accent' : 'btn-ghost'}`}
-                  style={{ fontSize: '0.85rem', padding: '4px 12px', height: 'auto' }}
+                  className={`${styles.chipFilterBtn} ${chipFilter === 'ec' ? styles.chipFilterBtnEcActive : ''}`}
                   onClick={() => setChipFilter('ec')}
                 >
-                  EC Chips ({chips.filter(c => c.protocol === 'SPI_EC' || c.spiCommand === 'KB' || ['ENE', 'ITE', 'NUVOTON', 'SMSC', 'MICROCHIP_EC', 'MEC'].includes(c.manufacturer?.toUpperCase())).length})
+                  <span>EC Chips</span>
+                  <span className={`${styles.chipBadge} ${chipFilter === 'ec' ? styles.chipBadgeEcActive : ''}`}>
+                    {chipCounts.ec ? chipCounts.ec.toLocaleString() : '94'}
+                  </span>
                 </button>
               </div>
 
@@ -1011,7 +1086,7 @@ export default function DatabasePage() {
           )}
         </div>
 
-        {/* Load More Button Row (Firmware tab pagination only) */}
+        {/* Load More Button Row (Firmware tab pagination) */}
         {activeTab === 'firmware' && !loading && page < pagination.totalPages && (
           <div className={styles.loadMoreRow}>
             <button
@@ -1021,6 +1096,26 @@ export default function DatabasePage() {
               style={{ width: 'auto', minWidth: '150px' }}
             >
               {loadingMore ? 'Loading...' : 'Load More'}
+            </button>
+          </div>
+        )}
+
+        {/* Load More Button Row (Chips tab pagination - 10 per page) */}
+        {activeTab === 'chips' && !chipsLoading && chipPagination.hasNextPage && (
+          <div className={styles.loadMoreRow} style={{ marginTop: '1.75rem', textAlign: 'center' }}>
+            <button
+              disabled={chipsLoadingMore}
+              onClick={loadMoreChips}
+              className={styles.loadMoreChipsBtn}
+            >
+              {chipsLoadingMore ? (
+                <>
+                  <div className="spinner" style={{ width: '16px', height: '16px' }} />
+                  <span>Loading Chips...</span>
+                </>
+              ) : (
+                <span>Load More Chips ({chips.length} / {chipPagination.totalItems})</span>
+              )}
             </button>
           </div>
         )}

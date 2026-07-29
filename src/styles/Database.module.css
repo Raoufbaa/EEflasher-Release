@@ -860,3 +860,96 @@
     margin-top: 4px;
   }
 }
+
+/* Chip Filter Container & Category Pills */
+.chipFilterContainer {
+  display: flex;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.chipFilterBtn {
+  padding: 8px 16px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.chipFilterBtn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--white);
+}
+
+.chipFilterBtnAllActive {
+  border: none !important;
+  background: rgba(99, 102, 241, 0.18) !important;
+  color: #a5b4fc !important;
+}
+
+.chipFilterBtnSpiActive {
+  border: none !important;
+  background: rgba(59, 130, 246, 0.18) !important;
+  color: #93c5fd !important;
+}
+
+.chipFilterBtnEcActive {
+  border: none !important;
+  background: rgba(16, 185, 129, 0.18) !important;
+  color: #6ee7b7 !important;
+}
+
+/* Pill Count Badges */
+.chipBadge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  transition: background 0.2s ease;
+}
+
+.chipBadgeAllActive {
+  background: #6366f1 !important;
+}
+
+.chipBadgeSpiActive {
+  background: #3b82f6 !important;
+}
+
+.chipBadgeEcActive {
+  background: #10b981 !important;
+}
+
+/* Load More Chips Button */
+.loadMoreChipsBtn {
+  padding: 10px 24px;
+  border-radius: 5px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--border);
+  color: var(--text);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.loadMoreChipsBtn:hover {
+  background: var(--border2);
+}
+
+.loadMoreChipsBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
