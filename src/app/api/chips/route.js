@@ -6,6 +6,7 @@ import { z } from 'zod';
 export const dynamic = 'force-dynamic';
 
 const chipSchema = z.object({
+  category: z.enum(["SPI", "EC"]).optional().default("SPI"),
   manufacturer: z.string().min(1, "Manufacturer is required").max(100),
   model: z.string().min(1, "Model is required").max(100),
   id: z.string().min(1, "Chip Hex ID is required").max(100), // maps to chip_id
@@ -50,9 +51,24 @@ export async function GET(req) {
     queryText += " ORDER BY manufacturer ASC, model ASC";
     const result = await query(queryText, params);
 
+    const spiChips = [];
+    const ecChips = [];
+
+    for (const chip of result.rows) {
+      const isEc = chip.protocol === 'SPI_EC' || chip.spiCommand === 'KB' || 
+                   ['ENE', 'ITE', 'NUVOTON', 'SMSC', 'MICROCHIP_EC', 'MEC'].includes(chip.manufacturer?.toUpperCase());
+      if (isEc) {
+        ecChips.push(chip);
+      } else {
+        spiChips.push(chip);
+      }
+    }
+
     return NextResponse.json({
       version: "2.2",
       total: result.rowCount,
+      Spi_Chips: spiChips,
+      EC_Chips: ecChips,
       chips: result.rows
     });
   } catch (err) {
@@ -102,6 +118,7 @@ export async function POST(req) {
     }
 
     const {
+      category = "SPI",
       manufacturer,
       model,
       id: chip_id,
@@ -111,6 +128,16 @@ export async function POST(req) {
       protocol,
       vcc
     } = validation.data;
+
+    let finalProtocol = protocol;
+    let finalSpiCommand = spiCommand;
+
+    if (category === "EC") {
+      finalProtocol = "SPI_EC";
+      if (!finalSpiCommand || finalSpiCommand === "SPI25") {
+        finalSpiCommand = "KB";
+      }
+    }
 
     const normalized = `${manufacturer}_${model}`.toUpperCase().replace(/[^A-Z0-9]/g, '');
 
@@ -136,8 +163,8 @@ export async function POST(req) {
         chip_id.trim().toUpperCase(),
         pageSize,
         size,
-        spiCommand.trim(),
-        protocol.trim(),
+        finalSpiCommand.trim(),
+        finalProtocol.trim(),
         vcc.trim(),
         approved,
         normalized

@@ -33,6 +33,7 @@ export default function DatabasePage() {
 
   // Tabs
   const [activeTab, setActiveTab] = useState('firmware'); // 'firmware' or 'chips'
+  const [chipFilter, setChipFilter] = useState('all'); // 'all', 'spi', 'ec'
   const [chips, setChips] = useState([]);
   const [chipsLoading, setChipsLoading] = useState(false);
   const [showAddChipModal, setShowAddChipModal] = useState(false);
@@ -927,51 +928,86 @@ export default function DatabasePage() {
 
           {/* Tab 2: Chips Directory */}
           {activeTab === 'chips' && (
-            chipsLoading ? (
-              <div className={styles.emptyState}>
-                <div className="spinner" style={{ width: '24px', height: '24px' }} />
-                <span>Loading supported chips directory...</span>
+            <div>
+              {/* Category Filter Pills for Chips */}
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+                <button
+                  className={`btn ${chipFilter === 'all' ? 'btn-accent' : 'btn-ghost'}`}
+                  style={{ fontSize: '0.85rem', padding: '4px 12px', height: 'auto' }}
+                  onClick={() => setChipFilter('all')}
+                >
+                  All Chips ({chips.length})
+                </button>
+                <button
+                  className={`btn ${chipFilter === 'spi' ? 'btn-accent' : 'btn-ghost'}`}
+                  style={{ fontSize: '0.85rem', padding: '4px 12px', height: 'auto' }}
+                  onClick={() => setChipFilter('spi')}
+                >
+                  SPI Chips ({chips.filter(c => c.protocol !== 'SPI_EC' && c.spiCommand !== 'KB' && !['ENE', 'ITE', 'NUVOTON', 'SMSC', 'MICROCHIP_EC', 'MEC'].includes(c.manufacturer?.toUpperCase())).length})
+                </button>
+                <button
+                  className={`btn ${chipFilter === 'ec' ? 'btn-accent' : 'btn-ghost'}`}
+                  style={{ fontSize: '0.85rem', padding: '4px 12px', height: 'auto' }}
+                  onClick={() => setChipFilter('ec')}
+                >
+                  EC Chips ({chips.filter(c => c.protocol === 'SPI_EC' || c.spiCommand === 'KB' || ['ENE', 'ITE', 'NUVOTON', 'SMSC', 'MICROCHIP_EC', 'MEC'].includes(c.manufacturer?.toUpperCase())).length})
+                </button>
               </div>
-            ) : chips.length === 0 ? (
-              <div className={styles.emptyState}>
-                <Cpu size={40} className={styles.emptyStateIcon} />
-                <h4>No supported chips found</h4>
-                <p>Try refining your search query.</p>
-              </div>
-            ) : (
-              <table className={`${styles.fwTable} ${styles.chipsTable}`}>
-                <thead>
-                  <tr>
-                    <th>Manufacturer</th>
-                    <th>Model</th>
-                    <th>Hex JEDEC ID</th>
-                    <th>Size</th>
-                    <th>Page Size</th>
-                    <th>Protocol</th>
-                    <th>SPI Command</th>
-                    <th>VCC</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {chips.map((chip, idx) => (
-                    <tr key={idx}>
-                      <td style={{ fontWeight: 600, color: 'var(--white)' }}>{chip.manufacturer}</td>
-                      <td style={{ fontWeight: 600, color: 'var(--accent)' }}>{chip.model}</td>
-                      <td style={{ fontFamily: 'monospace', letterSpacing: '0.04em' }}>{chip.id}</td>
-                      <td>{formatBytes(chip.size)}</td>
-                      <td>{chip.pageSize} Bytes</td>
-                      <td>
-                        <span className={`${styles.deviceBadge} ${styles.badgeReceiver}`}>
-                          {chip.protocol}
-                        </span>
-                      </td>
-                      <td style={{ fontFamily: 'monospace' }}>{chip.spiCommand}</td>
-                      <td style={{ fontWeight: 600 }}>{chip.vcc}V</td>
+
+              {chipsLoading ? (
+                <div className={styles.emptyState}>
+                  <div className="spinner" style={{ width: '24px', height: '24px' }} />
+                  <span>Loading supported chips directory...</span>
+                </div>
+              ) : chips.length === 0 ? (
+                <div className={styles.emptyState}>
+                  <Cpu size={40} className={styles.emptyStateIcon} />
+                  <h4>No supported chips found</h4>
+                  <p>Try refining your search query.</p>
+                </div>
+              ) : (
+                <table className={`${styles.fwTable} ${styles.chipsTable}`}>
+                  <thead>
+                    <tr>
+                      <th>Manufacturer</th>
+                      <th>Model</th>
+                      <th>Hex JEDEC ID</th>
+                      <th>Size</th>
+                      <th>Page Size</th>
+                      <th>Protocol</th>
+                      <th>SPI Command</th>
+                      <th>VCC</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )
+                  </thead>
+                  <tbody>
+                    {chips
+                      .filter(chip => {
+                        const isEc = chip.protocol === 'SPI_EC' || chip.spiCommand === 'KB' || 
+                                     ['ENE', 'ITE', 'NUVOTON', 'SMSC', 'MICROCHIP_EC', 'MEC'].includes(chip.manufacturer?.toUpperCase());
+                        if (chipFilter === 'spi') return !isEc;
+                        if (chipFilter === 'ec') return isEc;
+                        return true;
+                      })
+                      .map((chip, idx) => (
+                        <tr key={idx}>
+                          <td style={{ fontWeight: 600, color: 'var(--white)' }}>{chip.manufacturer}</td>
+                          <td style={{ fontWeight: 600, color: 'var(--accent)' }}>{chip.model}</td>
+                          <td style={{ fontFamily: 'monospace', letterSpacing: '0.04em' }}>{chip.id}</td>
+                          <td>{formatBytes(chip.size)}</td>
+                          <td>{chip.pageSize} Bytes</td>
+                          <td>
+                            <span className={`${styles.deviceBadge} ${styles.badgeReceiver}`}>
+                              {chip.protocol}
+                            </span>
+                          </td>
+                          <td style={{ fontFamily: 'monospace' }}>{chip.spiCommand}</td>
+                          <td style={{ fontWeight: 600 }}>{chip.vcc}V</td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
           )}
         </div>
 

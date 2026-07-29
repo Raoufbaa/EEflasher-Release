@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Cpu, AlertTriangle } from 'lucide-react';
+import { X, AlertTriangle, Cpu, Zap, Check } from 'lucide-react';
 import styles from '@/styles/UploadModal.module.css'; // Reuse upload modal styles
 
 export default function AddChipModal({ onClose, onSuccess }) {
+  const [category, setCategory] = useState('SPI'); // 'SPI' or 'EC'
   const [manufacturer, setManufacturer] = useState('');
   const [model, setModel] = useState('');
   const [chipId, setChipId] = useState('');
@@ -29,6 +30,27 @@ export default function AddChipModal({ onClose, onSuccess }) {
     };
   }, []);
 
+  const handleCategoryChange = (newCat) => {
+    setCategory(newCat);
+    if (newCat === 'EC') {
+      setProtocol('SPI_EC');
+      setSpiCommand('KB');
+      setPageSize(128);
+      setSize(131072); // 128 KB
+      setManufacturer('ENE');
+      setModel('KB9012');
+      setChipId('9012');
+    } else {
+      setProtocol('SPI');
+      setSpiCommand('SPI25');
+      setPageSize(256);
+      setSize(4194304); // 4 MB
+      setManufacturer('');
+      setModel('');
+      setChipId('');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -46,13 +68,14 @@ export default function AddChipModal({ onClose, onSuccess }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          category,
           manufacturer: manufacturer.trim(),
           model: model.trim(),
           id: chipId.trim().toUpperCase(),
           pageSize: Number(pageSize),
           size: Number(size),
-          spiCommand: spiCommand.trim(),
-          protocol: protocol.trim(),
+          spiCommand: category === 'EC' ? 'KB' : spiCommand.trim(),
+          protocol: category === 'EC' ? 'SPI_EC' : protocol.trim(),
           vcc: vcc.trim()
         })
       });
@@ -97,13 +120,107 @@ export default function AddChipModal({ onClose, onSuccess }) {
         )}
 
         <form onSubmit={handleSubmit}>
+          {/* Card Category Selector (No Radio Buttons) */}
+          <div className={styles.formGroup} style={{ marginBottom: '1.25rem' }}>
+            <label style={{ fontWeight: '600', marginBottom: '0.6rem', display: 'block', color: '#e2e8f0', fontSize: '0.9rem' }}>
+              Select Chip Type / Category:
+            </label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
+              {/* SPI Option Card */}
+              <div
+                onClick={() => handleCategoryChange('SPI')}
+                style={{
+                  cursor: 'pointer',
+                  padding: '0.85rem 1rem',
+                  borderRadius: '8px',
+                  border: category === 'SPI' ? '2px solid #38bdf8' : '1.5px solid rgba(255, 255, 255, 0.12)',
+                  backgroundColor: category === 'SPI' ? 'rgba(56, 189, 248, 0.12)' : 'rgba(255, 255, 255, 0.03)',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  userSelect: 'none'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <Zap size={20} color={category === 'SPI' ? '#38bdf8' : '#94a3b8'} />
+                  <div>
+                    <div style={{ fontWeight: '600', fontSize: '0.92rem', color: category === 'SPI' ? '#ffffff' : '#cbd5e1' }}>
+                      SPI / EEPROM Flash
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: category === 'SPI' ? '#93c5fd' : '#64748b' }}>
+                      Standard BIOS & Serial Flash
+                    </div>
+                  </div>
+                </div>
+                {category === 'SPI' && (
+                  <div style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    backgroundColor: '#38bdf8',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    <Check size={13} color="#0f172a" strokeWidth={3} />
+                  </div>
+                )}
+              </div>
+
+              {/* EC Option Card */}
+              <div
+                onClick={() => handleCategoryChange('EC')}
+                style={{
+                  cursor: 'pointer',
+                  padding: '0.85rem 1rem',
+                  borderRadius: '8px',
+                  border: category === 'EC' ? '2px solid #a855f7' : '1.5px solid rgba(255, 255, 255, 0.12)',
+                  backgroundColor: category === 'EC' ? 'rgba(168, 85, 247, 0.12)' : 'rgba(255, 255, 255, 0.03)',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  userSelect: 'none'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <Cpu size={20} color={category === 'EC' ? '#c084fc' : '#94a3b8'} />
+                  <div>
+                    <div style={{ fontWeight: '600', fontSize: '0.92rem', color: category === 'EC' ? '#ffffff' : '#cbd5e1' }}>
+                      EC Controller
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: category === 'EC' ? '#e9d5ff' : '#64748b' }}>
+                      ENE, ITE, Nuvoton SIO Chips
+                    </div>
+                  </div>
+                </div>
+                {category === 'EC' && (
+                  <div style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    backgroundColor: '#c084fc',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    <Check size={13} color="#0f172a" strokeWidth={3} />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
               <label>Manufacturer (Required)</label>
               <input
                 type="text"
                 required
-                placeholder="e.g. Winbond, Macronix"
+                placeholder={category === 'EC' ? "e.g. ENE, ITE, Nuvoton" : "e.g. Winbond, Macronix"}
                 value={manufacturer}
                 onChange={(e) => setManufacturer(e.target.value)}
               />
@@ -113,7 +230,7 @@ export default function AddChipModal({ onClose, onSuccess }) {
               <input
                 type="text"
                 required
-                placeholder="e.g. W25Q32BV, MX25L6405"
+                placeholder={category === 'EC' ? "e.g. KB9012, IT8586" : "e.g. W25Q32BV, MX25L6405"}
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
               />
@@ -122,11 +239,11 @@ export default function AddChipModal({ onClose, onSuccess }) {
 
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
-              <label>Chip ID (Hex) (Required)</label>
+              <label>Chip ID (Hex / Model ID) (Required)</label>
               <input
                 type="text"
                 required
-                placeholder="e.g. EF4016, C22017"
+                placeholder={category === 'EC' ? "e.g. 9012, IT8586" : "e.g. EF4016, C22017"}
                 value={chipId}
                 onChange={(e) => setChipId(e.target.value)}
               />
@@ -149,12 +266,14 @@ export default function AddChipModal({ onClose, onSuccess }) {
               <input
                 type="number"
                 required
-                placeholder="e.g. 4194304"
+                placeholder={category === 'EC' ? "e.g. 131072" : "e.g. 4194304"}
                 value={size}
                 onChange={(e) => setSize(Number(e.target.value))}
               />
               <span className={styles.helpText}>
-                4MB = 4,194,304 | 8MB = 8,388,608 | 16MB = 16,777,216
+                {category === 'EC'
+                  ? "128KB = 131,072 | 256KB = 262,144 | 512KB = 524,288"
+                  : "4MB = 4,194,304 | 8MB = 8,388,608 | 16MB = 16,777,216"}
               </span>
             </div>
             <div className={styles.formGroup}>
@@ -162,7 +281,7 @@ export default function AddChipModal({ onClose, onSuccess }) {
               <input
                 type="number"
                 required
-                placeholder="e.g. 256"
+                placeholder={category === 'EC' ? "e.g. 128" : "e.g. 256"}
                 value={pageSize}
                 onChange={(e) => setPageSize(Number(e.target.value))}
               />
@@ -172,22 +291,37 @@ export default function AddChipModal({ onClose, onSuccess }) {
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
               <label>Protocol</label>
-              <select value={protocol} onChange={(e) => setProtocol(e.target.value)}>
-                <option value="SPI">SPI</option>
-                <option value="I2C">I2C</option>
-                <option value="Microwire">Microwire</option>
-                <option value="OWI">One-Wire</option>
-              </select>
+              {category === 'EC' ? (
+                <select value="SPI_EC" disabled>
+                  <option value="SPI_EC">SPI_EC (EDI / ISP Protocol)</option>
+                </select>
+              ) : (
+                <select value={protocol} onChange={(e) => setProtocol(e.target.value)}>
+                  <option value="SPI">SPI</option>
+                  <option value="I2C">I2C</option>
+                  <option value="Microwire">Microwire</option>
+                  <option value="SPI_NAND">SPI NAND</option>
+                  <option value="SPI_DATA_45">SPI Data 45</option>
+                </select>
+              )}
             </div>
             <div className={styles.formGroup}>
-              <label>SPI Command Mode</label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. SPI25, I2C_24xx"
-                value={spiCommand}
-                onChange={(e) => setSpiCommand(e.target.value)}
-              />
+              <label>Command Mode</label>
+              {category === 'EC' ? (
+                <input
+                  type="text"
+                  disabled
+                  value="KB (Keyboard / EC Protocol)"
+                />
+              ) : (
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. SPI25, SPI45"
+                  value={spiCommand}
+                  onChange={(e) => setSpiCommand(e.target.value)}
+                />
+              )}
             </div>
           </div>
 
