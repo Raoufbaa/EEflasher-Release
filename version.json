@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "fixed ft232h detection",
+  "ReleaseNotes": "Fixed disconnect issue and enhance transfer reliability by adding dynamic chunks instead of hardcoded chunks",
   "SupportedVersions": [
+    "1.0.54",
     "1.0.53",
-    "1.0.52",
-    "1.0.51"
+    "1.0.52"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
