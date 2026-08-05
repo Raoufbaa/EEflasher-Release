@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "fixed spi operation in ch347 duo to dll limitation",
+  "ReleaseNotes": "fixed operation",
   "SupportedVersions": [
+    "1.0.56",
     "1.0.55",
-    "1.0.54",
-    "1.0.53"
+    "1.0.54"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
