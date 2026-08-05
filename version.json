@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "Fixed disconnect issue and enhance transfer reliability by adding dynamic chunks instead of hardcoded chunks",
+  "ReleaseNotes": "fixed spi operation in ch347 duo to dll limitation",
   "SupportedVersions": [
+    "1.0.55",
     "1.0.54",
-    "1.0.53",
-    "1.0.52"
+    "1.0.53"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
