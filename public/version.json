@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "Enhanced the compare feature in EEFlasher",
+  "ReleaseNotes": "trying to fix the erase function in ch347",
   "SupportedVersions": [
+    "1.0.58",
     "1.0.57",
-    "1.0.56",
-    "1.0.55"
+    "1.0.56"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
