@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "fixed operation",
+  "ReleaseNotes": "Enhanced the compare feature in EEFlasher",
   "SupportedVersions": [
+    "1.0.57",
     "1.0.56",
-    "1.0.55",
-    "1.0.54"
+    "1.0.55"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
