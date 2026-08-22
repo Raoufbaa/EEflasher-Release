@@ -212,41 +212,41 @@ export default function Home() {
 
         <div className={styles.featureItem}>
           <div className={styles.fIcon}><Activity size={16} /></div>
-          <h4>Protocol coverage</h4>
-          <p>SPI25, SPI45 DataFlash, I2C EEPROM (24-series), and Microwire EEPROM (93-series).</p>
+          <h4>Protocol &amp; EC Coverage</h4>
+          <p>SPI25, SPI45 DataFlash, I2C (24xx), Microwire (93xx), and EC Controllers (Early Alpha).</p>
         </div>
 
         <div className={styles.featureItem}>
           <div className={styles.fIcon}><DbIcon size={16} /></div>
           <h4>Chip database</h4>
-          <p>760+ chips from Winbond, Macronix, GigaDevice, ISSI, Spansion, Micron, and more.</p>
+          <p>1,500+ chips from Winbond, Macronix, GigaDevice, ISSI, Spansion, Micron, ENE, ITE, and more.</p>
         </div>
 
         <div className={styles.featureItem}>
           <div className={styles.fIcon}><Terminal size={16} /></div>
-          <h4>Hex editor</h4>
-          <p>Live editing, undo/redo, search, go-to-address, and support for files up to 256 MB.</p>
+          <h4>Hex Editor &amp; Firmware Tools</h4>
+          <p>Live hex editing, undo/redo, file splitting, binary merging, byte swapping, and SHA/CRC checksums.</p>
         </div>
 
         <div className={styles.featureItem}>
           <div className={styles.fIcon}><ShieldAlert size={16} /></div>
-          <h4>Write protection unlock</h4>
-          <p>One-click unlock for SPI25 and SPI45 chips with detailed status register readout.</p>
+          <h4>Intel ME / CSME Engine</h4>
+          <p>Built-in Intel CSME Analyzer, firmware health check, and Clean &amp; Configure repository rebuilder.</p>
         </div>
 
         <div className={styles.featureItem}>
           <div className={styles.fIcon}><Info size={16} /></div>
-          <h4>UEFI capsule parser</h4>
-          <p>Parse and extract UEFI firmware structures with tree view, GUIDs, and section metadata.</p>
+          <h4>UEFI Capsule Parser</h4>
+          <p>Parse and extract UEFI firmware structures with tree view, GUIDs, and individual region extraction.</p>
         </div>
       </div>
 
       {/* Supported Hardware Table */}
       <div className={styles.hwPanel} id="hardware">
-        <h3>Supported hardware interface adapters</h3>
+        <h3>Supported hardware interface adapters &amp; programmers</h3>
         <table className={styles.table}>
           <thead>
-            <tr><th>Device</th><th>Status</th><th>Protocols</th><th>32-bit</th><th>64-bit</th></tr>
+            <tr><th>Device / Section</th><th>Status</th><th>Protocols</th><th>32-bit</th><th>64-bit</th></tr>
           </thead>
           <tbody>
             <tr><td>CH341A</td><td><span className={styles.check}>✓ Supported</span></td><td>SPI, I2C, Microwire</td><td className={styles.check}>✓</td><td className={styles.check}>✓</td></tr>
@@ -254,8 +254,10 @@ export default function Home() {
             <tr><td>Arduino</td><td><span className={styles.check}>✓ Supported</span></td><td>SPI</td><td className={styles.check}>✓</td><td className={styles.check}>✓</td></tr>
             <tr><td>AVRISP MKII</td><td><span className={styles.check}>✓ Supported</span></td><td>SPI, ISP</td><td className={styles.check}>✓</td><td className={styles.check}>✓</td></tr>
             <tr><td>USBAsp</td><td><span className={styles.check}>✓ Supported</span></td><td>SPI</td><td className={styles.check}>✓</td><td className={styles.check}>✓</td></tr>
-            <tr><td>Bus Pirate</td><td><span className={styles.plan}>⏳ Planned</span></td><td>SPI, I2C</td><td>-</td><td>-</td></tr>
-            <tr><td>FT232H</td><td><span className={styles.plan}>⏳ Planned</span></td><td>SPI, I2C</td><td>-</td><td>-</td></tr>
+            <tr><td>EC Flasher Section</td><td><span className={styles.inProgress}>⚠️ Early Alpha</span></td><td>ENE, ITE, Nuvoton (Keyboard Controllers)</td><td className={styles.check}>✓</td><td className={styles.check}>✓</td></tr>
+            <tr><td>FT232H</td><td><span className={styles.inProgress}>🛠️ In Works</span></td><td>SPI, I2C, JTAG (High-Speed MPSSE)</td><td className={styles.check}>✓</td><td className={styles.check}>✓</td></tr>
+            <tr><td>Dediprog (SF100 / SF600 / SF700)</td><td><span className={styles.plan}>⏳ In Planning</span></td><td>High-Speed SPI &amp; Quad-SPI</td><td>-</td><td>-</td></tr>
+            <tr><td>Bus Pirate</td><td><span className={styles.plan}>⏳ In Planning</span></td><td>SPI, I2C</td><td>-</td><td>-</td></tr>
           </tbody>
         </table>
       </div>

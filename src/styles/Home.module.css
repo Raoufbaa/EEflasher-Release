@@ -430,6 +430,19 @@
   background: rgba(255, 255, 255, 0.02);
 }
 
+.check {
+  color: #86efac;
+}
+
+.inProgress {
+  color: #fbbf24;
+  font-weight: 500;
+}
+
+.plan {
+  color: var(--muted);
+}
+
 /* ─── req cards ─── */
 .reqGrid {
   display: grid;

@@ -12,30 +12,34 @@
 
 ## 🚀 Features
 
-- ✅ **Modern Dark UI** - Clean, professional interface built with Avalonia
+- ✅ **Modern Dark UI** - Clean, professional interface built with Avalonia 12
 - ✅ **Multi-Hardware Support** - CH341A, CH347, Arduino, AVRISP, USBAsp (32-bit & 64-bit)
+- ✅ **Embedded Controller (EC) Flasher** - Dedicated section for laptop ECs (ENE, ITE, Nuvoton) *(Early Alpha)*
+- ✅ **Intel ME / CSME Engine** - Built-in ME Analyzer with Clean & Configure repository rebuilding
+- ✅ **Firmware Tools** - Split binaries, combine files, byte swap (16/32-bit), pad, trim, and compute hashes
 - ✅ **Blazing Fast Performance** - Optimized write speeds (~56 seconds for 4MB, matching commercial tools)
 - ✅ **Cancellable Operations** - Stop any operation instantly with the Stop button
-- ✅ **Multiple Protocols** - SPI25, SPI45 (AT45 DataFlash), I2C, and Microwire support
+- ✅ **Multiple Protocols** - SPI25, SPI45 (AT45 DataFlash), I2C (24xx), and Microwire (93xx) support
 - ✅ **Reliable Chip Detection** - 3x retry logic with smart error handling
 - ✅ **Write Protection Management** - Easy unlock/lock with detailed status register display
-- ✅ **UEFI Capsule Parser** - Analyze and extract UEFI firmware structures
+- ✅ **UEFI Capsule Parser** - Analyze and extract UEFI firmware structures and individual regions
 - ✅ **Advanced Hex Editor** - Built-in editor with undo/redo, search, and modification tracking
-- ✅ **Comprehensive Chip Database** - 760+ chips from major manufacturers
-- ✅ **Real-time Progress** - Live progress bars and detailed activity logging
-- ✅ **Production Ready** - Stable, tested, and optimized for daily use
+- ✅ **Comprehensive Chip Database** - 1,500+ chips from major manufacturers with cloud auto-sync
+- ✅ **Production Ready** - Cryptographically secured, offline-first licensing, stable, and tested
 
-## 📋 Supported Hardware
+## 📋 Supported Hardware & Programmers
 
-| Device | Status | Protocols | Speed | 32-bit | 64-bit |
-|--------|--------|-----------|-------|--------|--------|
+| Device / Section | Status | Protocols | Speed | 32-bit | 64-bit |
+|------------------|--------|-----------|-------|--------|--------|
 | **CH341A** | ✅ Fully Supported | SPI, I2C, Microwire | Fast | ✅ | ✅ |
 | **CH347** | ✅ Fully Supported | SPI, I2C, Microwire | Very Fast | ✅ | ✅ |
 | **Arduino** | ✅ Supported | SPI | Medium | ✅ | ✅ |
 | **AVRISP MKII** | ✅ Supported | SPI, ISP | Medium | ✅ | ✅ |
 | **USBAsp** | ✅ Supported | SPI | Fast | ✅ | ✅ |
-| Bus Pirate | 🔄 Planned | SPI, I2C | - | - | - |
-| FT232H | 🔄 Planned | SPI, I2C | - | - | - |
+| **EC Flasher Section** | ⚠️ Early Alpha | ENE, ITE, Nuvoton (Keyboard Controllers) | Fast | ✅ | ✅ |
+| **FT232H** | 🛠️ In Works | SPI, I2C, JTAG (High-Speed MPSSE) | Blazing Fast | ✅ | ✅ |
+| **Dediprog (SF100 / SF600 / SF700)** | ⏳ In Planning | High-Speed SPI & Quad-SPI | Ultra Fast | ⏳ | ⏳ |
+| **Bus Pirate** | ⏳ In Planning | SPI, I2C | Medium | ⏳ | ⏳ |
 
 ### Hardware Features
 - **Auto-Detection** - Automatically detects connected programmer
@@ -46,31 +50,36 @@
 ## 📦 Supported Chips
 
 ### SPI Flash (25-series)
-- **Winbond**: W25Q10, W25Q20, W25Q40, W25Q80, W25Q16, W25Q32JV/BV/FV, W25Q64JV/BV/CV/FV, W25Q128JV/BV/FV, W25Q256JV/FV
-- **Macronix**: MX25L1005, MX25L2005, MX25L4005, MX25L8005, MX25L1606E, MX25L3206E, MX25L6405D, MX25L12805D
+- **Winbond**: W25Q10, W25Q20, W25Q40, W25Q80, W25Q16, W25Q32JV/BV/FV, W25Q64JV/BV/CV/FV, W25Q128JV/BV/FV, W25Q256JV/FV, W25Q512
+- **Macronix**: MX25L1005, MX25L2005, MX25L4005, MX25L8005, MX25L1606E, MX25L3206E, MX25L6405D, MX25L12805D, MX25L256
 - **GigaDevice**: GD25Q40, GD25Q80, GD25Q16, GD25Q32, GD25Q64, GD25Q128, GD25Q256
 - **ISSI**: IS25LP064, IS25LP128, IS25WP256
-- **EON**: EN25Q32, EN25Q64, EN25Q128
-- **Spansion**: S25FL064, S25FL128, S25FL256
-- **Micron**: M25P80, M25P16, N25Q064, N25Q128
+- **EON / ESMT**: EN25Q32, EN25Q64, EN25Q128, F25L32QA
+- **Spansion / Cypress**: S25FL064, S25FL128, S25FL256, S25FL512
+- **Micron / Numonyx**: M25P80, M25P16, N25Q064, N25Q128, N25Q256
+
+### Embedded Controllers (EC)
+- **ENE**: KB9010, KB9012, KB9016, KB9022, KB9028, KB930
+- **ITE**: IT8580, IT8585, IT8586, IT8587, IT8985, IT8987
+- **Nuvoton**: NPCE288, NPCE388
 
 ### SPI DataFlash (45-series)
 - **Atmel**: AT45DB011, AT45DB021, AT45DB041, AT45DB081, AT45DB161, AT45DB321, AT45DB642
 
 ### I2C EEPROM (24-series)
-- **Atmel**: AT24C01-AT24C512
-- **Microchip**: 24LC01-24LC512
-- **ST**: M24C01-M24C512
+- **Atmel**: AT24C01-AT24C1024
+- **Microchip**: 24LC01-24LC1025
+- **ST**: M24C01-M24M02
 
 ### MicroWire EEPROM
 - **Atmel**: AT93C46, AT93C56, AT93C66, AT93C86
 - **Microchip**: 93LC46, 93LC56, 93LC66, 93LC86
 
 ### Size Range
-- **Minimum**: 512 bytes (AT93C46)
-- **Maximum**: 256 MB (W25Q256, GD25Q256)
+- **Minimum**: 128 bytes (93C46)
+- **Maximum**: 512 MB (SPI NOR Flash)
 
-*Comprehensive chip database with 760+ supported chips*
+*Comprehensive chip database with 1,500+ supported chips and cloud auto-synchronization*
 
 ## 🛠️ Installation
 
