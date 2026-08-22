@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { rateLimit, getClientIp } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,6 +13,15 @@ function formatModelName(name) {
 }
 
 export async function GET(req) {
+  const ip = getClientIp(req);
+  const limitRes = rateLimit(ip, 120, 60000);
+  if (!limitRes.success) {
+    return NextResponse.json(
+      { error: "Too many requests. Please slow down." },
+      { status: 429, headers: { 'Retry-After': '60' } }
+    );
+  }
+
   const { searchParams } = new URL(req.url);
   const search = searchParams.get('search') || '';
   const deviceType = searchParams.get('device_type') || '';

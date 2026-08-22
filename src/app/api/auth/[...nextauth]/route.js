@@ -19,7 +19,7 @@ export const authOptions = {
 
         // Query database for user
         const result = await query(
-          "SELECT id, email, password_hash, verified, is_admin, name, profile_image FROM users WHERE LOWER(email) = $1",
+          "SELECT id, email, password_hash, verified, plan, plan_expires_at, name, profile_image FROM users WHERE LOWER(email) = $1",
           [credentials.email.toLowerCase()]
         );
 
@@ -34,11 +34,15 @@ export const authOptions = {
           throw new Error("Invalid email or password.");
         }
 
+        const { getUserPlan } = await import("@/lib/auth");
+        const activePlan = getUserPlan(user);
+
         return {
           id: user.id,
           email: user.email,
           verified: checkIsVerified(user),
-          is_admin: checkIsAdmin(user),
+          plan: activePlan,
+          plan_expires_at: user.plan_expires_at || null,
           name: user.name,
           profile_image: user.profile_image,
         };
@@ -54,20 +58,23 @@ export const authOptions = {
         token.id = user.id;
         token.email = user.email;
         token.verified = user.verified;
-        token.is_admin = user.is_admin;
+        token.plan = user.plan;
+        token.plan_expires_at = user.plan_expires_at;
         token.name = user.name;
         token.profile_image = user.profile_image;
       } else if (trigger === "update") {
         try {
           // Fetch the latest state from the database
           const result = await query(
-            "SELECT verified, is_admin, name, profile_image FROM users WHERE id = $1",
+            "SELECT verified, plan, plan_expires_at, name, profile_image FROM users WHERE id = $1",
             [token.id]
           );
           const dbUser = result.rows[0];
           if (dbUser) {
+            const { getUserPlan } = await import("@/lib/auth");
             token.verified = checkIsVerified(dbUser);
-            token.is_admin = checkIsAdmin(dbUser);
+            token.plan = getUserPlan(dbUser);
+            token.plan_expires_at = dbUser.plan_expires_at || null;
             token.name = dbUser.name;
             token.profile_image = dbUser.profile_image;
           }
@@ -82,7 +89,8 @@ export const authOptions = {
         session.user.id = token.id;
         session.user.email = token.email;
         session.user.verified = token.verified;
-        session.user.is_admin = token.is_admin;
+        session.user.plan = token.plan || "FREE";
+        session.user.plan_expires_at = token.plan_expires_at || null;
         session.user.name = token.name;
         session.user.profile_image = token.profile_image;
       }

@@ -4,10 +4,17 @@ import { s3Client } from '@/lib/b2';
 import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { getAuthToken } from '@/lib/auth';
+import { rateLimit, getClientIp } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req) {
+  const ip = getClientIp(req);
+  const limitRes = rateLimit(ip, 60, 60000);
+  if (!limitRes.success) {
+    return NextResponse.redirect(new URL('/Assets/profile.jpg', req.url));
+  }
+
   const token = await getAuthToken(req);
   if (!token) {
     // Return default profile picture if not logged in

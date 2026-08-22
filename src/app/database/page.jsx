@@ -225,7 +225,7 @@ export default function DatabasePage() {
   };
 
   useEffect(() => {
-    if (session?.user?.is_admin === true) {
+    if (session?.user?.plan === 'ADMIN') {
       const timer = setTimeout(() => {
         fetchPendingModels();
       }, 0);
@@ -249,7 +249,7 @@ export default function DatabasePage() {
   };
 
   useEffect(() => {
-    if (session?.user?.is_admin === true) {
+    if (session?.user?.plan === 'ADMIN') {
       const timer = setTimeout(() => {
         fetchPendingChips();
       }, 0);
@@ -683,7 +683,7 @@ export default function DatabasePage() {
       </div>
 
       {/* Admin Panel: Pending Models Review (Firmware Tab only) */}
-      {activeTab === 'firmware' && session && session.user.is_admin === true && pendingModels.length > 0 && (
+      {activeTab === 'firmware' && session && session.user.plan === 'ADMIN' && pendingModels.length > 0 && (
         <div className={styles.adminReviewPanel}>
           <div className={styles.adminReviewHeader}>
             <h3 className={styles.adminReviewTitle}>
@@ -752,7 +752,7 @@ export default function DatabasePage() {
       )}
 
       {/* Admin Panel: Pending Chips Review (Chips Tab only) */}
-      {activeTab === 'chips' && session && session.user.is_admin === true && pendingChips.length > 0 && (
+      {activeTab === 'chips' && session && session.user.plan === 'ADMIN' && pendingChips.length > 0 && (
         <div className={styles.adminReviewPanel}>
           <div className={styles.adminReviewHeader}>
             <h3 className={styles.adminReviewTitle}>
@@ -926,7 +926,7 @@ export default function DatabasePage() {
                                   <div className={styles.nestedContainer}>
                                     {modelFirmwares[model.id].map((fw) => {
                                       const isOwner = session?.user?.id === fw.uploaded_by;
-                                      const isAdmin = session?.user?.is_admin === true;
+                                      const isAdmin = session?.user?.plan === 'ADMIN';
                                       const canDelete = session && isVerifiedUploader && (isOwner || isAdmin);
 
                                       return (

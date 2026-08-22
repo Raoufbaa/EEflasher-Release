@@ -98,13 +98,17 @@ export default function Navbar() {
                 </div>
 
                 <div className={styles.dropdownBadges}>
-                  {session.user.is_admin ? (
+                  {session.user.plan === 'ADMIN' ? (
                     <span className={`${styles.dropdownBadge} ${styles.badgeAdmin}`}>
                       🛡️ System Admin
                     </span>
+                  ) : session.user.plan === 'PRO' ? (
+                    <span className={`${styles.dropdownBadge}`} style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+                      👑 Pro Tier
+                    </span>
                   ) : (
                     <span className={`${styles.dropdownBadge} ${styles.badgeUploader}`}>
-                      👤 Uploader
+                      👤 Free Tier
                     </span>
                   )}
 

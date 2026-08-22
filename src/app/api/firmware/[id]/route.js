@@ -17,7 +17,7 @@ export async function DELETE(req, { params }) {
   }
 
   // Get dynamic, real-time user status from DB
-  const userResult = await query("SELECT verified, is_admin FROM users WHERE id = $1", [token.id]);
+  const userResult = await query("SELECT verified, plan FROM users WHERE id = $1", [token.id]);
   if (userResult.rowCount === 0) {
     return NextResponse.json(
       { error: "Unauthorized. User account not found." },

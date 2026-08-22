@@ -1,10 +1,20 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { getAuthToken } from '@/lib/auth';
+import { rateLimit, getClientIp } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req) {
+  const ip = getClientIp(req);
+  const limitRes = rateLimit(ip, 60, 60000);
+  if (!limitRes.success) {
+    return NextResponse.json(
+      { error: "Too many requests. Please slow down." },
+      { status: 429, headers: { 'Retry-After': '60' } }
+    );
+  }
+
   // Ensure the user is logged in
   const token = await getAuthToken(req);
   if (!token) {

@@ -1,0 +1,354 @@
+.authPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 20px 80px;
+  position: relative;
+}
+
+.authCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  width: 100%;
+  max-width: 400px;
+  padding: 24px 22px;
+  animation: fadeUp 0.4s ease both;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.logo {
+  margin: 0 auto 8px auto;
+  display: block;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 3px 0;
+  color: var(--foreground);
+}
+
+.subtitle {
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin: 0 0 10px 0;
+}
+
+/* Token Expire Bar: 100% width, 0 bottom radius, flush with infoContainer */
+.tokenExpireBar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  border: none;
+  box-sizing: border-box;
+}
+
+.tokenExpireBarExpired {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-bottom: none;
+  box-sizing: border-box;
+}
+
+/* Unified Info Container: Dual gradient border, with dynamic top radius */
+.infoContainerWithTimer {
+  border: 2px solid transparent;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  padding: 14px;
+  margin-bottom: 14px;
+  margin-top: 0;
+  box-sizing: border-box;
+}
+
+.infoContainerNoTimer {
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 14px;
+  margin-top: 10px;
+  box-sizing: border-box;
+}
+
+/* User Info Layout */
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.userAvatar {
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+}
+
+.userDetails {
+  flex: 1;
+  min-width: 0;
+}
+
+.userNameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.userName {
+  font-weight: 700;
+  font-size: 0.96rem;
+  color: var(--foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planBadge {
+  padding: 3px 10px;
+  border-radius: 16px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  display: inline-block;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+.userEmail {
+  font-size: 0.8rem;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashedSeparator {
+  border-top: 1px dashed rgba(255, 255, 255, 0.12);
+  margin: 12px 0 10px 0;
+}
+
+.permissionsList {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.permissionsTitle {
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: 6px;
+  font-size: 0.81rem;
+}
+
+.permissionItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.checkMark {
+  color: #10b981;
+}
+
+/* Account Switch Alert */
+.accountSwitchAlert {
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-size: 0.8rem;
+  color: #93c5fd;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.accountSwitchTitle {
+  font-weight: 700;
+  color: #60a5fa;
+  margin-bottom: 2px;
+  font-size: 0.82rem;
+}
+
+.alertConnected {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.alertSwitching {
+  color: #93c5fd;
+  font-size: 0.78rem;
+  margin-top: 1px;
+}
+
+/* Warning & Error alerts */
+.warningAlert {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.errorAlert {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.timeoutAlert {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  margin-bottom: 12px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* Buttons */
+.buttonRow {
+  display: flex;
+  gap: 10px;
+}
+
+.cancelButton {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.authorizeButton {
+  flex: 2;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.88rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.disabledButton {
+  flex: 2;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: #475569;
+  color: #94a3b8;
+  cursor: not-allowed;
+  font-weight: 600;
+  font-size: 0.88rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Success Card */
+.successCard {
+  max-width: 400px;
+  text-align: center;
+  padding: 24px 20px;
+}
+
+.successIconBadge {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981, #059669);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px auto;
+}
+
+.successTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+  color: var(--foreground);
+}
+
+.successText {
+  color: var(--muted);
+  font-size: 0.86rem;
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+.dashboardBtn {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--foreground);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.doneBtn {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.88rem;
+}

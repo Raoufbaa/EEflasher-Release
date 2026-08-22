@@ -79,10 +79,10 @@ export async function POST(req) {
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(validatedPassword, salt);
 
-    // Determine verification status: first user is auto-verified admin, others are unverified
+    // Determine verification status and plan: first user is auto-verified ADMIN, others are FREE
     const userCountRes = await query("SELECT COUNT(*) as count FROM users");
     const isFirstUser = parseInt(userCountRes.rows[0].count, 10) === 0;
-    const is_admin = isFirstUser ? true : false;
+    const initialPlan = isFirstUser ? 'ADMIN' : 'FREE';
 
     let verifiedVal = 'true';
     let otp = null;
@@ -97,10 +97,10 @@ export async function POST(req) {
       verifiedVal = `${otpHash}|${expiresAt.toISOString()}`;
     }
  
-    // Save user with name and profile image to database
+    // Save user with name, profile image, and plan to database
     await query(
-      "INSERT INTO users (email, password_hash, verified, is_admin, name, profile_image) VALUES ($1, $2, $3, $4, $5, $6)",
-      [lowerEmail, passwordHash, verifiedVal, is_admin, validatedName, profileImageUrl]
+      "INSERT INTO users (email, password_hash, verified, name, profile_image, plan) VALUES ($1, $2, $3, $4, $5, $6)",
+      [lowerEmail, passwordHash, verifiedVal, validatedName, profileImageUrl, initialPlan]
     );
  
     if (!isFirstUser) {

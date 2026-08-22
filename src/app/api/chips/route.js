@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { getAuthToken, checkIsAdmin, checkIsVerified } from '@/lib/auth';
+import { rateLimit, getClientIp } from '@/lib/rateLimit';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
@@ -27,33 +28,12 @@ export function invalidateChipCache() {
   lastCacheTime = 0;
 }
 
-// Simple in-memory rate limiter (max 40 requests/min per IP)
-const rateLimitMap = new Map();
-
-function checkRateLimit(ip) {
-  const now = Date.now();
-  const windowMs = 60 * 1000;
-  const maxReqs = 40;
-
-  let record = rateLimitMap.get(ip);
-  if (!record || now - record.startTime > windowMs) {
-    record = { startTime: now, count: 1 };
-    rateLimitMap.set(ip, record);
-    return true;
-  }
-
-  record.count++;
-  if (record.count > maxReqs) {
-    return false;
-  }
-  return true;
-}
-
 // GET /api/chips - Return chips list for desktop app (encrypted full sync) or web (paginated JSON)
 export async function GET(req) {
   try {
-    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '127.0.0.1';
-    if (!checkRateLimit(clientIp)) {
+    const clientIp = getClientIp(req);
+    const limitRes = rateLimit(clientIp, 60, 60000);
+    if (!limitRes.success) {
       return NextResponse.json(
         { error: "Too many requests. Please slow down." },
         { status: 429, headers: { 'Retry-After': '60' } }
@@ -220,13 +200,22 @@ export async function GET(req) {
 
 // POST /api/chips - Submit a new chip
 export async function POST(req) {
+  const clientIp = getClientIp(req);
+  const limitRes = rateLimit(clientIp, 20, 60000);
+  if (!limitRes.success) {
+    return NextResponse.json(
+      { error: "Too many chip submissions. Please slow down." },
+      { status: 429, headers: { 'Retry-After': '60' } }
+    );
+  }
+
   const token = await getAuthToken(req);
   if (!token) {
     return NextResponse.json({ error: "Unauthorized. You must be logged in to add chips." }, { status: 401 });
   }
 
   // Get dynamic, real-time user status from DB
-  const userResult = await query("SELECT verified, is_admin FROM users WHERE id = $1", [token.id]);
+  const userResult = await query("SELECT verified, plan FROM users WHERE id = $1", [token.id]);
   if (userResult.rowCount === 0) {
     return NextResponse.json({ error: "Unauthorized. User account not found." }, { status: 401 });
   }

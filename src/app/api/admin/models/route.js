@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { deleteFileFromB2 } from '@/lib/b2';
 import { getAuthToken, checkIsAdmin } from '@/lib/auth';
+import { rateLimit, getClientIp } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,13 +18,22 @@ async function verifyAdmin(req) {
   const token = await getAuthToken(req);
   if (!token) return false;
 
-  const res = await query("SELECT is_admin FROM users WHERE id = $1", [token.id]);
+  const res = await query("SELECT plan FROM users WHERE id = $1", [token.id]);
   if (res.rowCount === 0) return false;
   return checkIsAdmin(res.rows[0]);
 }
 
 // GET /api/admin/models - Get all unapproved models
 export async function GET(req) {
+  const ip = getClientIp(req);
+  const limitRes = rateLimit(ip, 60, 60000);
+  if (!limitRes.success) {
+    return NextResponse.json(
+      { error: "Too many requests. Please slow down." },
+      { status: 429, headers: { 'Retry-After': '60' } }
+    );
+  }
+
   const isAdmin = await verifyAdmin(req);
   if (!isAdmin) {
     return NextResponse.json({ error: "Unauthorized. Admin privileges required." }, { status: 401 });
@@ -47,6 +57,15 @@ export async function GET(req) {
 
 // POST /api/admin/models - Perform approve, merge, or delete actions on models
 export async function POST(req) {
+  const ip = getClientIp(req);
+  const limitRes = rateLimit(ip, 60, 60000);
+  if (!limitRes.success) {
+    return NextResponse.json(
+      { error: "Too many requests. Please slow down." },
+      { status: 429, headers: { 'Retry-After': '60' } }
+    );
+  }
+
   const isAdmin = await verifyAdmin(req);
   if (!isAdmin) {
     return NextResponse.json({ error: "Unauthorized. Admin privileges required." }, { status: 401 });

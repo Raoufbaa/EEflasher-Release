@@ -37,13 +37,54 @@ export async function getAuthToken(req) {
 }
 
 /**
- * Resilient check if user has admin privileges.
- * Handles boolean true, string 'true', number 1, or string 't'.
+ * Resilient check to retrieve user's active Plan Tier ('FREE', 'PRO', or 'ADMIN').
+ * Evaluates plan column and expiration dates.
+ */
+export function getUserPlan(userOrValue) {
+  if (!userOrValue) return 'FREE';
+  
+  if (typeof userOrValue === 'string') {
+    const p = userOrValue.toUpperCase();
+    return (p === 'ADMIN' || p === 'PRO') ? p : 'FREE';
+  }
+
+  // 1. Direct plan check
+  const planVal = (userOrValue.plan || '').toString().toUpperCase();
+  if (planVal === 'ADMIN') {
+    return 'ADMIN';
+  }
+
+  if (planVal === 'PRO') {
+    // Check if subscription has expired
+    if (userOrValue.plan_expires_at) {
+      const expiry = new Date(userOrValue.plan_expires_at);
+      if (!isNaN(expiry.getTime()) && expiry.getTime() < Date.now()) {
+        return 'FREE'; // Subscription expired
+      }
+    }
+    return 'PRO';
+  }
+
+  return 'FREE';
+}
+
+/**
+ * Resilient check if user has admin privileges based on Plan === 'ADMIN'.
  */
 export function checkIsAdmin(userOrValue) {
   if (userOrValue === undefined || userOrValue === null) return false;
-  const val = typeof userOrValue === 'object' ? userOrValue.is_admin : userOrValue;
-  return val === true || val === 'true' || val === 1 || val === 't';
+  if (typeof userOrValue === 'object') {
+    return (userOrValue.plan || '').toString().toUpperCase() === 'ADMIN';
+  }
+  return userOrValue.toString().toUpperCase() === 'ADMIN';
+}
+
+/**
+ * Resilient check if user has active PRO or ADMIN tier.
+ */
+export function checkIsPro(userOrValue) {
+  const plan = getUserPlan(userOrValue);
+  return plan === 'PRO' || plan === 'ADMIN';
 }
 
 /**
