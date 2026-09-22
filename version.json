@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "Merge branch 'main' of https://github.com/Raoufbaa/EEFlasher",
+  "ReleaseNotes": "feat: add Intel ME cleaner and CSME configurator services with UI components",
   "SupportedVersions": [
+    "1.0.61",
     "1.0.60",
-    "1.0.59",
-    "1.0.58"
+    "1.0.59"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
