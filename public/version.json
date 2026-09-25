@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "feat: add Intel ME cleaner and CSME configurator services with UI components",
+  "ReleaseNotes": "Fix 32MB chip read corruption and add multi-device SPI frequency selector\n- Fix 4-byte address mode bug shifting reads by 1 byte on >16MB chips (MX25L25635E)\n- Add Bank Register 0x17 EXTADD handling for Spansion/Cypress flash\n- Correct CH347 iClock mapping with 15 MHz safe default for clip stability\n- Add dynamic SPI frequency selector for CH347, FT232H, USBAsp, Arduino, and AVRISP\n- Persist per-device SPI frequency in settings",
   "SupportedVersions": [
+    "1.0.62",
     "1.0.61",
-    "1.0.60",
-    "1.0.59"
+    "1.0.60"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
