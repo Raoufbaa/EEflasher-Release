@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "Fix 32MB chip read corruption and add multi-device SPI frequency selector\n- Fix 4-byte address mode bug shifting reads by 1 byte on >16MB chips (MX25L25635E)\n- Add Bank Register 0x17 EXTADD handling for Spansion/Cypress flash\n- Correct CH347 iClock mapping with 15 MHz safe default for clip stability\n- Add dynamic SPI frequency selector for CH347, FT232H, USBAsp, Arduino, and AVRISP\n- Persist per-device SPI frequency in settings",
+  "ReleaseNotes": "feat(firmware): add universal DMI, Serial & Windows Key Transfer engine\n- Implement DmiExtractionService supporting ACPI MSDM, SMBIOS 2.x/3.x, NVRAM stores, and OEM signatures (Lenovo, HP, Dell, Apple, ASUS, Acer)\n- Implement DmiInjectorService for non-destructive in-place injection with automatic ACPI checksum recalculation\n- Add dual-chip Intel Flash Descriptor detection with guidance for ME-only dumps\n- Integrate DMI file pickers, status bar, and actions into unified top container\n- Add two-pane comparative table with icon-only clipboard copy and per-field injection",
   "SupportedVersions": [
+    "1.0.63",
     "1.0.62",
-    "1.0.61",
-    "1.0.60"
+    "1.0.61"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
