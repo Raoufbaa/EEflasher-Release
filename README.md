@@ -15,6 +15,8 @@
 - ✅ **Modern Dark UI** - Clean, professional interface built with Avalonia 12
 - ✅ **Multi-Hardware Support** - CH341A, CH347, Arduino, AVRISP, USBAsp (32-bit & 64-bit)
 - ✅ **Embedded Controller (EC) Flasher** - Dedicated section for laptop ECs (ENE, ITE, Nuvoton) *(Early Alpha)*
+- ✅ **🏷️ Universal DMI & Key Migrator** - Transfer Serial, UUID, and Windows Product Key across dumps with comparative diff, auto ACPI checksum recalculation, and multi-vendor heuristics (Lenovo, Dell, HP, Apple, ASUS, Acer on Intel & AMD)
+- ✅ **🧹 Intel ME Cleaner & Disabler** - Integrated me_cleaner engine to neutralize ME/CSME firmware, apply HAP / AltMeDisable bits, and eliminate 30-minute thermal/watchdog shutdowns
 - ✅ **Intel ME / CSME Engine** - Built-in ME Analyzer with Clean & Configure repository rebuilding
 - ✅ **Firmware Tools** - Split binaries, combine files, byte swap (16/32-bit), pad, trim, and compute hashes
 - ✅ **Blazing Fast Performance** - Optimized write speeds (~56 seconds for 4MB, matching commercial tools)
@@ -217,6 +219,22 @@
 - **Structure View** - Tree view of capsule components
 - **Extract Sections** - View individual firmware sections
 - **Metadata Display** - GUID, version, and size information
+
+#### 🏷️ DMI & Windows Key Migrator
+- **Universal Dual-Dump Transfer** - Load Original (corrupted/legacy) BIOS and Target (clean/donor) BIOS side by side
+- **Smart Deep Inspection** - Automatically scans ACPI `MSDM` tables, SMBIOS 2.x/3.x Type 1 & Type 2 structures, and dual-encoded NVRAM variable stores (ASCII & UTF-16LE)
+- **Multi-Brand Heuristics** - Dedicated parsers for Lenovo ThinkPad/IdeaPad serials, Dell Service Tags & PPID, HP 10-char serials & Board CT numbers, Apple MacBook serials & MLB, ASUS, Acer, and MSI
+- **AMD & Intel Compatible** - Works across all x86 UEFI motherboards and architectures
+- **Auto ACPI Checksum Repair** - Recalculates `MSDM` checksum byte upon key replacement to guarantee valid Windows digital activation
+- **Interactive Diff Grid** - Real-time color-coded comparison badges (`MATCH`, `DIFFERENT`, `MISSING`, `INJECTED`) with per-field transfer buttons and 1-click **Transfer All to Target**
+- **Dual-Chip Flash Detection** - Automatically detects Intel Flash Descriptors on split dual-chip configurations and prompts to load the BIOS NVRAM chip
+
+#### 🧹 Intel ME Cleaner & Disabler (me_cleaner)
+- **Universal ME / CSME Support** - Full support across ME 2–10, CSME 11–18, CSTXE 3–4, and CSSPS 4–6
+- **Fix 30-Minute Shutdowns** - Eliminates watchdog thermal shutdowns and fan-at-100% bugs caused by corrupted ME regions
+- **Clean Mutable Partitions** - Safely wipes machine-specific mutable partitions (`MFS`, `AFSP`, etc.) to reset Intel ME to an unconfigured OEM factory template state while preserving OEM configurations
+- **HAP & AltMeDisable Bits** - Set High Assurance Platform (HAP) or AltMeDisable bits to disable Intel Management Engine operations safely
+- **Integrated CSME Configurator** - Rebuild and configure clean ME repositories directly inside the application
 
 ### 🔓 Write Protection Unlock
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowDown, Info, Cpu, Check, Activity, ShieldAlert, Monitor, Terminal, Database as DbIcon } from 'lucide-react';
+import { ArrowDown, Info, Cpu, Check, Activity, ShieldAlert, ShieldCheck, Monitor, Terminal, Tag, Layers, Database as DbIcon } from 'lucide-react';
 import styles from '@/styles/Home.module.css';
 
 export default function Home() {
@@ -15,12 +15,6 @@ export default function Home() {
     winX86: '-',
     linuxX64: '-'
   });
-
-  const formatNumber = (num) => {
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-    return num.toString();
-  };
 
   useEffect(() => {
     async function loadRelease() {
@@ -223,21 +217,39 @@ export default function Home() {
         </div>
 
         <div className={styles.featureItem}>
+          <div className={styles.fIcon}><Tag size={16} /></div>
+          <h4>DMI &amp; Key Migrator</h4>
+          <p>Transfer Serial, UUID, and Windows Product Key between dumps with comparative diff, auto ACPI checksum repair, and multi-vendor heuristics.</p>
+        </div>
+
+        <div className={styles.featureItem}>
+          <div className={styles.fIcon}><ShieldAlert size={16} /></div>
+          <h4>Intel ME Cleaner &amp; Disabler</h4>
+          <p>Neutralize ME/CSME firmware, set HAP / AltMeDisable bits, and eliminate 30-minute thermal/watchdog shutdowns.</p>
+        </div>
+
+        <div className={styles.featureItem}>
+          <div className={styles.fIcon}><ShieldCheck size={16} /></div>
+          <h4>Intel CSME Analyzer &amp; Rebuilder</h4>
+          <p>Built-in CSME Analyzer, firmware health check, and Clean &amp; Configure repository rebuilder.</p>
+        </div>
+
+        <div className={styles.featureItem}>
           <div className={styles.fIcon}><Terminal size={16} /></div>
           <h4>Hex Editor &amp; Firmware Tools</h4>
           <p>Live hex editing, undo/redo, file splitting, binary merging, byte swapping, and SHA/CRC checksums.</p>
         </div>
 
         <div className={styles.featureItem}>
-          <div className={styles.fIcon}><ShieldAlert size={16} /></div>
-          <h4>Intel ME / CSME Engine</h4>
-          <p>Built-in Intel CSME Analyzer, firmware health check, and Clean &amp; Configure repository rebuilder.</p>
-        </div>
-
-        <div className={styles.featureItem}>
           <div className={styles.fIcon}><Info size={16} /></div>
           <h4>UEFI Capsule Parser</h4>
           <p>Parse and extract UEFI firmware structures with tree view, GUIDs, and individual region extraction.</p>
+        </div>
+
+        <div className={styles.featureItem}>
+          <div className={styles.fIcon}><Layers size={16} /></div>
+          <h4>Universal Vendor Support</h4>
+          <p>Full support across AMD &amp; Intel systems: Lenovo, Dell, HP, Apple Mac, ASUS, Acer, and MSI.</p>
         </div>
       </div>
 
@@ -262,51 +274,28 @@ export default function Home() {
         </table>
       </div>
 
-      {/* System Requirements Grid */}
-      <div className={styles.reqGrid}>
-        <div className={styles.reqCard}>
-          <div className={styles.reqCardHead}>
-            <div className={styles.reqCardIcon}><Monitor size={15} /></div>
-            <h3>System requirements</h3>
-          </div>
-          <div className={styles.reqRows}>
-            <div className={styles.reqRow}>
-              <div className={styles.reqRowIcon}><Monitor size={12} /></div>
-              <div className={styles.reqRowText}><strong>Windows 10 / 11</strong><span>32-bit (x86) or 64-bit (x64) builds available</span></div>
-            </div>
-            <div className={styles.reqRow}>
-              <div className={styles.reqRowIcon}><Activity size={12} /></div>
-              <div className={styles.reqRowText}><strong>Linux x64</strong><span>Portable TAR.GZ archive, extract and run</span></div>
-            </div>
-            <div className={styles.reqRow}>
-              <div className={styles.reqRowIcon}><Check size={12} /></div>
-              <div className={styles.reqRowText}><strong>No .NET runtime needed</strong><span>Self-contained build bundles everything</span></div>
-            </div>
-            <div className={styles.reqRow}>
-              <div className={styles.reqRowIcon}><Info size={12} /></div>
-              <div className={styles.reqRowText}><strong>CH341A / CH347 vendor drivers</strong><span>Required only for those specific devices</span></div>
-            </div>
-          </div>
+      {/* System Requirements & Installation */}
+      <div className={styles.reqCardSingle}>
+        <div className={styles.reqCardHead}>
+          <div className={styles.reqCardIcon}><Monitor size={15} /></div>
+          <h3>System requirements &amp; installation</h3>
         </div>
-
-        <div className={styles.reqCard}>
-          <div className={styles.reqCardHead}>
-            <div className={styles.reqCardIcon}><Info size={15} /></div>
-            <h3>Before you install</h3>
+        <div className={styles.reqRowsGrid}>
+          <div className={styles.reqRow}>
+            <div className={styles.reqRowIcon}><Monitor size={12} /></div>
+            <div className={styles.reqRowText}><strong>Windows 10 / 11</strong><span>32-bit (x86) or 64-bit (x64) builds available</span></div>
           </div>
-          <div className={styles.reqRows}>
-            <div className={styles.reqRow}>
-              <div className={styles.reqRowIcon}><Terminal size={12} /></div>
-              <div className={styles.reqRowText}><strong>Close competing software</strong><span>Quit AsProgrammer or NeoProgrammer before connecting</span></div>
-            </div>
-            <div className={styles.reqRow}>
-              <div className={styles.reqRowIcon}><Check size={12} /></div>
-              <div className={styles.reqRowText}><strong>Verify driver in Device Manager</strong><span>Confirm device shows after driver install</span></div>
-            </div>
-            <div className={styles.reqRow}>
-              <div className={styles.reqRowIcon}><ShieldAlert size={12} /></div>
-              <div className={styles.reqRowText}><strong>Unlock before writing</strong><span>Use the Unlock button if write or erase fails</span></div>
-            </div>
+          <div className={styles.reqRow}>
+            <div className={styles.reqRowIcon}><Activity size={12} /></div>
+            <div className={styles.reqRowText}><strong>Linux x64</strong><span>Portable TAR.GZ archive, extract and run</span></div>
+          </div>
+          <div className={styles.reqRow}>
+            <div className={styles.reqRowIcon}><Info size={12} /></div>
+            <div className={styles.reqRowText}><strong>CH341A / CH347 vendor drivers</strong><span>Required only for those specific devices</span></div>
+          </div>
+          <div className={styles.reqRow}>
+            <div className={styles.reqRowIcon}><Check size={12} /></div>
+            <div className={styles.reqRowText}><strong>Verify driver in Device Manager</strong><span>Confirm device shows after driver install</span></div>
           </div>
         </div>
       </div>

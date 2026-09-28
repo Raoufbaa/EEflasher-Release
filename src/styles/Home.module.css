@@ -459,6 +459,28 @@
   padding: 20px;
 }
 
+.reqCardSingle {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 20px;
+  margin-bottom: 12px;
+  animation: fadeUp 0.5s 0.24s ease both;
+}
+
+.reqRowsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0 24px;
+}
+
+@media (max-width: 640px) {
+  .reqRowsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
 .reqCardHead {
   display: flex;
   align-items: center;
