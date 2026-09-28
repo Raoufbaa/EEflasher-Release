@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "feat: add Intel ME cleaner and CSME configurator services with UI components",
+  "ReleaseNotes": "feat(firmware): add universal DMI, Serial & Windows Key Transfer engine\n- Implement DmiExtractionService supporting ACPI MSDM, SMBIOS 2.x/3.x, NVRAM stores, and OEM signatures (Lenovo, HP, Dell, Apple, ASUS, Acer)\n- Implement DmiInjectorService for non-destructive in-place injection with automatic ACPI checksum recalculation\n- Add dual-chip Intel Flash Descriptor detection with guidance for ME-only dumps\n- Integrate DMI file pickers, status bar, and actions into unified top container\n- Add two-pane comparative table with icon-only clipboard copy and per-field injection",
   "SupportedVersions": [
-    "1.0.61",
-    "1.0.60",
-    "1.0.59"
+    "1.0.63",
+    "1.0.62",
+    "1.0.61"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
