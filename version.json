@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "bumped the version to 1.0.65",
+  "ReleaseNotes": "trying to fix the writing issue with the dediprog",
   "SupportedVersions": [
+    "1.0.66",
     "1.0.65",
-    "1.0.63",
-    "1.0.62"
+    "1.0.63"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
