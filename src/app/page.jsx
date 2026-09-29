@@ -268,7 +268,7 @@ export default function Home() {
             <tr><td>USBAsp</td><td><span className={styles.check}>✓ Supported</span></td><td>SPI</td><td className={styles.check}>✓</td><td className={styles.check}>✓</td></tr>
             <tr><td>EC Flasher Section</td><td><span className={styles.inProgress}>⚠️ Early Alpha</span></td><td>ENE, ITE, Nuvoton (Keyboard Controllers)</td><td className={styles.check}>✓</td><td className={styles.check}>✓</td></tr>
             <tr><td>FT232H</td><td><span className={styles.inProgress}>🛠️ In Works</span></td><td>SPI, I2C, JTAG (High-Speed MPSSE)</td><td className={styles.check}>✓</td><td className={styles.check}>✓</td></tr>
-            <tr><td>Dediprog (SF100 / SF600 / SF700)</td><td><span className={styles.plan}>⏳ In Planning</span></td><td>High-Speed SPI &amp; Quad-SPI</td><td>-</td><td>-</td></tr>
+            <tr><td>Dediprog (SF100 / SF600 / SF700)</td><td><span className={styles.inProgress}>🛠️ Work in Progress</span></td><td>High-Speed SPI &amp; Quad-SPI</td><td className={styles.check}>✓</td><td className={styles.check}>✓</td></tr>
             <tr><td>Bus Pirate</td><td><span className={styles.plan}>⏳ In Planning</span></td><td>SPI, I2C</td><td>-</td><td>-</td></tr>
           </tbody>
         </table>

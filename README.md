@@ -40,7 +40,7 @@
 | **USBAsp** | ✅ Supported | SPI | Fast | ✅ | ✅ |
 | **EC Flasher Section** | ⚠️ Early Alpha | ENE, ITE, Nuvoton (Keyboard Controllers) | Fast | ✅ | ✅ |
 | **FT232H** | 🛠️ In Works | SPI, I2C, JTAG (High-Speed MPSSE) | Blazing Fast | ✅ | ✅ |
-| **Dediprog (SF100 / SF600 / SF700)** | ⏳ In Planning | High-Speed SPI & Quad-SPI | Ultra Fast | ⏳ | ⏳ |
+| **Dediprog (SF100 / SF600 / SF700)** | 🛠️ Work in Progress | High-Speed SPI & Quad-SPI | Ultra Fast | ✅ | ✅ |
 | **Bus Pirate** | ⏳ In Planning | SPI, I2C | Medium | ⏳ | ⏳ |
 
 ### Hardware Features
