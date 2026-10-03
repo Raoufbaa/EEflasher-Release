@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "fix led and writing bug",
+  "ReleaseNotes": "fixed cleanme feature",
   "SupportedVersions": [
+    "1.0.69",
     "1.0.68",
-    "1.0.67",
-    "1.0.66"
+    "1.0.67"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
