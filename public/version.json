@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "fixed cleanme feature",
+  "ReleaseNotes": "feat: add BIOS password unlock feature\n- Add automated BIOS password unlock for HP (G1-G11), Lenovo, Dell, and generic UEFI (AMI/Insyde).\n- Add NVRAM credential neutralization preserving DMI, S/N, UUID, and Windows Keys.\n- Add hardware diagnostics for lock status, security descriptors, and system identity.\n- Add direct \"Flash to Chip\" action to load buffer and navigate to SPI Flash section.\n- Add animated skeleton loading state for file analysis and unlock patching.",
   "SupportedVersions": [
+    "1.0.70",
     "1.0.69",
-    "1.0.68",
-    "1.0.67"
+    "1.0.68"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
