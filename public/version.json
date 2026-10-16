@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "testing",
+  "ReleaseNotes": "EEFlasher Release Notes — Version 1.0.72\n\nThis release introduces interface alignment improvements, status-aware progress indicators, and an enhanced dual-file verification workflow in Firmware Tools.\n\nChangelog & Updates\n\nOperation Status & Progress Bar\n\nIntegrated dynamic color states on the main progress bar based on active hardware operations:\nRed: Erasing\nGreen: Writing / Programming\nBlue: Verifying\nOrange: Reading, Blank Check, and Unlock routines\nAdjusted status bar geometry to align directly with the sidebar border and hex editor origin.\nFirmware Tools — Dual Checksum & Hash Verification\n\nRedesigned the Checksums & Hashes module into a side-by-side dual binary comparison layout (File 1 / Original vs File 2 / Comparison).\nAdded row-by-row match validation (MATCH / DIFF) across MD5, SHA-1, SHA-256, CRC-32, and 8/16/32-bit checksums with overall identity status detection.\nAdded support for loading directly from active hex editor buffers, one-click file slot swapping, and full comparison report export.\nUpgraded the instant hash verifier to evaluate input values against both binary targets simultaneously.\nUI Safety & Controls\n\nActivity log toolbar buttons (Copy Log, Diagnostic Bug Report, Clear Log) and associated context menu entries are now locked and disabled while any flash operation is active.\nRemoved redundant hash badges from the activity log status strip for a cleaner interface.",
   "SupportedVersions": [
+    "1.0.72",
     "1.0.71",
-    "1.0.70",
-    "1.0.69"
+    "1.0.70"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
