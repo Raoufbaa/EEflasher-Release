@@ -1,10 +1,10 @@
 {
   "DownloadUrl": "https://github.com/Raoufbaa/EEflasher-Release/releases/latest",
-  "ReleaseNotes": "feat: add EC firmware flashing support with wiring diagram and protocol implementations",
+  "ReleaseNotes": "Added full EC chip flashing support (ENE EDI & ITE ISP protocols), hardware programmer pinout mapping (CH341A, FT232H, CH347, Arduino), and the new EC Flasher tab & wiring popup.",
   "SupportedVersions": [
+    "1.0.74",
     "1.0.73",
-    "1.0.72",
-    "1.0.71"
+    "1.0.72"
   ],
   "AppDisabled": false,
   "AppDisabledMessage": ""
